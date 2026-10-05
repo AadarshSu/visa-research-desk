@@ -71,7 +71,9 @@ documents (entry 253).
 **Next — explore with the owner:** a **travel-advice** panel **below the at-a-glance box**, shown
 **only** where the traveller's government publishes advice we can read (entry 259). Six publish a
 feed (US, UK, Canada, Germany, Netherlands, Japan), a dozen more only a page. Before code, the owner
-decides: feeds only or pages too, the language, and the source tier entry. **Weather is on the back
+has approved the source tier (entry 260). **Build next:** `visa-discover advisories` over all 198
+passports, reviewed rows in `config/advisory_publishers.yaml`, then the panel — read and quoted word
+for word in the publisher's language, linked where it refuses us, cached 6 hours. **Weather is on the back
 burner** until the form names a place within the country (entry 259). **News**, once integrated, is
 expected on every corridor. Later, the owner wants the length of stay in the plan itself.
 

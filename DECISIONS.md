@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [260](#260-travel-advice-is-a-third-trust-tier-the-travellers-own-government-read-for-one-panel-and-never-for-the-visa-answer) | **Travel advice is a third trust tier** — the passport's government, found offline for all 198 passports and reviewed; read and quoted word for word, or linked where it refuses us; never visa evidence |
 | [259](#259-travel-advice-shows-only-where-the-travellers-government-publishes-it-and-weather-waits-for-a-place-within-the-country) | **Travel advice only where the traveller's government publishes it; weather waits** — six governments publish a feed, a dozen more a page; a capital's weather misleads for a large country |
 | [251](#251-the-workflow-is-a-travel-readiness-app-for-one-traveller-built-around-the-dates-they-enter) | **The workflow is a travel-readiness app for one traveller** — the owner's direction for item 80: one date range the traveller enters; the visa answer, news and weather shown, the traveller decides; friends much later. Five decisions it needs, none taken |
 | [247](#247-scale-and-speed-are-where-the-owner-wants-them-optimisation-and-expansion-wait-until-required-and-a-workflow-on-ofselfs-schemas-is-next-to-explore) | **Scale and speed are where the owner wants them** — optimisation and expansion are parked until something requires them; TODO is cut to this phase's work; growing the app into a workflow on Ofself's schemas is next to explore, with nothing designed |
@@ -298,6 +299,91 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 260. Travel advice is a third trust tier: the traveller's own government, read for one panel and never for the visa answer
+
+**2026-10-05. The owner's decision, approved after two revisions. Answers decision 2 of entry 251
+and the three questions entry 259 left. Adds `config/advisory_publishers.yaml`
+and an advice panel; changes nothing the visa answer reads. Revised on the owner's review: the list
+covers all 198 passports, a publisher we cannot read is linked, and advice is quoted in its own
+language.**
+
+### The tier
+
+- **Whose advice:** the government of the traveller's **passport**. Where that government publishes
+  none we can read, there is no panel (entry 259); the country of residence is never substituted.
+- **Which domains:** a new file, `config/advisory_publishers.yaml`, beside `authority_domains.yaml`
+  and `supranational_authorities.yaml` and never in either. One row per publishing government: its
+  country code, its domains, where its advice is found (a feed or an index of pages), and its
+  language. **Every domain carries independent evidence** under entry 111's first tier, as the EU's
+  do (entry 201): Wikidata `P856` for the foreign ministry, or a TLS certificate naming it. A
+  domain enters only by a reviewed row.
+- **Officialness is still a property of the domain.** Every rule a fetched page meets still holds:
+  domain checks at load, after every redirect and after every meta-refresh; TLS verification;
+  `robots.txt`; the block and challenge rules (entries 35, 36, 41). Nothing works around a refusal.
+- **The list covers every passport the form offers, not the ones sampled.** The owner expects most
+  governments publish advice for their citizens, and entry 259's twenty-five were a sample of 198.
+  The list is built **offline**, like the registry (entry 38): for each of the 198, search proposes
+  candidates, a candidate counts only if it is that government's own domain under the same rule as
+  `authority_domains.yaml`, and a person reviews each row. A government found to publish nothing
+  gets a row saying so, with what was searched, so "none" is a finding and not a gap.
+
+### Confined to the panel
+
+- **Never visa evidence.** An advice page is never a `ConfiguredSource`, never enters a research
+  packet, and never reaches the model call that decides the visa answer, **including the "Entry
+  requirements" sections the FCDO and the State Department publish.** Enforced in code by a separate
+  module whose types the packet builder does not accept, with a test that the plan call's input is
+  byte-identical with and without advice.
+- **Never changes the plan.** A Level 4 does not make a plan partial, refused or unverified.
+
+### What the panel shows, and how it meets entry 251
+
+**Three outcomes, by what could be read:**
+- **Read:** the level, a quote, the date and the link, as below.
+- **Linked:** the publisher refused, challenged or `Disallow`ed us (Singapore, Ireland, Norway,
+  Finland, the Philippines on 2026-10-05), or reading failed. The panel names the government and
+  links its advice, saying we could not open it to check — the owner's call: their advice is still
+  good and necessary. Entry 27 already allows a blocked page to be **named, never read**; nothing
+  from it is shown or inferred. The link is the destination's page where the reviewed row records
+  its address pattern, and the government's advice index otherwise, so it is never a guessed URL
+  presented as checked.
+- **None:** the passport's government publishes no advice we found. No panel.
+
+When read, only the government's own words: **the level or status as written** ("Level 2: Exercise Increased
+Caution"), **one sentence quoted from the advice**, **the date the government says it updated it**,
+the publisher's name, "written for <nationals>", and the link.
+
+- **From a feed**, code reads the fields, and no model is involved.
+- **From a page**, one model call **selects** those three from the page text; it writes none of them.
+  **Code then checks that each one appears word for word in the fetched text** (whitespace
+  normalised). This is selection, not summary, so entry 251's "never summarised by a model" holds
+  unchanged.
+- **Anything that fails** (a check, the model call, the fetch) **shows the link alone.** Unlike a
+  failed visa adjudication, this does not refuse: a link states nothing, so it cannot be wrong.
+- **No common scale.** Each government's level is shown in its own terms; none is mapped to a
+  colour or a score.
+
+### Freshness and storage
+
+- **Read live, through the retrieval cache, in parallel with the plan**, so the visa answer waits on
+  nothing new. No offline store: the panel needs one page per request, and a store would make stored
+  text speak, against entries 78 and 83, for no gain in correctness.
+- **Limits:** cached for **6 hours**, the owner's choice (the visa pages' 24 is too long for a level
+  raised overnight); a failed refresh may serve the cached copy for at most **24 hours**, showing its
+  date; past that, the link alone.
+
+### Language — the owner's
+
+Advice in another language is read and **quoted in that language**, labelled with it ("in
+Japanese"), never dropped and never translated: a model translation would be the app's words, not
+the government's.
+
+### Still open
+
+- **Japan's per-country file** and South Korea's keyed API are not yet read.
 
 ---
 
