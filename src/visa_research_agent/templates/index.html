@@ -65,9 +65,13 @@
                 </div>
               </div>
               <p class="route-passport" aria-hidden="true">Passport <strong id="route-passport">—</strong> · <span id="route-purpose">—</span><span id="route-dates" hidden></span></p>
+              <div class="ticket-stub">
+                <span class="ticket-barcode" aria-hidden="true"></span>
+                <button id="edit-trip" class="ticket-edit" type="button" aria-expanded="false" aria-controls="ticket-body">Edit trip</button>
+              </div>
             </div>
 
-            <div class="ticket-body">
+            <div id="ticket-body" class="ticket-body">
               {% if signed_in %}<p id="ofself-note" class="form-note" role="status" hidden></p>{% endif %}
               {% set plans_locked = sign_in_required and not signed_in %}
               {% if plans_locked %}

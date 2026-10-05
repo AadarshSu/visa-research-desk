@@ -384,6 +384,9 @@ function renderApplicationLocation(plan, ctx) {
     appendUnreadVisaPages(container, plan);
     appendTools(container, plan, "application_route");
     appendDelegates(container, plan, "application_route");
+    // A traveller who needs no visa has the answer in the verdict ("Nowhere"); a panel saying only
+    // that again is dropped. One with a page, a tool or a contractor to name is kept.
+    if (needsNoVisa(plan) && container.children.length === 2) return null;
     return container;
   }
   appendUnreadVisaPages(container, plan);
@@ -426,9 +429,8 @@ function renderRequirements(plan, ctx) {
   // questions, which the plan is structurally required to carry when there is no checklist source.
   // Unless the authority publishes its list through a questionnaire — then there is somewhere to
   // send the traveller, and that is worth a panel even with nothing to list.
-  // A traveller who needs no visa is owed the panel even with nothing in it, because "no documents"
-  // is the answer to the question they came with rather than a gap. The other empty case stays
-  // dropped: a heading over nothing states an absence the unresolved questions already carry.
+  // A traveller who needs no visa with nothing to list is answered by the verdict ("None to
+  // gather"), so the panel is dropped too; a heading over nothing would only say it again.
   const checklistSources = (plan.application_document_source_ids || [])
     .map((id) => ctx.sourceMap.get(id))
     .filter(Boolean);
@@ -441,8 +443,7 @@ function renderRequirements(plan, ctx) {
     !plan.requirements.length &&
     !checklistSources.length &&
     !unreadChecklists.length &&
-    !checklistTools.length &&
-    !needsNoVisa(plan)
+    !checklistTools.length
   ) {
     return null;
   }
@@ -802,30 +803,60 @@ function glanceDocuments(plan, documentsShown) {
   return { value: "No checklist found", note: "See the documents section" };
 }
 
-function renderGlance(plan, documentsShown) {
+// The decision is the headline, on a band coloured by which side it fell. "Could not be confirmed"
+// has its own grey: an unverified answer never borrows the colour of either side. A decision that
+// holds only on a fact about the trip carries that fact beside the headline and a stamp saying so.
+const VERDICT_STAMPS = { visa: "Visa required", "no-visa": "Visa free", uncertain: "Unconfirmed" };
+
+function renderGlance(plan, documentsShown, applyShown) {
   const box = element("section", "glance");
   box.setAttribute("aria-label", "At a glance");
-  const grid = element("div", "glance-grid");
   const decision = glanceDecision(plan);
+  const conditional = Boolean(plan.decision_condition) && decision.tone !== "uncertain";
+  const band = element("a", `verdict verdict--${decision.tone}${conditional ? " verdict--conditional" : ""}`);
+  band.href = "#plan-decision";
+  const kicker = [
+    optionLabel(destinationSelect, destinationSelect.value),
+    `${optionLabel(nationalitySelect, nationalitySelect.value)} passport`,
+    sentenceCase(purposeSelect.value),
+  ].join(" · ");
+  const text = element("span", "verdict-text");
+  text.append(element("span", "verdict-kicker", kicker), element("strong", "verdict-headline", decision.value));
+  if (decision.note) text.append(element("span", conditional ? "verdict-condition" : "verdict-note", decision.note));
+  text.append(element("span", "verdict-more", "Why, with sources ↓"));
+  const stamp = element("span", "verdict-stamp");
+  stamp.setAttribute("aria-hidden", "true");
+  stamp.append(
+    element("span", "verdict-stamp-top", conditional ? "Conditional" : "Decision"),
+    element("span", "verdict-stamp-word", VERDICT_STAMPS[decision.tone]),
+    element("span", "verdict-stamp-date", new Date().toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })),
+  );
+  band.append(text, stamp);
+
+  const facts = element("div", "verdict-facts");
   [
-    ["Visa", decision, "plan-decision"],
-    ["Where to apply", glanceApply(plan), "plan-apply"],
-    ["Documents", glanceDocuments(plan, documentsShown), documentsShown ? "plan-documents" : "plan-apply"],
-  ].forEach(([label, fact, target]) => {
-    const cell = element("a", fact.tone ? `glance-cell glance-cell--${fact.tone}` : "glance-cell");
-    cell.href = `#${target}`;
-    cell.append(element("span", "glance-label", label), element("strong", "glance-value", fact.value));
-    if (fact.note) cell.append(element("span", "glance-note", fact.note));
-    cell.append(element("span", "glance-more", "Read more ↓"));
-    grid.append(cell);
+    ["Where to apply", glanceApply(plan), applyShown ? "plan-apply" : null, "⌂"],
+    ["Documents", glanceDocuments(plan, documentsShown), documentsShown ? "plan-documents" : applyShown ? "plan-apply" : null, "☰"],
+  ].forEach(([label, fact, target, glyph]) => {
+    // With no section below to read more in, the cell is the whole answer and links nowhere.
+    const cell = element(target ? "a" : "div", target ? "glance-cell" : "glance-cell glance-cell--final");
+    if (target) cell.href = `#${target}`;
+    const icon = element("span", "glance-icon", glyph);
+    icon.setAttribute("aria-hidden", "true");
+    const body = element("span", "glance-body");
+    body.append(element("span", "glance-label", label), element("strong", "glance-value", fact.value));
+    if (fact.note) body.append(element("span", "glance-note", fact.note));
+    cell.append(icon, body);
+    if (target) cell.append(element("span", "glance-more", "↓"));
+    facts.append(cell);
   });
-  box.append(grid);
+  box.append(band, facts);
   return box;
 }
 
 // The traveller's own government's travel advice, as a link and nothing else (DECISIONS entry 260).
 // No word of the advice is shown: the page names whose it is and where it goes. A government that
-// refused us is still linked, and says the link could not be opened from here to check.
+// refused our checker is linked the same way: the owner opened those links and they work.
 function siteOf(url) {
   try {
     return new URL(url).hostname.replace(/^www\./, "");
@@ -849,9 +880,6 @@ function renderAdvice(advice, destinationName) {
   body.append(element("span", "advice-meta", meta.join(" · ")));
   if (!advice.about_destination) {
     body.append(element("span", "advice-meta", `Its travel advice page — we found no separate page for ${destinationName}.`));
-  }
-  if (!advice.checked) {
-    body.append(element("span", "advice-note", "This site would not open for us, so we could not check the link."));
   }
   card.append(body, element("span", "advice-arrow", "↗"));
   card.setAttribute("aria-label", `${advice.government}: travel advice${advice.about_destination ? ` for ${destinationName}` : ""} (opens in a new tab)`);
@@ -1134,13 +1162,10 @@ function stationName(text) {
     .replace(/\b([a-z])/g, (letter) => letter.toUpperCase());
 }
 
-// The two panels beside the plan share one row: advice, then weather. Either may be absent.
-function renderContext(advice, weather) {
-  const parts = [advice, weather].filter(Boolean);
-  if (!parts.length) return null;
-  const row = element("div", "context-row");
-  row.append(...parts);
-  return row;
+// What sits beside the plan rather than in it — the trip, advice, weather — goes in a sidebar that
+// stays in view while the plan scrolls. Any of them may be absent.
+function sidebar() {
+  return results.querySelector(".plan-side");
 }
 
 // A plan already on screen follows the dates: the panel is fetched again, for the city chosen.
@@ -1153,11 +1178,7 @@ async function refreshWeather() {
   const fresh = renderWeather(await fetchWeather(lastRun.request.destination, city), lastRun.request.destination);
   if (old && fresh) old.replaceWith(fresh);
   else if (old) old.remove();
-  else if (fresh) {
-    const row = results.querySelector(".context-row");
-    if (row) row.append(fresh);
-    else results.querySelector(".glance").after(renderContext(null, fresh));
-  }
+  else if (fresh) sidebar()?.append(fresh);
 }
 
 function withId(node, id) {
@@ -1177,22 +1198,20 @@ function renderPlan(plan, advice = null, weather = null) {
   const documents = withId(renderRequirements(plan, ctx), "plan-documents");
   const steps = renderSteps(plan, ctx);
   const evidence = withId(renderReliability(plan), "plan-evidence");
-  results.replaceChildren(
+  const main = element("div", "plan-main");
+  main.append(...[decision, apply, documents, steps, evidence, renderClosingNote(plan)].filter(Boolean));
+  const side = element("aside", "plan-side");
+  side.setAttribute("aria-label", "Beside the plan");
+  side.append(
     ...[
       renderTrip(),
-      renderGlance(plan, Boolean(documents)),
-      renderContext(
-        renderAdvice(advice, optionLabel(destinationSelect, destinationSelect.value)),
-        renderWeather(weather, destinationSelect.value),
-      ),
-      decision,
-      apply,
-      documents,
-      steps,
-      evidence,
-      renderClosingNote(plan),
+      renderAdvice(advice, optionLabel(destinationSelect, destinationSelect.value)),
+      renderWeather(weather, destinationSelect.value),
     ].filter(Boolean),
   );
+  const layout = element("div", "plan-layout");
+  layout.append(main, side);
+  results.replaceChildren(renderGlance(plan, Boolean(documents), Boolean(apply)), layout);
 }
 
 // What each step of a plan request is called on screen (TODO item 57). The server names a step and
@@ -1277,8 +1296,27 @@ function showRefusal(detail) {
   // A refusal names the evidence it could not verify, rather than failing opaquely.
   renderRefusal(detail);
   attachReport("refusal", detail);
-  results.scrollIntoView({ behavior: "smooth", block: "start" });
+  showOutcome();
 }
+
+// Once there is an outcome, the page is about it: the introduction folds away, the boarding pass
+// becomes the header of the result, and the form waits behind "Edit trip". A new request opens it
+// again, because the progress is shown in it.
+const editTrip = document.querySelector("#edit-trip");
+
+function setEditing(open) {
+  document.body.classList.toggle("editing", open);
+  editTrip.setAttribute("aria-expanded", String(open));
+  editTrip.textContent = open ? "Close" : "Edit trip";
+}
+
+function showOutcome() {
+  document.body.classList.add("has-plan");
+  setEditing(false);
+  requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+}
+
+editTrip.addEventListener("click", () => setEditing(!document.body.classList.contains("editing")));
 
 function optionLabel(select, value) {
   const option = [...select.options].find((candidate) => candidate.value === value);
@@ -1330,7 +1368,7 @@ function attachReport(outcome, shown) {
   const box = element("section", outcome === "plan" ? "report" : "report report--fix");
   if (outcome === "plan") planReport(run, box);
   else fixRequest(run, box);
-  results.append(box);
+  (results.querySelector(".plan-main") || results).append(box);
 }
 
 function fixRequest(run, box) {
@@ -1425,6 +1463,7 @@ async function generatePlan(event) {
   startProgress();
   results.setAttribute("aria-busy", "true");
   generateButton.disabled = true;
+  if (document.body.classList.contains("has-plan")) setEditing(true);
 
   try {
     const request = {
@@ -1458,7 +1497,7 @@ async function generatePlan(event) {
       } else if (streamed.event === "plan") {
         renderPlan(streamed.plan, await advicePromise, await weatherPromise);
         attachReport("plan", streamed.plan);
-        results.scrollIntoView({ behavior: "smooth", block: "start" });
+        showOutcome();
         return;
       } else if (streamed.event === "refusal") {
         showRefusal(streamed.detail || {});
@@ -1985,7 +2024,7 @@ function refreshTripStrip() {
   const fresh = renderTrip();
   if (old && fresh) old.replaceWith(fresh);
   else if (old) old.remove();
-  else if (fresh) results.prepend(fresh);
+  else if (fresh) sidebar()?.prepend(fresh);
 }
 
 // A trip idea's window is soft — the schema says never to promote it to firm dates — so it fills
