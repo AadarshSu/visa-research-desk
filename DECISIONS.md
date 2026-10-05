@@ -72,6 +72,8 @@ not — and stored text ranks, it never speaks).
 ### What a plan may say to a traveller
 | | |
 | --- | --- |
+| [253](#253-a-plan-opens-with-three-answers-at-a-glance-the-visa-where-to-apply-and-the-documents) | **A plan opens with three answers at a glance** — visa, where to apply, documents; each derived from the fields its section renders and linking to it |
+| [254](#254-a-partial-plan-says-why-and-the-evidence-list-appears-only-with-a-page-to-name) | **A partial plan says why** — the chip names the reason ("Depends on your trip", "No checklist confirmed"); the generic incomplete-evidence lines are gone; the evidence list shows only with a page to name; no "Visa type unresolved" prefix |
 | [6](#6-structured-conflict-detection-built-then-deliberately-deleted) | Conflict detection: built, then deliberately deleted |
 | [8](#8-wrong-audience-is-a-veto-not-a-penalty) | Wrong audience is a veto, not a penalty |
 | [14](#14-a-missing-document-checklist-stops-refusing-the-corridor) | A missing document checklist stops refusing the corridor |
@@ -291,6 +293,77 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 254. A partial plan says why, and the evidence list appears only with a page to name
+
+**2026-10-05. The owner's request. Changes `static/app.js` and `static/styles.css`; no rule moves.**
+
+**What the owner saw.** On Spain US/US study: "Visa required", "Evidence partial", "Only if you will
+study in Spain for more than 90 days", then "Visa type unresolved. For a U.S. passport holder
+studying in Spain for up to 90 days, no visa is required…" — four hedges, none saying why, and
+*Evidence and caveats* opened with "Evidence is incomplete" over **an empty bullet** and a sentence
+true of every plan. The owner asked for the two generic lines to go: they say nothing about what is
+incomplete or why.
+
+**Why the list was empty.** A plan is `partial` for five reasons (`research/outcomes.py`): an
+unconfirmed decision, a conditional one (entry 250), no checklist, pages that could not be read, or
+pages that could not be re-checked. The evidence list could only ever name the last two, so for the
+first three it printed a heading over nothing.
+
+**What changed.**
+- **The status chip names the reason**, first match: "Depends on your trip", "Some pages
+  unreadable", "Some pages not re-checked", "No checklist confirmed". A null decision gets none —
+  its decision chip already says "Uncertain". A verified plan still says "Evidence verified".
+- **"Some evidence is incomplete — see Evidence and caveats below"** is gone from the decision panel,
+  and the same line from the at-a-glance box.
+- **The evidence list shows only when it has a page to name**, titled "Pages we could not read or
+  re-check", without the generic closing sentence. Every unreadable page keeps its link.
+- **"Visa type unresolved." no longer prefixes the explanation**; the visa type leads only where
+  the plan names one.
+
+**What this does not change.** A partial plan still cannot look verified: it never carries "Evidence
+verified", and its reason is beside the answer. What a plan may conclude, and how it is graded, are
+untouched. The Spain explanation itself still opens with the other side of the condition — that is
+the model's prose, not the page's layout.
+
+**Checked** in the browser on six plans from the 2026-10-03 runs (Spain US/US study, Japan IN/GB
+business, China IN/IN transit, Australia IN/IN study, South Africa IN/IN study, Thailand IN/IN
+tourism): each chip read as above, no decision panel carried the pointer, and the evidence list
+appeared only for Australia (one unreadable page) and South Africa (two).
+
+---
+
+## 253. A plan opens with three answers at a glance: the visa, where to apply, and the documents
+
+**2026-10-05. The owner's request. Changes `static/app.js` and `static/styles.css`; no rule moves.**
+
+**What the owner asked for.** The first thing a traveller sees after a plan is a box answering three
+questions at once — whether a visa is needed, where to apply, and whether there are documents to
+gather — each one clickable down to the section that sets it out. Steps are left out of it for now.
+The owner's reasoning: the sections below exist to earn trust, and once a traveller trusts the app
+the box is what they will read.
+
+**What was built.** `renderGlance` above the numbered panels, which it is not one of. Each cell is
+derived from the same plan fields its section renders and says no more than that section:
+- **Visa** — "Visa required", "No visa required" or "Could not be confirmed" (a `null` decision);
+  under it the decision's condition where it holds on one (entry 250), otherwise the visa type.
+- **Where to apply** — the authority leads, because it is the shortest true thing a plan holds; the
+  location and method are the model's sentences, often a full address, so the location is clipped to
+  two lines under it and given in full below. "In person" only where `in_person` says so; "Online"
+  where no location is stated, the same reading the section shows. No visa: "Nowhere".
+- **Documents** — "Official checklist" (linked, entry 211), "Checklist found" where it could not be
+  read, "Through a questionnaire" or "Through a contractor", "None to gather" for a visa-free plan,
+  and "No checklist found — not among the official pages we could read" where the documents panel
+  is dropped, linking to *Where to apply*, which holds the official route.
+- **A partial plan's reason is on the decision panel's chip** (entry 254), not repeated in the box.
+
+**Checked** on five plans from the 2026-10-03 purpose runs rendered in the browser (Japan IN/GB
+business, Thailand IN/IN tourism, China IN/IN transit, Spain US/US study, Germany IN/GB transit):
+every cell's link lands on a section that exists, a click scrolls to it, and at phone width the box
+stacks with no sideways scroll. **Seen in passing, not changed:** at phone width the *Where to apply*
+section's own three-column detail grid squeezes its cells and clips the third.
 
 ---
 

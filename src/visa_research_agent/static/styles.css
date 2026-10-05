@@ -820,20 +820,6 @@ button:disabled {
   font-weight: 700;
 }
 
-/* Incomplete evidence is named above the guidance in one line, and set out in full at the end.
-   Both halves matter: a partial plan must not look complete, and a wall of caveats above the answer
-   buries the answer. */
-.evidence-pointer {
-  margin: 0 0 14px;
-  padding: 10px 14px;
-  border-left: 4px solid var(--amber);
-  border-radius: 6px;
-  background: var(--amber-soft);
-  color: #684319;
-  font-size: 14px;
-  font-weight: 600;
-}
-
 /* An official questionnaire holding the decision is a next step, not a caveat, so it is set in the
    green used for things the traveller can act on rather than the amber used for gaps in evidence. */
 .decision-tool {
@@ -888,12 +874,6 @@ button:disabled {
   line-height: 1.6;
 }
 
-.evidence-banner-note {
-  margin: 12px 0 0;
-  font-size: 14px;
-  line-height: 1.55;
-}
-
 .stale-badge {
   padding: 2px 7px;
   border-radius: 999px;
@@ -910,6 +890,103 @@ button:disabled {
   color: var(--muted);
   font-size: 17px;
   line-height: 1.65;
+}
+
+/* The answers at a glance: above the numbered panels and not one of them, so it takes no number.
+   Each cell links down to the panel that sets its answer out. */
+html {
+  scroll-behavior: smooth;
+}
+
+.results .panel {
+  scroll-margin-top: 16px;
+}
+
+.glance {
+  display: grid;
+  gap: 12px;
+}
+
+.glance-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1.5px solid rgb(12 43 37 / 22%);
+  border-radius: 16px;
+  background: var(--line);
+  box-shadow: var(--shadow);
+}
+
+.glance-cell {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  min-width: 0;
+  padding: 22px;
+  color: var(--ink);
+  background: var(--surface);
+  text-decoration: none;
+}
+
+.glance-cell:hover .glance-more,
+.glance-cell:focus-visible .glance-more {
+  color: var(--green);
+  text-decoration: underline;
+}
+
+.glance-cell:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: -4px;
+}
+
+.glance-label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.glance-value {
+  font-size: clamp(20px, 2.4vw, 26px);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.glance-cell--visa .glance-value {
+  color: var(--violet);
+}
+
+.glance-cell--no-visa .glance-value {
+  color: var(--blue);
+}
+
+.glance-cell--uncertain .glance-value {
+  color: var(--yellow);
+}
+
+.glance-note {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.glance-more {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@media (max-width: 760px) {
+  .glance-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .detail-grid {

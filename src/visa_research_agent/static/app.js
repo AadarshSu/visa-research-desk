@@ -97,14 +97,6 @@ function appendIfFilled(container, group) {
   if (group.childElementCount) container.append(group);
 }
 
-function hasIncompleteEvidence(plan) {
-  return (
-    plan.status !== "verified"
-    || plan.sources.some((source) => source.is_stale)
-    || (plan.unavailable_sources || []).length > 0
-  );
-}
-
 function appendLinks(item, failures) {
   failures.forEach((failure, index) => {
     if (index) item.append(document.createTextNode(", "));
@@ -144,14 +136,16 @@ function refusalItem(authority, failures) {
   return item;
 }
 
-// A partial plan is still useful, but it must never look as complete as a verified one.
+// The pages behind a partial plan that a traveller can do something about: ones we could not read,
+// each linked, and ones we could not re-check. Shown only when there is one to name — a heading over
+// an empty list, with a sentence that fits every plan, told the traveller nothing (entry 254).
 function renderEvidenceBanner(plan) {
   const staleSources = plan.sources.filter((source) => source.is_stale);
   const missing = plan.unavailable_sources || [];
-  if (!hasIncompleteEvidence(plan)) return null;
+  if (!missing.length && !staleSources.length) return null;
 
   const banner = element("div", "evidence-banner");
-  banner.append(element("p", "evidence-banner-title", "Evidence is incomplete"));
+  banner.append(element("p", "evidence-banner-title", "Pages we could not read or re-check"));
 
   const list = element("ul");
   // An authority refusing this program is the one gap a traveller can close themselves, so it gets
@@ -186,14 +180,6 @@ function renderEvidenceBanner(plan) {
     );
   });
   banner.append(list);
-  banner.append(
-    element(
-      "p",
-      "evidence-banner-note",
-      "Everything in this plan is still drawn only from official sources, but confirm these points "
-        + "directly with the responsible authority before you rely on them.",
-    ),
-  );
   return banner;
 }
 
@@ -293,6 +279,19 @@ function needsNoVisa(plan) {
   return plan.visa_required === false;
 }
 
+// Why a plan is partial, in the words of the one reason that applies, first match wins. A null
+// decision has no label here: its decision chip already says "Uncertain".
+function partialReason(plan) {
+  if (plan.decision_condition) return "Depends on your trip";
+  if (plan.visa_required === null) return null;
+  if ((plan.unavailable_sources || []).length) return "Some pages unreadable";
+  if (plan.sources.some((source) => source.is_stale)) return "Some pages not re-checked";
+  if (!needsNoVisa(plan) && !(plan.application_document_source_ids || []).length) {
+    return "No checklist confirmed";
+  }
+  return null;
+}
+
 function renderDecision(plan, ctx) {
   const { container, header } = panel(plan.destination, "Visa decision");
   const [decision, tone] =
@@ -302,10 +301,10 @@ function renderDecision(plan, ctx) {
         ? ["Visa required", "visa"]
         : ["No visa required", "no-visa"];
   const chips = element("div", "chip-group");
-  chips.append(
-    element("span", `decision-chip decision-chip--${tone}`, decision),
-    element("span", `status-chip status-chip--${plan.status}`, plan.status === "verified" ? "Evidence verified" : "Evidence partial"),
-  );
+  chips.append(element("span", `decision-chip decision-chip--${tone}`, decision));
+  // A partial plan says which way it is partial, never only that it is (entry 254).
+  const status = plan.status === "verified" ? "Evidence verified" : partialReason(plan);
+  if (status) chips.append(element("span", `status-chip status-chip--${plan.status}`, status));
   header.append(chips);
   // A decision that holds only on a fact about the trip the traveller has not confirmed — the
   // layover, the length of stay — says so beside the answer, never only in the explanation below
@@ -315,23 +314,12 @@ function renderDecision(plan, ctx) {
       element("p", "decision-condition", `Only if ${plan.decision_condition.replace(/\.$/, "")}.`),
     );
   }
-  // A partial plan must not look complete, so it says so above the guidance — but briefly. The
-  // reasons and links are long enough to bury the answer, so they sit with the other caveats at the
-  // end instead.
-  if (hasIncompleteEvidence(plan)) {
-    container.append(
-      element(
-        "p",
-        "evidence-pointer",
-        "Some evidence is incomplete — see Evidence and caveats below before relying on this.",
-      ),
-    );
-  }
-  // "Visa type unresolved" is a gap where a visa is needed and noise where none is: nothing failed
-  // to resolve, there is simply no visa to have a type.
-  const lead = needsNoVisa(plan)
-    ? plan.explanation
-    : `${sentenceCase(plan.visa_type) || "Visa type unresolved"}. ${plan.explanation}`;
+  // The visa type leads where the plan names one. "Visa type unresolved" in front of an explanation
+  // that already says why only stacked a third hedge on a conditional answer (entry 254).
+  const lead =
+    needsNoVisa(plan) || !plan.visa_type
+      ? plan.explanation
+      : `${sentenceCase(plan.visa_type)}. ${plan.explanation}`;
   container.append(element("p", "lead", lead));
   appendTools(container, plan, "visa_decision");
   appendDelegates(container, plan, "visa_decision");
@@ -730,6 +718,86 @@ function renderRefusal(detail) {
   results.replaceChildren(container);
 }
 
+// The three answers a traveller came for, in one box above the plan, each linking to the section
+// that sets it out. Every line is derived from the same fields the section below renders, and says
+// no more than it: where a section hedges, the box hedges.
+function glanceDecision(plan) {
+  if (plan.visa_required === null) {
+    return { tone: "uncertain", value: "Could not be confirmed", note: "See why in the visa decision" };
+  }
+  const condition = plan.decision_condition
+    ? `Only if ${plan.decision_condition.replace(/\.$/, "")}`
+    : "";
+  if (plan.visa_required) {
+    return { tone: "visa", value: "Visa required", note: condition || sentenceCase(plan.visa_type) || "" };
+  }
+  return { tone: "no-visa", value: "No visa required", note: condition };
+}
+
+function glanceApply(plan) {
+  const location = plan.where_to_apply;
+  if (!location) {
+    return needsNoVisa(plan)
+      ? { value: "Nowhere", note: "No visa, so no application" }
+      : { value: "Not confirmed", note: "See what we found" };
+  }
+  // The authority leads because it is the shortest true thing a plan holds: the location and method
+  // are the model's sentences, often a full address, and are clipped here and given in full below.
+  // "Online" where no location is stated is the same reading the section below shows.
+  const place = location.location || (location.in_person === "required" ? "" : "Online");
+  const inPerson = location.in_person === "required" ? "In person" : "";
+  return { value: location.authority, note: [inPerson, place].filter(Boolean).join(" · ") };
+}
+
+function glanceDocuments(plan, documentsShown) {
+  if (needsNoVisa(plan)) return { value: "None to gather", note: "No visa application" };
+  if (!documentsShown) {
+    return { value: "No checklist found", note: "Not among the official pages we could read" };
+  }
+  if (plan.requirements.length) {
+    return { value: `${plan.requirements.length} listed`, note: "From the official source" };
+  }
+  if ((plan.application_document_source_ids || []).length) {
+    return { value: "Official checklist", note: "Linked from the authority" };
+  }
+  if ((plan.unavailable_sources || []).some((f) => String(f.source_id).startsWith("checklist_unread_"))) {
+    return { value: "Checklist found", note: "We could not read it; open it yourself" };
+  }
+  if (toolsFor(plan, "document_checklist").length) {
+    return { value: "Through a questionnaire", note: "The authority's own" };
+  }
+  if (delegatesFor(plan, "document_checklist").length) {
+    return { value: "Through a contractor", note: "The authority sends applicants there" };
+  }
+  return { value: "No checklist found", note: "See the documents section" };
+}
+
+function renderGlance(plan, documentsShown) {
+  const box = element("section", "glance");
+  box.setAttribute("aria-label", "At a glance");
+  const grid = element("div", "glance-grid");
+  const decision = glanceDecision(plan);
+  [
+    ["Visa", decision, "plan-decision"],
+    ["Where to apply", glanceApply(plan), "plan-apply"],
+    ["Documents", glanceDocuments(plan, documentsShown), documentsShown ? "plan-documents" : "plan-apply"],
+  ].forEach(([label, fact, target]) => {
+    const cell = element("a", fact.tone ? `glance-cell glance-cell--${fact.tone}` : "glance-cell");
+    cell.href = `#${target}`;
+    cell.append(element("span", "glance-label", label), element("strong", "glance-value", fact.value));
+    if (fact.note) cell.append(element("span", "glance-note", fact.note));
+    cell.append(element("span", "glance-more", "Read more ↓"));
+    grid.append(cell);
+  });
+  box.append(grid);
+  return box;
+}
+
+function withId(node, id) {
+  if (node) node.id = id;
+  return node;
+}
+
 function renderPlan(plan) {
   const ctx = {
     sourceMap: new Map(plan.sources.map((source) => [source.source_id, source])),
@@ -737,14 +805,13 @@ function renderPlan(plan) {
     seen: new Set(),
     seenUrls: new Set(),
   };
+  const decision = withId(renderDecision(plan, ctx), "plan-decision");
+  const apply = withId(renderApplicationLocation(plan, ctx), "plan-apply");
+  const documents = withId(renderRequirements(plan, ctx), "plan-documents");
+  const steps = renderSteps(plan, ctx);
+  const evidence = withId(renderReliability(plan), "plan-evidence");
   results.replaceChildren(
-    ...[
-      renderDecision(plan, ctx),
-      renderApplicationLocation(plan, ctx),
-      renderRequirements(plan, ctx),
-      renderSteps(plan, ctx),
-      renderReliability(plan),
-    ].filter(Boolean),
+    ...[renderGlance(plan, Boolean(documents)), decision, apply, documents, steps, evidence].filter(Boolean),
   );
 }
 
