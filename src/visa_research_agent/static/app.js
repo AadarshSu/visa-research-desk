@@ -391,13 +391,17 @@ function renderApplicationLocation(plan, ctx) {
   appendDelegates(container, plan, "application_route");
 
   const grid = element("div", "detail-grid");
+  // Only what the pages stated: a location where one is given, and whether to attend where a page
+  // says. "Online" under a method that already says online, and "Not stated" under "In person",
+  // repeated the cell beside them or said nothing (entry 257).
   const details = [
     ["Authority", location.authority],
     ["Method", location.application_method],
-    // "Online" beside "you must attend in person" would contradict itself.
-    ["Location", location.location || (location.in_person === "required" ? "Not stated" : "Online")],
-    ["In person", IN_PERSON[location.in_person] || IN_PERSON.unstated],
   ];
+  if (location.location) details.push(["Location", location.location]);
+  if (IN_PERSON[location.in_person] && location.in_person !== "unstated") {
+    details.push(["In person", IN_PERSON[location.in_person]]);
+  }
   details.forEach(([label, value]) => {
     const cell = element("div", "detail-cell");
     cell.append(element("span", "", label), element("p", "", value));
@@ -577,37 +581,47 @@ function renderSteps(plan, ctx) {
       element("h3", "", step.title),
       element("p", "", step.action),
     );
+    // Each step names the pages it rests on, timing included, where the reader meets the claim — a
+    // grouped list at the end left a timing with nothing beside it to check it against (entry 257).
+    const cited = [...new Set(step.source_ids)].map((id) => ctx.sourceMap.get(id)).filter(Boolean);
+    if (cited.length) {
+      const from = element("p", "step-sources");
+      from.append(document.createTextNode(cited.length === 1 ? "Source: " : "Sources: "));
+      cited.forEach((source, index) => {
+        if (index) from.append(document.createTextNode(" · "));
+        from.append(externalLink(`${source.title} \u2197`, source.url));
+      });
+      content.append(from);
+    }
     item.append(content);
     list.append(item);
   });
   container.append(list);
-
-  // Provenance for the steps, grouped once and deduped against the rest of the page,
-  // rather than a link repeated inside each step.
-  const timelineSources = plan.application_steps.flatMap((step) => step.source_ids);
-  const evidence = renderEvidence(timelineSources, ctx, "timeline");
-  if (evidence.childElementCount) {
-    container.append(element("p", "eyebrow evidence-eyebrow", "Sources for these steps"));
-    container.append(evidence);
-  }
   return container;
 }
 
 // Name the authorities this plan actually rests on, so the caveat is never wrong for a country.
 function authoritiesSentence(plan) {
-  const names = [...new Set(plan.sources.map((source) => source.authority))];
+  // One authority is often recorded twice, with and without "www." in its address.
+  const byKey = new Map();
+  plan.sources.forEach((source) => {
+    const key = source.authority.replace(/\(www\./, "(").toLowerCase();
+    if (!byKey.has(key)) byKey.set(key, source.authority.replace(/\(www\./, "("));
+  });
+  const names = [...byKey.values()];
   if (!names.length) return "the responsible authority";
   if (names.length === 1) return names[0];
   return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
 }
 
+// Shown only when it has something particular to say — a page that could not be read or re-checked,
+// or an official questionnaire for fees, processing times or entry. Otherwise it was a heading over
+// the standing caveat, which now closes the page on its own (entry 257).
 function renderReliability(plan) {
   const { container } = panel("Evidence and caveats", "Reliability");
+  const before = container.childElementCount;
   const banner = renderEvidenceBanner(plan);
   if (banner) container.append(banner);
-  container.append(
-    element("p", "checked-at", `Evidence last checked ${new Date(plan.last_checked).toLocaleString()}.`),
-  );
 
   // Fees, processing times and entry conditions have no panel of their own — they live inside the
   // steps — so a questionnaire holding one is offered here rather than dropped.
@@ -616,10 +630,16 @@ function renderReliability(plan) {
     appendTools(container, plan, topic, shown);
     appendDelegates(container, plan, topic, shown);
   });
-  // The standing caveat is about an application, and half of it is false where there is none: there
-  // is nothing to apply for and no visa to be approved. What still holds is the part that matters
-  // most to a visa-free traveller — the rules change, and the border decides.
-  container.append(
+  return container.childElementCount > before ? container : null;
+}
+
+// The standing caveat and when the evidence was read, at the foot of every plan.
+// The caveat is about an application, and half of it is false where there is none: there is nothing
+// to apply for and no visa to be approved. What still holds is the part that matters most to a
+// visa-free traveller — the rules change, and the border decides.
+function renderClosingNote(plan) {
+  const note = element("section", "plan-closing");
+  note.append(
     element(
       "p",
       "disclaimer",
@@ -627,8 +647,9 @@ function renderReliability(plan) {
         ? `Entry rules can change, including which passports need a visa. Confirm the current rules with ${authoritiesSentence(plan)} before you travel. Meeting them does not guarantee entry, which is decided at the border.`
         : `Requirements can change. Confirm the current rules, fees, documents and appointment instructions with ${authoritiesSentence(plan)} before applying. A visa does not guarantee approval or entry.`,
     ),
+    element("p", "checked-at", `Evidence last checked ${new Date(plan.last_checked).toLocaleString()}.`),
   );
-  return container;
+  return note;
 }
 
 // Refusing is a legitimate outcome for high-stakes guidance, so it gets a real explanation
@@ -743,8 +764,8 @@ function glanceApply(plan) {
   }
   // The authority leads because it is the shortest true thing a plan holds: the location and method
   // are the model's sentences, often a full address, and are clipped here and given in full below.
-  // "Online" where no location is stated is the same reading the section below shows.
-  const place = location.location || (location.in_person === "required" ? "" : "Online");
+  // Under it, the stated location, or the method where no location is stated.
+  const place = location.location || location.application_method;
   const inPerson = location.in_person === "required" ? "In person" : "";
   return { value: location.authority, note: [inPerson, place].filter(Boolean).join(" · ") };
 }
@@ -811,9 +832,16 @@ function renderPlan(plan) {
   const steps = renderSteps(plan, ctx);
   const evidence = withId(renderReliability(plan), "plan-evidence");
   results.replaceChildren(
-    ...[renderTrip(), renderGlance(plan, Boolean(documents)), decision, apply, documents, steps, evidence].filter(
-      Boolean,
-    ),
+    ...[
+      renderTrip(),
+      renderGlance(plan, Boolean(documents)),
+      decision,
+      apply,
+      documents,
+      steps,
+      evidence,
+      renderClosingNote(plan),
+    ].filter(Boolean),
   );
 }
 

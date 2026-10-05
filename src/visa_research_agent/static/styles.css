@@ -1265,10 +1265,6 @@ html {
   font-weight: 700;
 }
 
-.evidence-eyebrow {
-  margin: 22px 0 12px;
-}
-
 .steps {
   display: grid;
   gap: 18px;
@@ -1339,6 +1335,29 @@ html {
   padding-left: 20px;
   color: var(--muted);
   line-height: 1.6;
+}
+
+/* Each timeline step's own pages, under the step (entry 257). */
+.step-sources {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.step-sources a {
+  color: var(--green);
+  font-weight: 650;
+}
+
+/* The standing caveat and the check date, closing every plan. */
+.plan-closing {
+  display: grid;
+  gap: 8px;
+}
+
+.plan-closing p {
+  margin: 0;
 }
 
 .checked-at {

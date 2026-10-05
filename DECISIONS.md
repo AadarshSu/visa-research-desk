@@ -72,6 +72,7 @@ not — and stored text ranks, it never speaks).
 ### What a plan may say to a traveller
 | | |
 | --- | --- |
+| [257](#257-where-to-apply-shows-only-what-was-stated-each-timeline-step-cites-its-pages-and-the-caveat-closes-the-page) | **Where to apply shows only what was stated**; each timeline step cites its pages; the standing caveat closes the page and *Evidence and caveats* appears only with something particular |
 | [256](#256-travel-dates-on-the-form-in-three-modes-kept-in-the-page-and-out-of-the-research) | **Travel dates on the form** — exact, roughly, not sure; kept in the page, out of the research; a trip line shows the traveller's passport against their dates |
 | [255](#255-an-applications-steps-become-a-timeline-of-two-to-five-of-what-has-to-happen-by-when--asked-for-not-enforced-and-not-measured) | **Steps become a timeline of two to five** — asked for, not enforced, not measured: they were 57% of what the plan call writes; entry plans untouched |
 | [253](#253-a-plan-opens-with-three-answers-at-a-glance-the-visa-where-to-apply-and-the-documents) | **A plan opens with three answers at a glance** — visa, where to apply, documents; each derived from the fields its section renders and linking to it |
@@ -295,6 +296,32 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 257. Where to apply shows only what was stated, each timeline step cites its pages, and the caveat closes the page
+
+**2026-10-05. The owner's requests. Changes `static/app.js` and `static/styles.css`; no rule moves.**
+
+- **Where to apply.** India's details read Authority, Method "Online e-Visa application", Location
+  "Online", In person "Not stated on the pages read" — the third repeating the second and the
+  fourth saying nothing. The grid now holds Authority and Method, with Location only where a page
+  gave one and In person only where a page said yes or no. The summary box (entry 253) shows the
+  stated location under the authority, or the method where there is none, rather than inferring
+  "Online".
+- **Timeline steps cite their pages.** Each step lists the pages in its `source_ids` beneath it,
+  linked, in place of one grouped "Sources for these steps" list at the end of the panel. A step's
+  sources support the whole step, its timing included; a citation for the timing alone would need a
+  field the plan does not have.
+- **The caveat closes every plan.** *Evidence and caveats* is shown only when it has something
+  particular — a page that could not be read or re-checked, or an official questionnaire for fees,
+  processing times or entry. Otherwise it was a heading over the standing caveat, which now sits at
+  the foot of the page with the date the evidence was checked. The caveat names each authority
+  once: India's was named twice, with and without `www.`.
+
+**Checked** in the browser on Vietnam IN/IN tourism (two-cell details, six steps each citing their
+pages, the section kept for a page that could not be re-checked) and Japan IN/GB tourism (no
+section, the closing note last).
 
 ---
 
