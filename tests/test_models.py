@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from typing import cast
 
 import pytest
 from pydantic import ValidationError
@@ -472,7 +473,7 @@ def test_an_entry_plan_may_state_the_decision_and_nothing_else() -> None:
 
 
 @pytest.mark.parametrize("decision", [True, None])
-def test_only_a_stated_no_may_use_fewer_than_four_steps(decision: bool | None) -> None:
+def test_only_a_stated_no_may_use_fewer_than_two_steps(decision: bool | None) -> None:
     """The guard, read from the side a wrong answer would come in by.
 
     A plan that needs a visa is a process with a form and a fee, and one that could not confirm the
@@ -481,10 +482,23 @@ def test_only_a_stated_no_may_use_fewer_than_four_steps(decision: bool | None) -
     nothing for the traveller to notice the error with."""
 
     payload = entry_payload(visa_required=decision, status="partial")
+    payload["application_steps"] = cast(list[object], payload["application_steps"])[:1]
     payload["unresolved_questions"] = ["Which documents the application needs."]
 
-    with pytest.raises(ValidationError, match="at least 4 steps"):
+    with pytest.raises(ValidationError, match="at least 2 steps"):
         VisaPlan.model_validate(payload)
+
+
+def test_an_application_timeline_past_five_is_shown_not_refused() -> None:
+    """Entry 255: the prompt asks for at most five, and a plan that writes six is still shown —
+    a long timeline is what plans were before, and refusing a correct answer for its length is
+    worse. The schema's eight still holds."""
+
+    six = cast(list[object], entry_payload()["application_steps"]) * 2
+    payload = entry_payload(visa_required=True, status="partial", application_steps=six)
+    payload["unresolved_questions"] = ["Which documents the application needs."]
+
+    assert len(VisaPlan.model_validate(payload).application_steps) == 6
 
 
 def test_an_entry_plan_still_cannot_list_a_single_document() -> None:
@@ -537,8 +551,14 @@ def test_the_draft_holds_the_same_line_before_the_app_sees_it() -> None:
 
     assert len(VisaPlanDraft.model_validate(draft).application_steps) == 3
 
-    with pytest.raises(ValidationError, match="at least 4 steps"):
-        VisaPlanDraft.model_validate({**draft, "visa_required": True})
+    with pytest.raises(ValidationError, match="at least 2 steps"):
+        VisaPlanDraft.model_validate(
+            {
+                **draft,
+                "visa_required": True,
+                "application_steps": cast(list[object], draft["application_steps"])[:1],
+            }
+        )
 
 
 def test_a_step_linking_a_page_it_did_not_cite_cites_it() -> None:

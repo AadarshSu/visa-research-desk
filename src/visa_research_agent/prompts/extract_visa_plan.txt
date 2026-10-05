@@ -86,7 +86,7 @@ Follow these rules:
    empty, and do not record an unresolved question about the missing checklist: there is no
    application, so there are no application documents and nothing failed to be found.
    - List only the entry duties the sources state, however few — three is a complete answer if three
-     is what the pages say, and rule 10's four-step minimum does not apply to this shape. Never add
+     is what the pages say, and rule 10's two-step minimum does not apply to this shape. Never add
      a step to reach a count. An entry duty you invented is the most damaging thing here, because a
      traveller told they need no visa has nothing left to check it against.
    - Set where_to_apply to null when there is nothing to apply for. If the sources say a visa-free
@@ -239,13 +239,18 @@ Follow these rules:
    run past the limit: a title that stops mid-clause reads as a broken interface. Everything the
    traveller has to do belongs in the step's action, which has room for it.
 
-10. Return four to eight ordered application steps that form a genuinely actionable timeline. Where
-   rule 8e applies there is no minimum and the maximum is still eight: an entry list is exactly as
-   long as the duties the sources state, and if they state none it is empty. Cover
-   the supported route end to end: what to prepare, which official page to open, account or sign-in
-   setup only if evidenced, appointment booking, where to attend, what to submit or pay, the stated
-   processing window, how approval or documents are received, and any supported final pre-travel
-   action. Each step needs a short title, a precise action, a timing window and supporting source IDs.
+10. Return two to five application steps that form a timeline: what has to happen by when. The
+   timing is the point of each step. State it as the source states it — "within 30 days before
+   arrival", "three working days, excluding the day of submission", "no earlier than three months
+   before travel" — and where no source states a time for a stage, write "No time stated" rather
+   than estimating one. Cover only the stages a traveller has to plan around: when to start or
+   apply, the appointment or submission and its window, the stated processing time, and anything
+   due before departure. Merge stages that happen together. Do not explain how to use a website,
+   form or account, or walk through the route's mechanics: the plan links the official page, and
+   the traveller follows it there. Each step needs a short title, an action of one sentence under
+   160 characters, a timing window and supporting source IDs. Where rule 8e applies there is no
+   minimum and the maximum is eight: an entry list is exactly as long as the duties the sources
+   state, and if they state none it is empty.
 11. Use link_target "application_route" when the step should open where_to_apply.application_url;
    use "source" with link_source_id for another supplied official page, and list that same ID in the
    step's source_ids; otherwise use "none". Never invent a URL. Never claim that an account,

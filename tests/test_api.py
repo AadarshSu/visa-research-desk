@@ -165,7 +165,7 @@ async def test_singapore_fixture_plan_is_returned(
         "sg_ica_india_visa_details" in requirement["source_ids"]
         for requirement in plan["requirements"]
     )
-    assert 4 <= len(plan["application_steps"]) <= 8
+    assert 2 <= len(plan["application_steps"]) <= 5
     assert all(
         {
             "title",

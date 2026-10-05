@@ -73,6 +73,7 @@ not — and stored text ranks, it never speaks).
 | | |
 | --- | --- |
 | [256](#256-travel-dates-on-the-form-in-three-modes-kept-in-the-page-and-out-of-the-research) | **Travel dates on the form** — exact, roughly, not sure; kept in the page, out of the research; a trip line shows the traveller's passport against their dates |
+| [255](#255-an-applications-steps-become-a-timeline-of-two-to-five-of-what-has-to-happen-by-when--asked-for-not-enforced-and-not-measured) | **Steps become a timeline of two to five** — asked for, not enforced, not measured: they were 57% of what the plan call writes; entry plans untouched |
 | [253](#253-a-plan-opens-with-three-answers-at-a-glance-the-visa-where-to-apply-and-the-documents) | **A plan opens with three answers at a glance** — visa, where to apply, documents; each derived from the fields its section renders and linking to it |
 | [254](#254-a-partial-plan-says-why-and-the-evidence-list-appears-only-with-a-page-to-name) | **A partial plan says why** — the chip names the reason ("Depends on your trip", "No checklist confirmed"); the generic incomplete-evidence lines are gone; the evidence list shows only with a page to name; no "Visa type unresolved" prefix |
 | [6](#6-structured-conflict-detection-built-then-deliberately-deleted) | Conflict detection: built, then deliberately deleted |
@@ -332,6 +333,44 @@ to what a plan concludes and to the reuse key, so its own entry.
 **Checked** in the browser: each mode, a past departure and a return before departure refused by the
 pickers, a rough single month and span, a trip idea's window filling *Roughly*, the trip line with a
 passport expiring four months after return and one expiring mid-trip, and the form at phone width.
+
+---
+
+## 255. An application's steps become a timeline of two to five, of what has to happen by when — asked for, not enforced, and not measured
+
+**2026-10-05. The owner's direction. Committed without the measurement below, by the owner's choice.**
+Changes `prompts/extract_visa_plan.txt` (rule 10, and 8e's reference to it), `domain/models.py`
+(`APPLICATION_STEP_FLOOR` 4 → 2), the Singapore fixture and
+the panel's eyebrow.
+
+**What the owner said.** The steps section is long for little benefit: with only the links and the
+other sections, the owner could work out how to apply. It is not to be removed, but it does not
+justify the time and tokens it takes, and it is there for **timelines rather than physical steps**.
+
+**What it costs today.** Over the 45 plans of the 2026-10-03 purpose runs, the steps are **57% of
+what the plan call writes** (median 2,699 of 4,568 characters). The plan call's median there is
+**13.0 s and 1,413 output tokens** over 113 calls.
+
+**The draft.** Rule 10 asked for "four to eight ordered application steps" covering "the supported
+route end to end". It now asks for **two to five steps forming a timeline**: each step's timing as
+the source states it, "No time stated" where none does, only the stages a traveller plans around,
+stages that happen together merged, nothing on how to use a website or form, an action of one
+sentence. **The floor is enforced; the five is not** — the owner's decision: a model that writes six to eight
+steps produces a long timeline, which is what every plan was before, and refusing a correct answer
+for its length would be worse. The schema's eight still holds.
+**Entry plans are untouched**: no minimum, at most eight — their duties are however many the
+authority states. The step schema is unchanged, so rules 7, 8b, 8c and 8e, which each place a
+particular step, still hold. `action` keeps its 320-character limit; the prompt asks for under 160,
+so a long sentence is not a new way to be refused.
+
+**What it changes about refusing.** An application plan of two or three steps was refused and is now
+served. Nothing that was served is now refused.
+
+**Not run — to measure later** (`var/steps-2026-10-05/replay_steps.py`): the plan call alone, replayed on ten
+captured plan inputs (eight applications, one visa-free, one conditional), twice each, with the
+committed prompt from a checkout of HEAD and with the draft — identical inputs, so only the prompt
+and the step rules differ. Graded on several runs, in seconds and tokens (entries 144, 145), and on
+whether any decision changes or any draft is refused.
 
 ---
 

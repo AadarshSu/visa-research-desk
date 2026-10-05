@@ -863,18 +863,23 @@ class ApplicationStep(StrictModel):
         return self
 
 
-APPLICATION_STEP_FLOOR = 4
+APPLICATION_STEP_FLOOR = 2
 """How many steps an *application* must be described in before it is worth serving.
 
-One line is not a plan for a process with a form, an appointment and a fee, so a model that
-summarised the route away is refused rather than rendered. It is a floor on describing something
-known to be multi-step, and that is the whole of its warrant — see `_check_step_count` for why an
-entry plan is not held to it.
+One line is not a timeline for a process with a submission and a wait, so a model that summarised
+the route away is refused rather than rendered. It was four until entry 255, when the steps became a
+timeline of what has to happen by when rather than a walk through the route: the linked official
+pages carry the mechanics. See `_check_step_count` for why an entry plan is not held to it.
 """
+
+# Five is what the prompt asks an application timeline for (entry 255), and deliberately not checked
+# here: a plan with six to eight steps is a long timeline, which is what plans were before, and the
+# owner chose to show it rather than refuse a correct answer for its length. The schema's eight
+# holds.
 
 
 def _check_step_count(visa_required: bool | None, steps: Sequence[ApplicationStep]) -> None:
-    """The four-step floor holds for an application and is withheld from an entry plan.
+    """The two-step floor holds for an application and is withheld from an entry plan.
 
     A traveller who needs no visa still has duties — Singapore asks for the SG Arrival Card, a
     passport valid past the stay and evidence of onward travel — and none of them is an application,

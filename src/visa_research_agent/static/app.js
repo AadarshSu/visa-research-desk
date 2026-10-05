@@ -567,7 +567,7 @@ function renderSteps(plan, ctx) {
   if (entry && !plan.application_steps.length) return null;
   const { container } = entry
     ? panel("Before you travel", "Entry requirements")
-    : panel("Application timeline", "Actionable sequence");
+    : panel("Application timeline", "When to do what");
   const list = element("ol", "steps");
   plan.application_steps.forEach((step) => {
     const item = element("li");

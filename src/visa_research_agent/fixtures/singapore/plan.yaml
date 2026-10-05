@@ -35,59 +35,33 @@ requirements:
     reason_it_applies: ICA does not state that this is required for every Indian applicant.
     source_ids: [sg_ica_india_visa_details]
 application_steps:
-  - title: Confirm passport validity
+  - title: Check passport validity
     action: >-
-      Check that the passport covers at least six months from entry. Because official pages use
-      slightly different reference points, verify the calculation against the intended trip dates.
+      Check the passport covers at least six months from entry; the official pages use slightly
+      different reference points.
     timing: Before booking an appointment or committing to travel.
     source_ids: [sg_ica_india_visa_details, sg_mfa_check_visa, sg_ica_entry_requirements]
     link_target: source
     link_source_id: sg_ica_india_visa_details
-  - title: Prepare the application documents
-    action: >-
-      Complete and sign Form 14A, prepare the recent photograph and passport copy, and add official
-      translations or Form V39A only when relevant or requested.
-    timing: Before opening the appointment-booking flow.
-    source_ids: [sg_ica_india_visa_details]
-    link_target: source
-    link_source_id: sg_ica_india_visa_details
-  - title: Verify the VFS account and return process
-    action: >-
-      Open the official UK application route and confirm account or sign-in requirements, extra UK
-      documents, whether originals are retained, and the collection or courier process. The saved
-      evidence does not establish these details.
-    timing: Before booking; begin within 30 days before the intended arrival.
-    source_ids: [sg_mfa_london_visa_information, sg_ica_india_visa_details]
-    link_target: application_route
-    link_source_id: null
   - title: Book the London appointment
     action: >-
-      Use the authorised VFS UK route to choose an available appointment at 66 Wilson Street,
-      London EC2A 2BT.
+      Book through the authorised VFS UK route, with the documents on the official checklist ready.
     timing: Within 30 days before arrival, subject to VFS appointment availability.
     source_ids: [sg_mfa_london_visa_information, sg_ica_india_visa_details]
     link_target: application_route
     link_source_id: null
   - title: Attend and submit
     action: >-
-      Attend VFS at the booked time, submit the application documents and pay the stated £19 visa
-      fee plus £13.50 VFS processing fee.
+      Submit at VFS, 66 Wilson Street, London, and pay the £19 visa fee plus the £13.50 VFS fee.
     timing: At the booked appointment time.
     source_ids: [sg_mfa_london_visa_information]
     link_target: application_route
     link_source_id: null
-  - title: Monitor the decision
+  - title: Wait for the decision
     action: >-
-      Follow the submitting agent's updates. ICA describes three working days excluding submission
-      day as typical, but some cases take longer and VFS-specific timing is not established here.
-    timing: After submission; do not treat the typical period as a guaranteed deadline.
-    source_ids: [sg_ica_india_visa_details]
-    link_target: source
-    link_source_id: sg_ica_india_visa_details
-  - title: Obtain and check the e-Visa
-    action: >-
-      If approved, obtain the e-Visa from the submitting agent and verify its details before travel.
-    timing: After approval and before departure.
+      ICA describes three working days excluding submission day as typical; check the e-Visa once
+      approved.
+    timing: After submission; some cases take longer, so it is not a guaranteed deadline.
     source_ids: [sg_ica_india_visa_details]
     link_target: source
     link_source_id: sg_ica_india_visa_details

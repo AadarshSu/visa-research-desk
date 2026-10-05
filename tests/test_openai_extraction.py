@@ -83,7 +83,7 @@ async def test_openai_extractor_uses_one_bounded_structured_call() -> None:
     assert "untrusted evidence" in generator.system_prompt
     assert "outside knowledge" in generator.system_prompt
     assert "Do not list the application documents" in generator.system_prompt
-    assert "genuinely actionable timeline" in generator.system_prompt
+    assert "form a timeline: what has to happen by when" in generator.system_prompt
     assert "Never claim that an account" in generator.system_prompt
     assert generator.research_packet is not None
     packet = json.loads(generator.research_packet)
