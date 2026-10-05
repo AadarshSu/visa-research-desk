@@ -1122,9 +1122,11 @@ html {
   }
 }
 
+/* Four cells — authority, method, location, in person — as two rows of two, so none is left alone
+   on a row of its own; minmax(0) lets a long method wrap instead of pushing a column out of view. */
 .detail-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
   overflow: hidden;
   border: 1px solid var(--line);
@@ -1532,7 +1534,7 @@ footer p {
   }
 
   .detail-grid {
-    padding: 12px;
+    grid-template-columns: 1fr;
   }
 
   .panel-header {
