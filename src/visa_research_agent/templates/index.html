@@ -122,6 +122,17 @@
                   <p id="residence-note" class="field-note" role="status" hidden></p>
                   <div id="residence-choices" class="field-choices" hidden></div>
                 </div>
+                <div id="region-group" class="field-group" hidden>
+                  <label for="region">State or region <span class="field-optional">optional</span></label>
+                  <select
+                    id="region"
+                    name="region"
+                    data-selected="{{ traveller.region_of_residence or '' if traveller else '' }}"
+                  >
+                    <option value="">Not given</option>
+                  </select>
+                  <p class="field-note">Picks the embassy or visa centre that serves you.</p>
+                </div>
                 <div class="field-group">
                   <label for="purpose">Purpose</label>
                   <select id="purpose" name="purpose" {% if signed_in %}required{% endif %}>

@@ -15,7 +15,7 @@ def test_the_default_profile_is_the_one_the_singapore_fixture_was_recorded_again
         "passport_nationality": "IN",
         "passport_type": "ordinary",
         "country_of_residence": "GB",
-        "city_of_residence": "Edinburgh",
+        "region_of_residence": "Scotland",
         "residence_status": "Graduate visa",
         "residence_permission_expiry": "2027-12-23",
         "travel_purpose": "tourism",
@@ -61,7 +61,7 @@ def test_only_the_deciding_details_are_required() -> None:
     profile = TravellerRequest(passport_nationality="IN", country_of_residence="GB").to_profile()
 
     assert profile.travel_purpose == "tourism"
-    assert profile.city_of_residence is None
+    assert profile.region_of_residence is None
     assert profile.residence_status is None
 
 
@@ -115,3 +115,38 @@ async def test_only_the_request_body_source_falls_back_to_the_default_traveller(
     )
 
     assert profile == DEFAULT_TRAVELLER_PROFILE
+
+
+def test_a_region_is_carried_through_in_the_reference_datas_spelling() -> None:
+    """Item 71: the region is what a post's jurisdiction list is matched against."""
+
+    profile = TravellerRequest(
+        passport_nationality="IN", country_of_residence="IN", region_of_residence="  tamil  nadu "
+    ).to_profile()
+
+    assert profile.region_of_residence == "Tamil Nadu"
+
+
+@pytest.mark.parametrize(
+    ("country", "region"),
+    [
+        ("IN", "Chennai"),  # a city, not a region: which region it is in would be a guess
+        ("GB", "Maharashtra"),  # another country's region
+        ("IN", "Tamilnadu"),  # a misspelling is refused, not matched
+    ],
+)
+def test_a_region_the_reference_data_does_not_hold_is_refused_rather_than_guessed(
+    country: str, region: str
+) -> None:
+    with pytest.raises(ValidationError, match="not a region"):
+        TravellerRequest(
+            passport_nationality="IN", country_of_residence=country, region_of_residence=region
+        )
+
+
+def test_a_blank_region_is_no_region() -> None:
+    request = TravellerRequest(
+        passport_nationality="IN", country_of_residence="GB", region_of_residence=" "
+    )
+
+    assert request.region_of_residence is None

@@ -478,6 +478,21 @@ h1 em {
   background: var(--surface);
 }
 
+.field-group[hidden] {
+  display: none;
+}
+
+/* With the region shown, the purpose after it would sit alone in half a row. */
+#region-group:not([hidden]) ~ .field-group {
+  grid-column: 1 / -1;
+}
+
+.field-optional {
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
 .field-group:focus-within {
   border-color: var(--green);
 }

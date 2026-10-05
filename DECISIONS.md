@@ -237,6 +237,7 @@ not — and stored text ranks, it never speaks).
 | [20](#20-the-traveller-becomes-input-countries-become-codes) | The traveller becomes input; countries become codes |
 | [234](#234-the-page-stops-showing-unresolved-questions-and-a-visa-type-starts-with-a-capital) | **The page stops showing unresolved questions, and a visa type starts with a capital** — the owner's call: the questions stay in the plan and in reports; Canada's "visitor visa." opened the decision |
 | [233](#233-a-traveller-can-report-a-result-with-its-run-attached) | **A traveller can report a result, with its run attached** — the owner's item 74: one tap on a refusal, a message on a plan; the server keeps the corridor's four codes, copies the run's log and the build; `var/reports/`, `visa-discover reports` |
+| [252](#252-residence-narrows-to-a-state-or-region-chosen-from-a-list-and-the-plan-says-whether-to-go-in-person) | **Residence narrows to a state or region, and the plan says whether to go in person** — the owner's item 71, revising entry 225's city: 3,584 GeoNames regions, committed; a region the list lacks is refused; the plan names the post the page assigns to it (12 of 12 replays) and asks where the split is finer; `in_person` only where a page says so |
 | [250](#250-transit-is-its-own-purpose-an-exemption-for-another-purpose-says-nothing-and-a-plan-may-state-an-answer-that-holds-on-a-fact-about-the-trip) | **Transit, other purposes and conditional answers** — the owner's answers to entry 248: a short-stay list never decides transit, another purpose's exemption says nothing, and `decision_condition` lets a plan state an answer that holds on a trip fact, shown beside it and never `verified`; transit 3 → 8 decisions, 8 of them conditional |
 | [249](#249-the-stale-ceiling-is-90-days-a-store-past-its-rebuild-is-served-flagged-stale-rather-than-refused) | **The stale ceiling is 90 days** — the owner's decision: 168 → 2160 hours; a page that cannot be refreshed is served from the cache flagged stale and the plan stays `partial`; the five corridors entry 248 lost all resolve |
 | [248](#248-business-study-and-transit-measured-for-the-first-time-business-answers-like-tourism-study-needs-a-length-of-stay-transit-needs-three-facts-the-form-never-asks) | **Business, study and transit, measured** — 51 corridors with a same-day tourism control: business 9 decisions as tourism's 9, study 7, transit 3; the stores are past the stale ceiling (Vietnam refuses in every purpose); transit needs layover, airside and onward country; Japan transit probably wrong from the short-stay exemption list; four questions for the owner |
@@ -289,6 +290,94 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 252. Residence narrows to a state or region, chosen from a list, and the plan says whether to go in person
+
+**2026-10-05 · the owner, on TODO item 71.** Revises entry 225, which chose a city. Tools and raw
+rows: `var/item71-2026-10-05/`.
+
+### What the owner said
+
+- **A state or region, not a city.** Most cities point to an embassy in some nearby region — for
+  many destinations the only post in the United Kingdom is London — and the question a traveller
+  has is which city holds the post that serves them, and whether they must travel to it.
+- **Every city in the world would be too much for a dropdown.**
+- **"Go ahead with region, include the in-person line."**
+
+### Why a region, beyond the dropdown
+
+- **Jurisdiction pages are written in regions.** Of 375 distinct saved plans, 79 ended on an
+  unresolved "which post serves you" question, and they asked for an Indian state, a UK nation, a
+  US state — never a street.
+- **The match becomes literal.** The page says "Maharashtra, Gujarat, Goa ☞ Mumbai"; the traveller
+  chose Maharashtra. A city would need geography — that Pune is in Maharashtra — from reference data
+  or from the model, which item 71's bound forbids.
+- **No world-cities list and no ambiguous names.** London, Ontario, and the two Hyderabads go away
+  because the country is chosen first.
+- **Where it is too coarse, the plan asks.** Japan sends Scotland *and* named northern-English
+  counties to Edinburgh, so "England" cannot decide. The plan names both posts and asks for the
+  county — what it did before for the whole country.
+
+### What was built
+
+- **`config/regions.yaml`, committed**: GeoNames' first-level divisions, by English name, for 196
+  of the 198 countries (Singapore and the Vatican have none, so the field is hidden). 3,584 names;
+  the largest list is Slovenia's 212 municipalities, India's is 36, the UK's 4. Generated by
+  `visa-discover regions --geonames admin1CodesASCII.txt`; CC BY 4.0, credited in the file's header.
+  The owner chose GeoNames over ISO 3166-2, whose names are local official forms ("Dubayy",
+  "Anhui Sheng").
+- **`TravellerProfile.region_of_residence`** replaces `city_of_residence`, which no form ever asked
+  for. **A region the list does not hold is refused, never matched** — a city, a misspelling,
+  another country's region (`normalise_region`). It reaches the plan call; **it does not enter the
+  corridor key**, so the corridor store is unchanged. The plan reuse key splits by it, because the
+  packet differs (entry 178).
+- **The form** shows an optional "State or region" after the country, filled from `/regions/{country}`.
+  The default traveller is Scotland, where it was Edinburgh.
+- **`where_to_apply.in_person`**: `required`, `not_required` or null, shown as "In person" on the
+  card. Set only where a source in `where_to_apply.source_ids` says the traveller must attend, or
+  that the whole application is made without attending. **Null is "not stated", never "no"**.
+- **Plan rules 13 and 14** in `extract_visa_plan.txt` say how: a region placed by the source's own
+  allocation — by name, another spelling, or a catch-all such as "all other states" — names the post;
+  an allocation drawn finer than the region, or none, names the posts and asks; no outside geography,
+  no "nearest" post.
+
+### Measured
+
+Replays of the plan call on captured packets, the region added to the profile, 2 runs a case,
+through Personas. First with the committed prompt (`replay.jsonl`), then with rules 13 and 14
+(`replay_rules.jsonl`).
+
+| case | no region | region, before rules 13–14 | region, after |
+| --- | --- | --- | --- |
+| page states the split, region decides it (Korea and China `IN/IN`, Germany and Japan `IN/GB`) | asks which post, 8 of 8 → 10 of 10 | **right post, 12 of 12**, none asks | **right post, 12 of 12**; Japan Wales once also asks to confirm London, since the page names only Edinburgh's areas |
+| region too coarse (Japan England, Germany England) | — | asks, 4 of 4 | Germany asks London or Manchester 2 of 2; **Japan England names London without asking in 1 of 2** |
+| page states no split (Turkey, Spain, South Africa) | — | no post invented, 6 of 6 | no post invented, 6 of 6 |
+
+- **The posts named**: Korea Maharashtra → Mumbai, Tamil Nadu → Chennai; China Maharashtra →
+  Mumbai, West Bengal → the Kolkata service centre; Germany Scotland → Edinburgh; Japan Scotland →
+  Edinburgh, Wales → London. Each is what the page in the packet says.
+- **In person**: `required` where a page says to attend (Germany's TLScontact centres, China's
+  Kolkata centre, Spain's Mumbai office, Japan for business), `not_required` for Japan tourism from
+  the UK 3 of 4 — its eVISA page applies online, and says business travellers "apply in person at
+  the Embassy" — and null where no page says (Korea, South Africa, Turkey).
+- **Rule 8e still holds** (the prompt changed, so the standing check ran): Japan `IN/GB` visa
+  required 4 of 4, Singapore `PH/PH` no visa 4 of 4.
+- **Unchanged and not caused by this:** Switzerland `IN/IN` study returned no place to apply in 1
+  of 2 runs with or without a region in the first replay.
+
+One or two runs a case: these show the direction, not a rate. No corridor was run end to end.
+
+### Left
+
+- **Japan England's 1 in 2.** Rule 13 says to ask where the allocation is finer than the region;
+  one run named London instead. Watch it; a firmer wording is the fix to try if it recurs.
+- **Ofself** may hold an address a region could come from (item 55). Not read: the region comes
+  from the form only.
+- **Discovery does not use the region.** Scoring the traveller's own post above another post's
+  within the same country — Korea's rare wrong checklist was the Chennai consulate's page — is a
+  scoring change and would need its own measurement.
 
 ---
 
@@ -1592,6 +1681,9 @@ than country of residence."
 
 Not built. The open design questions are in item 71: reference data for cities, ambiguous names,
 states for India's jurisdiction lists, and the corridor key.
+
+**Revised by entry 252 (2026-10-05):** a state or region, chosen from a list, after the country —
+not a city in place of it.
 
 ---
 

@@ -82,6 +82,21 @@ async def test_health_endpoint(client: httpx.AsyncClient) -> None:
 
 
 @pytest.mark.anyio
+async def test_a_countrys_regions_are_served_for_the_form(client: httpx.AsyncClient) -> None:
+    """TODO item 71: the region field lists only the chosen country's regions."""
+
+    response = await client.get("/regions/gb")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "country": "GB",
+        "regions": ["England", "Northern Ireland", "Scotland", "Wales"],
+    }
+    assert (await client.get("/regions/SG")).json()["regions"] == []
+    assert (await client.get("/regions/Atlantis")).status_code == 404
+
+
+@pytest.mark.anyio
 async def test_destinations_endpoint(client: httpx.AsyncClient) -> None:
     response = await client.get("/destinations")
 

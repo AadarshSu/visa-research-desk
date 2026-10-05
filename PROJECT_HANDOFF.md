@@ -7,8 +7,8 @@ stands, what to do next, and what is known to be broken. The history of how it g
 | | |
 | --- | --- |
 | **Repository** | `github.com/AadarshSu/visa-research-agent` |
-| **Last updated** | 2026-10-03 — update this line when you touch the handoff |
-| **Tests** | 1,030 on the owner's machine, with `var/` present: 1,029 passing and 1 skipped (the opt-in browser test), run 2026-10-03; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
+| **Last updated** | 2026-10-05 — update this line when you touch the handoff |
+| **Tests** | 1,040 on the owner's machine, with `var/` present: 1,039 passing and 1 skipped (the opt-in browser test), run 2026-10-05; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
 
 | Question | File |
 | --- | --- |
@@ -35,9 +35,14 @@ propose either unprompted.**
 schemas (TODO item 80).** Nothing is designed. Do not start it without the owner.
 
 **This phase's queue** is TODO's *Now*: 80, then **63** (accurate answers, ongoing), **55** (what is
-left of the Ofself adapter), **71** (the traveller's city and the one post that serves them), **79**
-(a small scoring consistency fix), **4** (the client-side retrieval decision) and **20** (durable
-stores).
+left of the Ofself adapter), **79** (a small scoring consistency fix), **4** (the client-side
+retrieval decision) and **20** (durable stores).
+
+**Item 71 shipped 2026-10-05 (entry 252):** the form asks for an optional state or region after the
+country, from a committed GeoNames list (`config/regions.yaml`, regenerated with `visa-discover
+regions`); a plan names the post the page assigns to that region, and says "In person" only where a
+page does. Measured by replaying the plan call on saved packets, 1–2 runs a case; no corridor was run
+end to end, and the deployed server has not been updated.
 
 **Where item 63 was left (entries 214–224).**
 - The second round of ten destinations, `IN/IN`, twice each: decisions 5 → 7 of 10, checklists
@@ -72,7 +77,7 @@ several times first.** Rule 8e's bounds live only in the prompt, and a packet ch
 ## Waiting, or shipped and not measured
 
 - **Decisions waiting on the owner:** item 4, whether the traveller's own browser may fetch what the
-  agent was refused; item 71's open questions. Parked with their items: whether a corridor's five
+  agent was refused. Parked with their items: whether a corridor's five
   renders should grow (item 61), and whether to store a refusal (entry 151).
 - **Questions for Ofself:** does it host apps, and does any of its apps record a trip before it
   happens (TODO item 55).

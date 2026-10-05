@@ -24,6 +24,11 @@ from visa_research_agent.config.loader import (
     get_destination_registry,
     get_runtime_policy,
 )
+from visa_research_agent.config.regions import (
+    REGIONS_FILENAME,
+    regions_from_geonames,
+    render_regions_yaml,
+)
 from visa_research_agent.config.settings import settings
 from visa_research_agent.discovery.adjudication import (
     LangChainRoleAdjudicator,
@@ -715,6 +720,22 @@ def run_audit(args: argparse.Namespace, stream: TextIO) -> int:
         if cause in {"decision_not_found", "no_candidates", "adjudication_failed", "run_raised"}
     )
     return 1 if refused or report.unrecorded else 0
+
+
+def run_regions(args: argparse.Namespace, stream: TextIO) -> int:
+    """Write the committed region list from a downloaded GeoNames file (TODO item 71, entry 252)."""
+
+    codes = [country.code for country in get_country_registry().countries]
+    with Path(args.geonames).open(encoding="utf-8") as handle:
+        regions = regions_from_geonames(handle, codes)
+    Path(args.output).write_text(render_regions_yaml(regions), encoding="utf-8")
+    without = sorted(set(codes) - set(regions))
+    print(
+        f"{sum(map(len, regions.values()))} regions for {len(regions)} of {len(codes)} countries "
+        f"written to {args.output}; none for {', '.join(without) or 'none'}.",
+        file=stream,
+    )
+    return 0
 
 
 def run_reports(args: argparse.Namespace, stream: TextIO) -> int:
@@ -1895,6 +1916,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     page_text.add_argument("--limit", type=int, default=10)
 
+    regions = commands.add_parser(
+        "regions", help="regenerate the region list a traveller chooses from, from GeoNames"
+    )
+    regions.add_argument(
+        "--geonames", required=True, help="a downloaded GeoNames admin1CodesASCII.txt"
+    )
+    regions.add_argument("--output", default=str(config_path(REGIONS_FILENAME)))
+
     reports = commands.add_parser(
         "reports", help="list travellers' problem reports, each with the line that re-runs it"
     )
@@ -2013,6 +2042,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return run_audit(args, sys.stderr)
         if args.command == "reports":
             return run_reports(args, sys.stdout)
+        if args.command == "regions":
+            return run_regions(args, sys.stderr)
         if args.command == "selection-recall":
             return run_selection_recall(args, sys.stderr)
         if args.command == "coverage":

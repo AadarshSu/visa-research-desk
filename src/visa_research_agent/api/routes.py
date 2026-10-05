@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import ValidationError
 
+from visa_research_agent.api.countries import normalise_country
 from visa_research_agent.api.dependencies import (
     get_automatic_destinations,
     get_traveller_source,
@@ -27,12 +28,14 @@ from visa_research_agent.api.schemas import (
     DestinationsResponse,
     DestinationSummary,
     HealthResponse,
+    RegionsResponse,
     VisaPlanRequest,
 )
 from visa_research_agent.api.signin import SignIn, get_sign_in, require_signed_in_for_plans
 from visa_research_agent.api.templates import static_asset_version, templates
 from visa_research_agent.api.traveller import TravellerSource
 from visa_research_agent.config.loader import get_destination_registry, get_runtime_policy
+from visa_research_agent.config.regions import regions_for
 from visa_research_agent.config.settings import settings
 from visa_research_agent.config.traveller import DEFAULT_TRAVELLER_PROFILE
 from visa_research_agent.discovery.adjudication import AdjudicationError
@@ -133,6 +136,17 @@ def researchable_destinations() -> list[DestinationSummary]:
 @router.get("/health", response_model=HealthResponse, tags=["system"])
 async def health() -> HealthResponse:
     return HealthResponse()
+
+
+@router.get("/regions/{country}", response_model=RegionsResponse, tags=["visa research"])
+async def regions(country: str) -> RegionsResponse:
+    """The regions a traveller in this country may choose from (TODO item 71, entry 252)."""
+
+    try:
+        code = normalise_country(country)
+    except ValueError as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail={"message": str(exc)}) from exc
+    return RegionsResponse(country=code, regions=list(regions_for(code)))
 
 
 @router.get("/destinations", response_model=DestinationsResponse, tags=["visa research"])

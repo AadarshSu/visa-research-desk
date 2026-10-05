@@ -2,6 +2,8 @@ const form = document.querySelector("#plan-form");
 const destinationSelect = document.querySelector("#destination");
 const nationalitySelect = document.querySelector("#nationality");
 const residenceSelect = document.querySelector("#residence");
+const regionSelect = document.querySelector("#region");
+const regionGroup = document.querySelector("#region-group");
 const purposeSelect = document.querySelector("#purpose");
 const generateButton = document.querySelector("#generate-button");
 const progress = document.querySelector("#progress");
@@ -368,6 +370,14 @@ function appendUnreadVisaPages(container, plan) {
   container.append(group);
 }
 
+// Whether the traveller must travel to the post (TODO item 71, DECISIONS entry 252). Set only where
+// a cited page says so; anything else is "not stated", never "no".
+const IN_PERSON = {
+  required: "Yes \u2014 you must attend in person",
+  not_required: "No \u2014 the pages say no visit is needed",
+  unstated: "Not stated on the pages read",
+};
+
 function renderApplicationLocation(plan, ctx) {
   const { container } = panel("Where to apply", "Application route");
   const location = plan.where_to_apply;
@@ -396,7 +406,9 @@ function renderApplicationLocation(plan, ctx) {
   const details = [
     ["Authority", location.authority],
     ["Method", location.application_method],
-    ["Location", location.location || "Online"],
+    // "Online" beside "you must attend in person" would contradict itself.
+    ["Location", location.location || (location.in_person === "required" ? "Not stated" : "Online")],
+    ["In person", IN_PERSON[location.in_person] || IN_PERSON.unstated],
   ];
   details.forEach(([label, value]) => {
     const cell = element("div", "detail-cell");
@@ -845,7 +857,9 @@ function tripLine(request) {
   return [
     optionLabel(destinationSelect, request.destination),
     `${optionLabel(nationalitySelect, traveller.passport_nationality)} passport`,
-    `from ${optionLabel(residenceSelect, traveller.country_of_residence)}`,
+    `from ${[traveller.region_of_residence, optionLabel(residenceSelect, traveller.country_of_residence)]
+      .filter(Boolean)
+      .join(", ")}`,
     traveller.travel_purpose,
   ].join(" · ");
 }
@@ -971,6 +985,7 @@ async function generatePlan(event) {
       traveller: {
         passport_nationality: nationalitySelect.value,
         country_of_residence: residenceSelect.value,
+        region_of_residence: regionGroup.hidden ? null : regionSelect.value || null,
         travel_purpose: purposeSelect.value,
       },
     };
@@ -1174,6 +1189,7 @@ function prefillResidence(payload) {
   };
   const pick = (residence) => {
     residenceSelect.value = residence.country;
+    loadRegions();
     describe(residence);
   };
   if (residences.length === 1) {
@@ -1324,6 +1340,31 @@ function updateRoute() {
   routePassport.textContent = chosenLabel(nationalitySelect);
   routePurpose.textContent = chosenLabel(purposeSelect);
 }
+
+// The region a post's jurisdiction is drawn in (TODO item 71, DECISIONS entry 252). Only the chosen
+// country's regions are offered, from committed reference data; a country with none hides the field.
+let regionsShownFor = 0;
+async function loadRegions(keep = "") {
+  const country = residenceSelect.value;
+  const asked = ++regionsShownFor;
+  regionSelect.replaceChildren(new Option("Not given", ""));
+  regionGroup.hidden = true;
+  if (!country) return;
+  try {
+    const response = await fetch(`/regions/${encodeURIComponent(country)}`);
+    if (!response.ok) return;
+    const { regions } = await response.json();
+    // A later country choice may have answered first; only the latest one may fill the field.
+    if (asked !== regionsShownFor || !regions.length) return;
+    regions.forEach((region) => regionSelect.append(new Option(region, region, false, region === keep)));
+    regionGroup.hidden = false;
+  } catch {
+    // Optional detail: without it the plan names the posts and asks, as it did before.
+  }
+}
+
+residenceSelect.addEventListener("change", () => loadRegions());
+loadRegions(regionSelect.dataset.selected);
 
 form.addEventListener("change", updateRoute);
 form.addEventListener("click", () => requestAnimationFrame(updateRoute));

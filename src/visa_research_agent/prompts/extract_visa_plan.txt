@@ -254,3 +254,21 @@ Follow these rules:
    explicit confirmation action and unresolved question. Qualify estimates and approval-dependent
    steps clearly. Never submit an application, book an appointment, create an account or fill a form.
 12. The destination must use the configured display name from the research packet.
+13. traveller_profile.region_of_residence, when present, is the state, province or region the
+   traveller chose as where they live. Where a source assigns embassies, consulates or application
+   centres by where the applicant lives, use it:
+   - If the source's own allocation places that region — by name, under a former name or another
+     spelling of it, or under a catch-all such as "all other states" — make where_to_apply the post
+     or centre it names, and do not ask which post serves the traveller.
+   - If the allocation is drawn finer than a region — counties, cities, districts — and splits this
+     region, or the source names no allocation, name the posts or centres the sources give and
+     record an unresolved question asking for exactly what decides it.
+   - Never place a region in an allocation from anything but a source's own words: no geography
+     from outside the packet, and no "nearest" post.
+   When region_of_residence is null and a source allocates posts by where the applicant lives, ask
+   which state, province or region they live in.
+14. where_to_apply.in_person says whether the traveller must go somewhere in person. Set "required"
+   only where a source in where_to_apply.source_ids says they must attend — to submit the
+   application, give biometrics, or be interviewed. Set "not_required" only where such a source says
+   the whole application is made without attending, online or by post. Otherwise null: a source
+   that does not mention attending says nothing either way.

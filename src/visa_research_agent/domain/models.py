@@ -206,7 +206,11 @@ class TravellerProfile(StrictModel):
     country_of_residence: str = Field(pattern=COUNTRY_CODE_PATTERN)
     travel_purpose: TravelPurpose = "tourism"
 
-    city_of_residence: str | None = None
+    region_of_residence: str | None = None
+    """The state, province or region they live in, chosen from committed reference data — the unit
+    missions draw jurisdiction in (TODO item 71, DECISIONS entry 252). It replaced a city, which no
+    form ever asked for: a region is matched against a page's own list, where a city would need
+    geography inferred. None when the traveller did not say."""
     residence_status: str | None = None
     """The permission a traveller holds where they live, when they are not a citizen of it — a UK
     Graduate visa, a US green card. Frequently decisive: Brazil and China both require proof of
@@ -771,6 +775,11 @@ class VisaRequirement(StrictModel):
     source_ids: list[str] = Field(min_length=1)
 
 
+InPerson = Literal["required", "not_required"]
+"""`required`: a page says the traveller must attend — to submit, give biometrics or be interviewed.
+`not_required`: a page says the whole application is made without attending, online or by post."""
+
+
 class ApplicationLocation(StrictModel):
     """Where and how the traveller should apply."""
 
@@ -779,6 +788,9 @@ class ApplicationLocation(StrictModel):
     location: str | None = None
     application_url: AnyHttpUrl
     source_ids: list[str] = Field(min_length=1)
+    in_person: InPerson | None = None
+    """Whether the traveller must go somewhere in person, only where a cited page says so (TODO item
+    71, DECISIONS entry 252). None is "not stated", never "no"."""
 
 
 class ApplicationLocationDraft(StrictModel):
@@ -789,6 +801,7 @@ class ApplicationLocationDraft(StrictModel):
     location: str | None
     application_url: str = Field(min_length=1)
     source_ids: list[str] = Field(min_length=1)
+    in_person: InPerson | None
 
 
 class ApplicationStep(StrictModel):

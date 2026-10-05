@@ -35,7 +35,7 @@ REPORT: dict[str, Any] = {
             "passport_nationality": "IN",
             "country_of_residence": "GB",
             "travel_purpose": "tourism",
-            "city_of_residence": "Leeds",
+            "region_of_residence": "England",
             "residence_status": "skilled worker",
         },
     },

@@ -47,7 +47,6 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 | **Now** | 80. Explore growing from an answer into a workflow, on Ofself's schemas | `explore`, with the owner |
 |  | 63. Make most corridors return accurate and useful information | `ongoing` |
 |  | 55. Take the traveller from Ofself's shared identity, through one adapter | `soon` |
-|  | 71. Take the city the traveller lives in, and name the one post that serves them | `soon` |
 |  | 79. Score pages fetched live with the post-aware stored-text fixes | `soon` |
 |  | 4. Decide the client-side retrieval question | `soon` |
 |  | 20. Make the stores substrate-swappable and durable | `soon` |
@@ -155,29 +154,6 @@ is in [CRUX.md](CRUX.md), argued in entries 180 and 181; platform surprises are 
 5. **After the adapter a country is an ISO alpha-2 code.**
 6. **Nothing is written back without a decision entry.** A plan is a rendering, never a stored fact
    (entry 44); `travel-requirement` rows are never read as evidence. `fact` nodes are never evidence.
-
-### 71. Take the city the traveller lives in, and name the one post that serves them — `soon`
-
-**Why — the owner, 2026-09-26.** Where a traveller applies often turns on where in a country they
-live: South Korea splits India between New Delhi, Mumbai and Chennai; most destinations take UK
-applications only in London. The aim is **the one post or centre that serves this traveller**, not a
-list of every post.
-
-**Decided (entry 225):** the traveller gives a **city** instead of a country of residence, and the
-country is derived from it.
-
-**To build on:** plans already notice ("the profile does not provide a city"); mission pages usually
-publish their jurisdiction; `mission_labels` recognises posts by city (entry 134); Ofself may hold
-the city (item 55).
-
-**Bounds.** The city is traveller input, never inferred. A post's jurisdiction must come from a page
-that states it, under the usual trust rules; where none does, the plan names the posts and asks.
-Nothing per city is stored as an answer (entry 44).
-
-**Open:** where the city-to-country data comes from, and ambiguous names (London, Ontario; Hyderabad)
-— a city with no reference data is refused, never guessed; matching a city to jurisdiction lists that
-name states; whether the corridor key gains the city or the post it resolves to (it splits the
-corridor store and the plan reuse key, entry 178); what Ofself supplies.
 
 ### 79. Score pages fetched live with the post-aware stored-text fixes — `soon`
 
@@ -339,6 +315,7 @@ The reasoning is in the DECISIONS entry; this is the index. Code comments cite s
 
 | Was | Done | Entry | What building it found |
 | --- | --- | --- | --- |
+| 71. Take where the traveller lives, and name the one post that serves them | 10-05 | 225, 252 | A state or region from a committed GeoNames list, not a city; the plan names the page's post for it in 12 of 12 replays and asks where the split is finer (Japan England named London once in 2). `in_person` shown only where a page says. Discovery does not use the region; Ofself supplies none yet |
 | 78. Decide whether to show the selector 60 + 40 pages with the search boost | 09-30 | 246 | Closed, not adopted: live over ten corridors the boosted 60 + 40 gave the same decisions and checklists on 44% less selector input and lost France `PH/PH`'s processing time in every run; a vocabulary fix and embeddings were both checked and neither keeps the page. The owner kept 120 + 40; the boost stays in the code, off |
 | 77. Make the stored-text score credit the traveller's own post | 09-30 | 244, 245 | Shipped: nationality from title and path only, a residence credit and the own/other-post signals on post roles, no purpose bonus on the decision. At today's cut every decision and checklist in every run (127.0 against 126.6); with the search boost 60 + 40 becomes level (item 78) |
 | 76. Test the search boost with the selector | 09-30 | 243, 244 | Offline 129 of 131 at a 40 cut once `CandidatePage.searched` records every page search returned; the selector scores 124.2–124.4 against 126.6 on 45–60% less input — corpus-only answers are displaced. Not adopted; the cause is item 77 |
@@ -404,6 +381,11 @@ photograph, and other relevant documents") and was graded `verified`. About 1 ru
 rule 4 did no better on replay. Untried: a deterministic floor on how many distinct documents a
 credited checklist names (`names_documents` in `scoring.py`); refusing a checklist credited from the
 page the same call credited as an exemption list. Measure on the saved packets first.
+
+**A place to apply with no location reads "Online" (entry 252).** The where-to-apply card has
+always shown a null `location` as "Online", which is false when the page names a post but no
+address — South Korea's plans often do. Entry 252 shows "Not stated" only beside `in_person:
+required`; the general case is untouched.
 
 **Egypt `BD/SA` credits its decision 1 run in 3 on a byte-identical packet (entry 204).** A prompt
 question — measure with `replay_roles.py` before changing anything.
