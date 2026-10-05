@@ -257,6 +257,8 @@ after a push costs a second commit for one concern; before it, the change folds 
 .venv/bin/visa-discover advisories --only GB,IN  # survey who publishes travel advice; a draft to review (entry 260)
 .venv/bin/visa-discover advisory-links --only GB  # build and check each government's advice links (entry 260)
 .venv/bin/visa-discover country-names          # regenerate country names in publisher languages, from Wikidata
+.venv/bin/visa-discover cities --geonames cities15000.txt  # regenerate the weather panel's cities (entry 261)
+.venv/bin/visa-discover climate                # build destination cities' monthly averages from NOAA (entry 261)
 .venv/bin/visa-discover selection-recall       # does the corridor find it? no network, no model
 .venv/bin/visa-discover contention --destination czechia --nationality IN --from GB --outside-pool \
     --role document_checklist                  # curate an oracle row, including outside the pool

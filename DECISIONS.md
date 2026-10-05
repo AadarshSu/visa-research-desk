@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [261](#261-weather-for-the-trips-dates-met-norways-forecast-noaas-averages-and-a-city-picker-in-the-panel) | **Weather for the trip's dates** — MET Norway's forecast about nine days out, NOAA station averages beyond; a city picker in the panel, the capital first; Open-Meteo and NASA POWER refused by their own robots.txt |
 | [260](#260-travel-advice-is-a-third-trust-tier-the-travellers-own-government-read-for-one-panel-and-never-for-the-visa-answer) | **Travel advice is a third trust tier** — the passport's government, found offline for all 198 passports and reviewed; **linked, never read or quoted**, each link checked offline; never visa evidence |
 | [259](#259-travel-advice-shows-only-where-the-travellers-government-publishes-it-and-weather-waits-for-a-place-within-the-country) | **Travel advice only where the traveller's government publishes it; weather waits** — six governments publish a feed, a dozen more a page; a capital's weather misleads for a large country |
 | [251](#251-the-workflow-is-a-travel-readiness-app-for-one-traveller-built-around-the-dates-they-enter) | **The workflow is a travel-readiness app for one traveller** — the owner's direction for item 80: one date range the traveller enters; the visa answer, news and weather shown, the traveller decides; friends much later. Five decisions it needs, none taken |
@@ -299,6 +300,65 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 261. Weather for the trip's dates: MET Norway's forecast, NOAA's averages, and a city picker in the panel
+
+**2026-10-06. The owner asked for the weather panel, set aside in entry 259 for want of a place
+within the country. Adds `src/visa_research_agent/weather/`, `GET /weather`, the panel under the
+travel advice, and three generated files. Nothing reaches the visa answer.**
+
+### The place: a picker in the panel, not a field on the form
+
+The form names a country, and a country's weather is no one place's. The panel offers the
+destination's capital first and its largest cities after, and the traveller picks; the visa form
+gets nothing new (entry 251). The list, `config/destination_cities.yaml`, is generated from
+GeoNames' `cities15000` (CC BY 4.0, downloaded with the owner's yes) by `visa-discover cities`:
+the capital, then up to seven more by population, dropping any place within 25 km of one already
+listed — so Brooklyn, Delhi beside New Delhi and Singapore's new towns are not offered. **Ranked by
+population, it misses places travellers go that few people live in** — Chiang Mai, Phuket, Bali.
+A name not on the list is refused, never answered with the capital's weather.
+
+### The sources, and the two that may not be used
+
+- **Forecast: MET Norway's Locationforecast** (CC BY 4.0), about nine days ahead. Its `robots.txt`
+  disallows nothing to us; its terms ask a client to identify itself, to send four decimals of
+  latitude and longitude, and to reuse a response until it expires — the client does all three,
+  and reads `robots.txt` before asking. Credited on the panel, linked to Yr, MET Norway's own page.
+- **Beyond the window: averages from NOAA's Global Summary of the Month**, public domain, built
+  offline by `visa-discover climate` into `config/climate_normals.yaml`: per city, the nearest of up
+  to three stations within 60 km with maximum temperatures for at least five years of 1996–2025,
+  each calendar month averaged, with the station, its distance and the years the averages actually
+  cover shown on the panel. The first build, over 2011–2025 and one station a city, left Beijing,
+  Singapore, Oslo and Kuala Lumpur without averages: the station listing claimed records the
+  monthly summaries did not hold. **Built: 334 cities across the 55 destinations.** Every capital
+  has averages except Brasília, Cairo, Bratislava and Montevideo; **Brazil has none for any city**
+  — NOAA's monthly summaries hold no usable Brazilian station for these years. Transient failures
+  (Belgium, Brazil, Canada, Finland, Singapore) were asked again in a later run, as entry 207
+  allows; nothing an authority stated was retried.
+- **Not Open-Meteo or NASA POWER.** Both APIs are disallowed to every client by their own
+  `robots.txt` (Open-Meteo `Disallow: /`, NASA POWER `Disallow: /api/`), and Open-Meteo's free tier
+  is non-commercial. **Open-Meteo's `climate` API would have been wrong anyway:** it returns one
+  model's simulation of a future year, not an average.
+
+### What the data turned out to hold
+
+- **Each NOAA data type has its own dates.** Tokyo's central station stopped reporting maxima in
+  2022 and minima in 1989; Abu Dhabi's airport reports temperatures to 2025 and stopped reporting
+  rain in 1998. So a station is judged type by type: maxima required, rain preferred.
+- **The monthly summaries often lack minima** even where the station listing claims them
+  (Yokohama), so the panel shows an average low only where one was recorded.
+- MET Norway gives temperatures per time step — hourly for two or three days, six-hourly after —
+  so a day's high and low are the forecast's warmest and coldest step, in the city's own time
+  zone. Rain is summed from the hourly steps, then the six-hourly ones that follow, never both.
+
+### What the panel shows
+
+With **exact dates**, the days inside the window as a forecast ("The forecast reaches 5 of your 25
+days"), then each later month's averages. With **rough months**, averages only — a forecast is
+never shown for a span the traveller has not fixed. With **no dates, no panel.** It appears with
+the plan and follows the dates and the chosen city as they change.
 
 ---
 

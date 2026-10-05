@@ -1,5 +1,6 @@
 import json
 from collections.abc import AsyncIterator, Callable
+from datetime import date, timedelta
 from types import SimpleNamespace
 from typing import cast
 
@@ -809,3 +810,60 @@ async def test_no_travel_advice_where_the_government_publishes_none(
 
     assert response.status_code == 200
     assert response.json() == {"advice": None}
+
+
+class FakeForecasts:
+    def __init__(self) -> None:
+        self.asked: list[str] = []
+
+    async def forecast(self, city: object) -> list[object]:
+        self.asked.append(getattr(city, "name", ""))
+        return []
+
+
+@pytest.mark.anyio
+async def test_weather_is_for_a_city_the_panel_offers(
+    client: httpx.AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Entry 261: a city not on the destination's list is refused, never swapped for the capital."""
+
+    from visa_research_agent.api import routes
+
+    fake = FakeForecasts()
+    client._transport.app.dependency_overrides[routes.get_forecast_client] = lambda: fake  # type: ignore[attr-defined]
+    soon = date.today() + timedelta(days=1)
+    params = {"destination": "japan", "start": soon.isoformat(), "end": soon.isoformat()}
+
+    refused = await client.get("/weather", params={**params, "city": "Atlantis"})
+    assert refused.status_code == 404
+
+    backwards = await client.get(
+        "/weather", params={**params, "end": (soon - timedelta(days=2)).isoformat()}
+    )
+    assert backwards.status_code == 422
+
+    response = await client.get("/weather", params={**params, "city": "Osaka"})
+    assert response.status_code == 200
+    assert fake.asked == ["Osaka"]
+
+
+@pytest.mark.anyio
+async def test_a_rough_span_is_never_sent_for_a_forecast(
+    client: httpx.AsyncClient,
+) -> None:
+    from visa_research_agent.api import routes
+
+    fake = FakeForecasts()
+    client._transport.app.dependency_overrides[routes.get_forecast_client] = lambda: fake  # type: ignore[attr-defined]
+    soon = date.today()
+    response = await client.get(
+        "/weather",
+        params={
+            "destination": "japan",
+            "start": soon.isoformat(),
+            "end": (soon + timedelta(days=40)).isoformat(),
+            "exact": "false",
+        },
+    )
+    assert response.status_code == 200
+    assert fake.asked == []

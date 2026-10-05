@@ -33,11 +33,13 @@ propose either unprompted.**
 
 **Next, with the owner: a travel-readiness app for one traveller, built around the dates they enter
 (TODO item 80, entry 251).** Built so far: optional dates on the form (entry 256) and the
-at-a-glance box (entry 253). **Next to explore:** a travel-advice panel below the at-a-glance box,
+at-a-glance box (entry 253). **Built next:** a travel-advice panel below the at-a-glance box,
 from the passport's government, **links only** — nothing read or quoted (entry 260). Built on
 2026-10-05: 52 reviewed publishers, 682 checked destination links, `GET /travel-advice` and the
-panel under the at-a-glance box — seen on the fixture plan, not yet deployed. Weather is on the back burner
-(entry 259). Never an input to the visa answer.
+panel under the at-a-glance box — seen on the fixture plan, not yet deployed. **Weather** (entry 261)
+followed on 2026-10-06: MET Norway's forecast within about nine days, NOAA station averages beyond,
+for a city picked in the panel — also not deployed. Neither panel is ever an input to the visa
+answer.
 
 **This phase's queue** is TODO's *Now*: 80, then **63** (accurate answers, ongoing), **55** (what is
 left of the Ofself adapter), **79** (a small scoring consistency fix), **4** (the client-side

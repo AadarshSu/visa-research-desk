@@ -875,12 +875,148 @@ async function fetchAdvice(request) {
   }
 }
 
+// Weather for the trip's dates, beside the plan and never an input to it (DECISIONS entry 261).
+// The forecast where the dates fall inside MET Norway's window; past it, a city's monthly averages,
+// labelled as averages with their station and years. No dates, no panel.
+function weatherQuery(destination, trip, city) {
+  const query = new URLSearchParams({
+    destination,
+    start: isoDay(trip.start),
+    end: isoDay(trip.end),
+    exact: String(trip.mode === "exact"),
+  });
+  if (city) query.set("city", city);
+  return query;
+}
+
+async function fetchWeather(destination, city = null) {
+  const trip = tripDates();
+  if (!trip || !destination) return null;
+  try {
+    const response = await fetch(`/weather?${weatherQuery(destination, trip, city)}`, {
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) return null;
+    return (await response.json()).weather || null;
+  } catch {
+    return null;
+  }
+}
+
+function degrees(value) {
+  return value === null || value === undefined ? "–" : `${Math.round(value)}°`;
+}
+
+function rainfall(value) {
+  return value === null || value === undefined ? null : `${Math.round(value)} mm rain`;
+}
+
+function renderWeather(weather, destination) {
+  if (!weather) return null;
+  const box = element("section", "weather");
+  box.setAttribute("aria-label", "Weather for your dates");
+  const head = element("div", "weather-head");
+  head.append(element("span", "weather-label", "Weather"));
+  if (weather.cities.length > 1) {
+    const picker = element("select", "weather-city");
+    picker.setAttribute("aria-label", "City");
+    weather.cities.forEach((name) => {
+      const label = name === weather.capital_city ? `${name} (capital)` : name;
+      picker.append(new Option(label, name, false, name === weather.city));
+    });
+    picker.addEventListener("change", async () => {
+      picker.disabled = true;
+      const fresh = renderWeather(await fetchWeather(destination, picker.value), destination);
+      if (fresh) box.replaceWith(fresh);
+      else picker.disabled = false;
+    });
+    head.append(picker);
+  } else {
+    head.append(element("strong", "weather-city-name", weather.city));
+  }
+  box.append(head);
+
+  if (weather.forecast.length) {
+    const block = element("div", "weather-block");
+    block.append(element("p", "weather-kind", "Forecast"));
+    const days = element("ol", "weather-days");
+    weather.forecast.forEach((day) => {
+      const date = parseDay(day.day);
+      const item = element("li", "weather-day");
+      item.append(
+        element("span", "weather-date", date.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" })),
+        element("span", "weather-summary", day.summary),
+        element("span", "weather-temps", `${degrees(day.high_c)} / ${degrees(day.low_c)}`),
+        element("span", "weather-rain", day.rain_mm >= 0.5 ? `${Math.round(day.rain_mm)} mm` : "Dry"),
+      );
+      days.append(item);
+    });
+    block.append(days);
+    if (weather.trip_days && weather.trip_days > weather.forecast.length) {
+      block.append(element("p", "weather-note", `The forecast reaches ${weather.forecast.length} of your ${weather.trip_days} days.`));
+    }
+    const credit = element("p", "weather-source");
+    credit.append("Forecast from MET Norway (CC BY 4.0) · ");
+    credit.append(externalLink("See it on Yr ↗", weather.forecast_link));
+    block.append(credit);
+    box.append(block);
+  }
+
+  if (weather.averages.length) {
+    const block = element("div", "weather-block");
+    block.append(element("p", "weather-kind", weather.forecast.length ? "Then, typically" : "Typically"));
+    const months = element("ul", "weather-months");
+    weather.averages.forEach((month) => {
+      const item = element("li", "weather-month");
+      const values = [`High ${degrees(month.high_c)}`];
+      if (month.low_c !== null) values.push(`low ${degrees(month.low_c)}`);
+      const rain = rainfall(month.rain_mm);
+      if (rain) values.push(rain);
+      item.append(element("span", "weather-date", month.name), element("span", "weather-temps", values.join(" · ")));
+      months.append(item);
+    });
+    block.append(months);
+    const source = weather.averages_source;
+    block.append(
+      element(
+        "p",
+        "weather-source",
+        `Averages for ${source.first_year}–${source.last_year}, not a forecast, from NOAA's record for ${stationName(source.station)} (${Math.round(source.distance_km)} km away). A forecast reaches only about nine days ahead.`,
+      ),
+    );
+    box.append(block);
+  }
+  return box;
+}
+
+// NOAA names a station in capitals with its own two-letter country code ("SYDNEY OBSERVATORY
+// HILL, AS" — AS is Australia to NOAA), which reads as nothing to a traveller: the code is dropped.
+function stationName(text) {
+  return text
+    .replace(/,\s*[A-Z]{2}$/, "")
+    .toLowerCase()
+    .replace(/\b([a-z])/g, (letter) => letter.toUpperCase());
+}
+
+// A plan already on screen follows the dates: the panel is fetched again, for the city chosen.
+let weatherTimer;
+
+async function refreshWeather() {
+  if (!results.querySelector(".glance") || !lastRun) return;
+  const old = results.querySelector(".weather");
+  const city = old ? old.querySelector(".weather-city")?.value || null : null;
+  const fresh = renderWeather(await fetchWeather(lastRun.request.destination, city), lastRun.request.destination);
+  if (old && fresh) old.replaceWith(fresh);
+  else if (old) old.remove();
+  else if (fresh) (results.querySelector(".advice") || results.querySelector(".glance")).after(fresh);
+}
+
 function withId(node, id) {
   if (node) node.id = id;
   return node;
 }
 
-function renderPlan(plan, advice = null) {
+function renderPlan(plan, advice = null, weather = null) {
   const ctx = {
     sourceMap: new Map(plan.sources.map((source) => [source.source_id, source])),
     home: assignSourceHomes(plan),
@@ -897,6 +1033,7 @@ function renderPlan(plan, advice = null) {
       renderTrip(),
       renderGlance(plan, Boolean(documents)),
       renderAdvice(advice, optionLabel(destinationSelect, destinationSelect.value)),
+      renderWeather(weather, destinationSelect.value),
       decision,
       apply,
       documents,
@@ -1152,6 +1289,7 @@ async function generatePlan(event) {
     // Looked up beside the plan rather than after it, and shown with it: a lookup in committed
     // data, so it is ready long before the plan (entry 260).
     const advicePromise = fetchAdvice(request);
+    const weatherPromise = fetchWeather(request.destination);
     const response = await fetch("/visa-plans/stream", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1167,7 +1305,7 @@ async function generatePlan(event) {
       if (streamed.event === "stage") {
         showStage(streamed.stage);
       } else if (streamed.event === "plan") {
-        renderPlan(streamed.plan, await advicePromise);
+        renderPlan(streamed.plan, await advicePromise, await weatherPromise);
         attachReport("plan", streamed.plan);
         results.scrollIntoView({ behavior: "smooth", block: "start" });
         return;
@@ -1626,6 +1764,8 @@ function updateDates() {
     showNote(datesNote, []);
   }
   refreshTripStrip();
+  clearTimeout(weatherTimer);
+  weatherTimer = setTimeout(refreshWeather, 400);
 }
 
 function weeksOrDays(days) {

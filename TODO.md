@@ -79,9 +79,15 @@ government and links its advice for this destination; nothing is read or quoted.
 destination links for 16 governments, `GET /travel-advice`, and the link panel under the
 at-a-glance box. **Left:** Finland answered `429` after five links; Czechia's pages need a region in
 the address; Russia waits on evidence for `mid.ru`; the eight unclear governments; re-run
-`visa-discover advisory-links` when a government moves its pages. **Not deployed.** **Open:** whether India's
-"no advisory for this country" may be shown (entry 260). **Weather is on the back
-burner** until the form names a place within the country (entry 259). **News**, once integrated, is
+`visa-discover advisory-links` when a government moves its pages. **Not deployed.**
+
+**Weather — built 2026-10-06 (entry 261):** a panel under the travel advice with MET Norway's
+forecast for the days inside its window and NOAA station averages for the months beyond, for a city
+picked in the panel (the capital first). **Left:** the city list is by population, so places
+travellers go that few people live in (Chiang Mai, Phuket, Bali) are missing; some cities have no
+station within 60 km — Brazil none, and the capitals of Egypt, Slovakia and Uruguay; average lows
+are often unrecorded. **Not deployed.** **Open:** whether India's
+"no advisory for this country" may be shown (entry 260). **News**, once integrated, is
 expected on every corridor. Later, the owner wants the length of stay in the plan itself.
 
 **First piece — decided:** an optional date range on the form, and **three context panels beside the
@@ -94,10 +100,8 @@ input to the visa answer; the visa form gets no harder. Mockup with example data
   for its manifest first: can it take a country and a date window rather than the person's
   interests, must it save articles into the traveller's account, can an app trigger it, how fast it
   answers, which sources.
-- **Weather** from an open weather service; climate averages beyond about two weeks, said so.
-  **On the back burner** (entry 259): it needs a place, not a country. When it returns, the
-  averages come from past years' observations, never Open-Meteo's `climate` API, which is one
-  model's simulation of that future year.
+- **Weather** — built (entry 261): MET Norway's forecast, NOAA's averages, a city picker in the
+  panel.
 
 **Before building, the owner decides** (each set out in entry 251): (1) dates, fees and processing
 times as cited values; (2) the travel-advice source tier and whose advice; (3) the news plugin

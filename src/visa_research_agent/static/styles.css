@@ -1202,6 +1202,144 @@ html {
   font-weight: 700;
 }
 
+/* Weather for the trip's dates (DECISIONS entry 261): forecast days, then typical months, each with
+   where it came from. Same family as the advice card above it. */
+.weather {
+  display: grid;
+  gap: 14px;
+  padding: 18px 22px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.weather-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+.weather-label,
+.weather-kind {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.weather-kind {
+  margin: 0 0 8px;
+}
+
+.weather-city {
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+  padding: 6px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: var(--paper);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.weather-city-name {
+  font-size: 17px;
+}
+
+.weather-block {
+  display: grid;
+}
+
+.weather-days,
+.weather-months {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.weather-day,
+.weather-month {
+  display: grid;
+  grid-template-columns: 8.5rem minmax(0, 1fr) auto 3.5rem;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+}
+
+.weather-month {
+  grid-template-columns: 8.5rem minmax(0, 1fr);
+}
+
+.weather-rain {
+  text-align: right;
+}
+
+.weather-date {
+  font-weight: 700;
+}
+
+.weather-summary,
+.weather-rain {
+  color: var(--muted);
+}
+
+.weather-temps {
+  font-variant-numeric: tabular-nums;
+}
+
+.weather-note,
+.weather-source {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.weather-source a {
+  color: var(--green);
+  font-weight: 600;
+}
+
+@media (max-width: 560px) {
+  .weather-day {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "date temps"
+      "summary rain";
+    row-gap: 2px;
+  }
+
+  .weather-day .weather-date {
+    grid-area: date;
+  }
+
+  .weather-day .weather-temps {
+    grid-area: temps;
+  }
+
+  .weather-day .weather-summary {
+    grid-area: summary;
+  }
+
+  .weather-day .weather-rain {
+    grid-area: rain;
+  }
+
+  .weather-month {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 2px;
+  }
+}
+
 .advice-alt {
   justify-self: start;
   padding-left: 22px;

@@ -192,6 +192,21 @@ from visa_research_agent.research.rendering import (
 from visa_research_agent.research.robots import RobotsCache
 from visa_research_agent.research.source_cache import FileSourceCache
 from visa_research_agent.research.tls import build_ssl_context
+from visa_research_agent.weather.climate import (
+    NORMALS_FILENAME,
+    CityNormals,
+    build_normals,
+    load_normals,
+    write_normals,
+)
+from visa_research_agent.weather.places import (
+    CITIES_FILENAME,
+    City,
+    cities_from_geonames,
+    get_cities,
+    read_geonames,
+    render_cities_yaml,
+)
 
 
 def build_search_provider() -> BraveSearchProvider:
@@ -616,6 +631,58 @@ async def run_advisories(args: argparse.Namespace, stream: TextIO) -> int:
         for code, reason in sorted(failures.items()):
             print(f"  {code}  {reason}", file=stream)
         return 2
+    return 0
+
+
+def run_cities(args: argparse.Namespace, stream: TextIO) -> int:
+    """Regenerate `destination_cities.yaml` from GeoNames' cities dump (entry 261)."""
+
+    codes = [country.code for country in get_country_registry().countries]
+    cities = cities_from_geonames(read_geonames(args.geonames), codes)
+    destination = config_path(CITIES_FILENAME)
+    destination.write_text(render_cities_yaml(cities), encoding="utf-8")
+    print(f"{len(cities)} countries' cities written to {destination}", file=stream)
+    return 0
+
+
+async def run_climate(args: argparse.Namespace, stream: TextIO) -> int:
+    """Build each destination city's monthly averages from NOAA station records (entry 261)."""
+
+    only = {code.strip().upper() for code in args.only.split(",") if code.strip()}
+    offered = {row.code for row in get_authority_registry().countries}
+    cities = {
+        code: list(places)
+        for code, places in get_cities().items()
+        if code in offered and (not only or code in only)
+    }
+    target = config_path(NORMALS_FILENAME)
+    existing = load_normals(target) if target.exists() else None
+
+    def report(code: str, city: City, result: CityNormals | str) -> None:
+        if isinstance(result, str):
+            print(f"  {code}  {city.name}: none — {result}", file=stream)
+        else:
+            print(
+                f"  {code}  {city.name}: {result.station_name}, {result.distance_km} km",
+                file=stream,
+            )
+
+    async with httpx.AsyncClient(
+        headers={"User-Agent": settings.source_user_agent},
+        verify=build_ssl_context(),
+        timeout=60,
+    ) as client:
+        normals = await build_normals(
+            client,
+            cities,
+            existing=existing,
+            rebuild=args.rebuild,
+            on_city=report,
+            write=lambda current: write_normals(current, target),
+        )
+    write_normals(normals, target)
+    found = sum(len(rows) for rows in normals.countries.values())
+    print(f"\n{found} cities' averages written to {target}", file=stream)
     return 0
 
 
@@ -2027,6 +2094,17 @@ def build_parser() -> argparse.ArgumentParser:
         "--only", default="", help="comma-separated ISO codes to survey, e.g. GB,US,IN"
     )
 
+    cities = commands.add_parser(
+        "cities", help="regenerate each country's capital and largest cities from GeoNames"
+    )
+    cities.add_argument("--geonames", required=True, help="path to GeoNames' cities15000.txt")
+    climate = commands.add_parser(
+        "climate", help="build destination cities' monthly averages from NOAA, entry 261"
+    )
+    climate.add_argument("--only", default="", help="comma-separated destination codes")
+    climate.add_argument(
+        "--rebuild", action="store_true", help="ask again for countries already in the file"
+    )
     commands.add_parser(
         "country-names", help="regenerate country names in publisher languages from Wikidata"
     )
@@ -2213,6 +2291,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             return asyncio.run(run_bootstrap(args, sys.stderr))
         if args.command == "registry":
             return asyncio.run(run_registry(args, sys.stderr))
+        if args.command == "cities":
+            return run_cities(args, sys.stderr)
+        if args.command == "climate":
+            return asyncio.run(run_climate(args, sys.stderr))
         if args.command == "country-names":
             return asyncio.run(run_country_names(args, sys.stderr))
         if args.command == "advisory-links":

@@ -9,6 +9,7 @@ from visa_research_agent.api.countries import normalise_country
 from visa_research_agent.config.regions import normalise_region
 from visa_research_agent.discovery.advisories import AdviceLink
 from visa_research_agent.domain.models import TravellerProfile, TravelPurpose
+from visa_research_agent.weather.panel import WeatherPanel
 
 
 class ApiModel(BaseModel):
@@ -42,6 +43,13 @@ class TravelAdviceResponse(ApiModel):
 
     advice: AdviceLink | None
     """None where that government publishes no advice we found: the page shows no panel."""
+
+
+class WeatherResponse(ApiModel):
+    """Weather for the trip's dates in one of the destination's cities (DECISIONS entry 261)."""
+
+    weather: WeatherPanel | None
+    """None where there is nothing to show: no forecast reaches the dates and no averages exist."""
 
 
 class TravellerRequest(ApiModel):

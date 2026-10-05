@@ -3,9 +3,11 @@
 import asyncio
 import json
 from collections.abc import AsyncIterator, Callable, Coroutine
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta
+from functools import lru_cache
 from typing import Annotated, Any, Literal, get_args
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import ValidationError
@@ -31,6 +33,7 @@ from visa_research_agent.api.schemas import (
     RegionsResponse,
     TravelAdviceResponse,
     VisaPlanRequest,
+    WeatherResponse,
 )
 from visa_research_agent.api.signin import SignIn, get_sign_in, require_signed_in_for_plans
 from visa_research_agent.api.templates import static_asset_version, templates
@@ -66,7 +69,13 @@ from visa_research_agent.research.errors import (
     VisaResearchError,
 )
 from visa_research_agent.research.personas import PersonasError
+from visa_research_agent.research.robots import RobotsCache
 from visa_research_agent.research.service import VisaPlanService
+from visa_research_agent.research.tls import build_ssl_context
+from visa_research_agent.weather.climate import normals_for
+from visa_research_agent.weather.forecast import FORECAST_DAYS, ForecastClient
+from visa_research_agent.weather.panel import weather_panel
+from visa_research_agent.weather.places import cities_for, city_in
 
 router = APIRouter()
 
@@ -174,6 +183,72 @@ async def travel_advice(passport: str, destination: str) -> TravelAdviceResponse
     return TravelAdviceResponse(
         advice=advice_link(
             passport_code, destination_code, get_advisory_publishers(), get_advisory_links()
+        )
+    )
+
+
+MAXIMUM_TRIP_DAYS = 731
+
+
+@lru_cache(maxsize=1)
+def get_forecast_client() -> ForecastClient:
+    """One MET Norway client per process, so its forecasts are reused until they expire."""
+
+    client = httpx.AsyncClient(
+        headers={"User-Agent": settings.source_user_agent},
+        verify=build_ssl_context(),
+        timeout=15,
+    )
+    return ForecastClient(client, RobotsCache(user_agent=settings.source_user_agent))
+
+
+@router.get("/weather", response_model=WeatherResponse, tags=["visa research"])
+async def weather(
+    destination: str,
+    start: date,
+    end: date,
+    forecasts: Annotated[ForecastClient, Depends(get_forecast_client)],
+    exact: bool = True,
+    city: str | None = None,
+) -> WeatherResponse:
+    """Weather for the trip's dates, beside the plan and never an input to it (entry 261).
+
+    The forecast where the dates fall inside MET Norway's window; past it, the city's committed
+    monthly averages. `exact` is false for a rough span of months, which never gets a forecast.
+    """
+
+    if end < start or (end - start).days > MAXIMUM_TRIP_DAYS:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail={"message": "the dates must run forwards, over at most two years"},
+        )
+    try:
+        by_slug = next(
+            (c.code for c in get_country_registry().countries if c.slug == destination), None
+        )
+        code = by_slug or normalise_country(destination)
+    except ValueError as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail={"message": str(exc)}) from exc
+    place = city_in(code, city)
+    if place is None:
+        if city:
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND, detail={"message": f"{city} is not offered for {code}"}
+            )
+        return WeatherResponse(weather=None)
+    now = datetime.now(UTC)
+    window_end = now.date() + timedelta(days=FORECAST_DAYS)
+    forecast = await forecasts.forecast(place) if exact and start <= window_end else None
+    return WeatherResponse(
+        weather=weather_panel(
+            place,
+            list(cities_for(code)),
+            start,
+            end,
+            exact=exact,
+            forecast=forecast,
+            normals=normals_for(code, place.name),
+            now=now,
         )
     )
 
