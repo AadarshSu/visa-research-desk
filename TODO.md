@@ -44,7 +44,7 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 
 | | | |
 | --- | --- | --- |
-| **Now** | 80. A travel-readiness app for one traveller, built around their dates | `explore`, with the owner |
+| **Now** | 80. A travel-readiness app for one traveller — next, an advice and weather panel | `explore`, with the owner |
 |  | 63. Make most corridors return accurate and useful information | `ongoing` |
 |  | 55. Take the traveller from Ofself's shared identity, through one adapter | `soon` |
 |  | 79. Score pages fetched live with the post-aware stored-text fixes | `soon` |
@@ -57,16 +57,20 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 
 ## Now — this phase's work
 
-### 80. A travel-readiness app for one traveller, built around their dates — `explore`, **with the owner; the direction is set, nothing is built**
+### 80. A travel-readiness app for one traveller, built around their dates — `explore`, **with the owner; dates built, the panels next**
 
 **The direction — the owner, 2026-10-05 (entry 251).** Someone planning a trip enters where and
 when, and sees the visa answer with what else bears on going. **One traveller**; friends come much
 later. **One date range**, entered by the traveller. Ofself's schemas are read to learn about the
 person and, once allowed, written to record what happened for next time.
 
-**Built (entry 256):** the date field — exact, roughly, not sure — after Purpose, kept in the page and
-out of the research, and a "Your trip" line above a plan with the traveller's passport expiry
-against their dates. **Next, the owner wants:** the length of stay into the plan itself.
+**Built:** the date field — exact, roughly, not sure — kept in the page and out of the research, with
+a "Your trip" line above the plan (entry 256); the at-a-glance box of visa, where to apply and
+documents (entry 253).
+
+**Next — explore with the owner:** a panel **below the at-a-glance box** with **travel advice** and
+**weather for the dates**. Start from the mockup and the two advice sources below; advice needs
+decision (2) first. Later, the owner wants the length of stay in the plan itself.
 
 **First piece — decided:** an optional date range on the form, and **three context panels beside the
 visa plan: travel advice, news and weather.** Each is labelled with its source, linked, and never an
