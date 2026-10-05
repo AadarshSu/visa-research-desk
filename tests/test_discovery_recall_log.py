@@ -394,8 +394,11 @@ async def test_a_configured_selector_that_never_chose_is_not_recorded_as_the_mod
     assert selector.calls == 0, "no index, so the model was never even asked"
 
 
-async def test_a_failed_selection_records_the_arm_that_actually_ranked(tmp_path: Path) -> None:
-    """The credit-exhaustion path: the model was asked, could not answer, and did not choose."""
+async def test_a_failed_selection_refuses_the_corridor(tmp_path: Path) -> None:
+    """Entry 258: the model was asked and could not answer, so nothing is read and nothing resolves.
+
+    Until then the heuristic ranking chose instead, and on Australia `IN/SG` it chose another
+    country's post and the result was stored. A failed call now ends the run as a failed check."""
 
     log = RecordingLog()
     resolver = build_resolver(tmp_path, [INDEX, MISSION_INDEX], log)
@@ -406,8 +409,34 @@ async def test_a_failed_selection_records_the_arm_that_actually_ranked(tmp_path:
     resolved = await resolver.resolve(indexed_destination(), corridor())
 
     assert selector.calls == 1, "the model was asked"
-    assert log.records[-1].selector == "heuristic", "and it did not choose"
+    assert not resolved.sources, "and nothing was read in its place"
+    assert not resolved.is_usable
+    assert resolver.trace.refusal_cause == "adjudication_failed"
     assert any("candidate selection failed" in note for note in resolved.notes)
+
+
+class EmptySelector:
+    """A selector that answers and names no page at all."""
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def select(self, system_prompt: str, packet: str, *, usage: object = None) -> Selection:
+        self.calls += 1
+        return Selection(source_ids=[])
+
+
+async def test_a_selection_that_named_no_page_refuses_too(tmp_path: Path) -> None:
+    """Entry 258: an answer that chose nothing is not handed to the heuristic either."""
+
+    resolver = build_resolver(tmp_path, [INDEX, MISSION_INDEX], RecordingLog())
+    resolver.selector = EmptySelector()
+    resolver.page_text = text_store(tmp_path, [INDEX, MISSION_INDEX, DETAIL_INDIA])
+
+    resolved = await resolver.resolve(indexed_destination(), corridor())
+
+    assert not resolved.sources
+    assert resolver.trace.refusal_cause == "no_candidates"
 
 
 async def test_a_selection_that_chose_is_recorded_as_the_model(tmp_path: Path) -> None:

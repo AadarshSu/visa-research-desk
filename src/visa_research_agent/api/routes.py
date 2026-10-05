@@ -331,7 +331,8 @@ def research_fault(exc: VisaResearchError) -> HTTPException:
         return refusal(
             "check_failed",
             "A model call this research depends on did not complete, so nothing was concluded "
-            "about this trip. This is a fault on our side, not a finding about the trip.",
+            "about this trip and nothing was saved. This is a fault on our side, not a finding "
+            "about the trip: generate the plan again.",
         )
     return refusal(
         "internal_error",

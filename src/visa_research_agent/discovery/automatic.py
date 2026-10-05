@@ -272,8 +272,8 @@ def unusable_corridor(
         # A failed model call is not a missing page, and must never read as one.
         return AutomaticDiscoveryError(
             f"The check that decides which of {country_name}'s official pages answer this trip "
-            "could not run, so nothing was concluded about it. This is a fault on our side, not a "
-            "finding about the trip.",
+            "could not run, so nothing was concluded about it and nothing was saved. This is a "
+            "fault on our side, not a finding about the trip: generate the plan again.",
             cause="check_failed",
         )
     if cause == "no_candidates":
@@ -425,7 +425,7 @@ class AutomaticDestinationService:
         countries: CountryRegistry | None = None,
         denylist: Denylist | None = None,
         authorities: AuthorityRegistry | None = None,
-        maximum_age_hours: float = 24.0 * 21,
+        maximum_age_hours: float = 24.0 * 7,
         now: Callable[[], datetime] = _utc_now,
     ) -> None:
         self.provider = provider
@@ -501,11 +501,12 @@ class AutomaticDestinationService:
             raise unusable_corridor(country.name, resolved, getattr(trace, "refusal_cause", None))
 
         self._write_back(country, trusted, resolver, resolved)
-        if not resolved.ran_without_search:
-            # A corridor answered from the corpus alone is a narrower resolution than usual, and
-            # the store keeps what it is given for three weeks. Keeping this one would serve a
-            # degraded answer long after search came back, with nobody told — the shape entry 44
-            # rejects, arriving by a different route. DECISIONS entry 74.
+        if not resolved.ran_without_search and not resolved.unread_for_now:
+            # Only a resolution that ran as it should is kept. One answered from the corpus alone
+            # is narrower than usual (entry 74), and one built while a page it chose to read was
+            # down is that day's bad luck (entry 258): the store keeps what it is given for a week,
+            # and keeping either would serve a degraded answer long after the cause had passed,
+            # with nobody told — the shape entry 44 rejects, arriving by a different route.
             self.store.store(corridor, resolved, trusted, withheld, self.now())
         return DiscoveredDestination(
             config=resolved.to_destination_config(base),

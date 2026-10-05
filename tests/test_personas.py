@@ -297,3 +297,22 @@ def test_the_openai_route_is_one_policy_line_away(monkeypatch: pytest.MonkeyPatc
     configure_personas(monkeypatch, openai_api_key=SecretStr("sk-test"))
 
     assert isinstance(build_role_adjudicator(policy("openai")), LangChainRoleAdjudicator)
+
+
+async def test_the_quick_calls_carry_their_own_shorter_limit() -> None:
+    """Entry 258: selection and role calls end at their own limit, not the general one, so a call
+    stuck behind the gateway ends the run sooner. Anything not given a limit keeps the client's."""
+
+    limits: list[float | None] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        limits.append(request.extensions["timeout"]["read"])
+        if "selection" in request.content.decode().lower():
+            return answered('{"source_ids": ["s1"]}')
+        return answered(ROLES)
+
+    await PersonasCandidateSelector(client(handler), timeout_seconds=12).select("p", "{}")
+    await PersonasRoleAdjudicator(client(handler), timeout_seconds=14).adjudicate("p", "{}")
+    await PersonasRoleAdjudicator(client(handler)).adjudicate("p", "{}")
+
+    assert limits == [12, 14, 30]

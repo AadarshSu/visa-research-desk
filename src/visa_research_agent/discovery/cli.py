@@ -182,7 +182,10 @@ def build_role_adjudicator(policy: RuntimePolicy) -> RoleAdjudicator | None:
     if policy.discovery_decider == "heuristic":
         return None
     if policy.model_route == "personas":
-        return PersonasRoleAdjudicator(personas_client_from_settings())
+        return PersonasRoleAdjudicator(
+            personas_client_from_settings(),
+            timeout_seconds=settings.personas_roles_timeout_seconds,
+        )
     if settings.openai_api_key is None or not settings.openai_api_key.get_secret_value().strip():
         raise LLMConfigurationError("OPENAI_API_KEY is required for model role adjudication")
     if settings.openai_model is None or not settings.openai_model.strip():
@@ -206,7 +209,10 @@ def build_candidate_selector(policy: RuntimePolicy) -> CandidateSelector | None:
     if policy.discovery_selector != "model":
         return None
     if policy.model_route == "personas":
-        return PersonasCandidateSelector(personas_client_from_settings())
+        return PersonasCandidateSelector(
+            personas_client_from_settings(),
+            timeout_seconds=settings.personas_selection_timeout_seconds,
+        )
     if settings.openai_api_key is None or not settings.openai_api_key.get_secret_value().strip():
         raise LLMConfigurationError("OPENAI_API_KEY is required for model candidate selection")
     if settings.openai_model is None or not settings.openai_model.strip():
@@ -580,7 +586,7 @@ def print_variance(report: VarianceReport, stream: TextIO) -> None:
     else:
         print(
             f"  **the corridor flipped** — {report.resolved_runs} of {report.runs} resolved. "
-            "A stored corridor would have kept whichever came first for three weeks.",
+            "A stored corridor would have kept whichever came first for a week.",
             file=stream,
         )
     print(

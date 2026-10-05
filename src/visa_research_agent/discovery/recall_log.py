@@ -11,7 +11,7 @@ candidate the corridor considered with its score and whether it was shortlisted 
 a diagnostic, not evidence: nothing reads it back, no decision depends on it, and losing it costs a
 question rather than an answer.
 
-Deliberately separate from `corridor_store.py`, which keeps *resolved* corridors for three weeks and
+Deliberately separate from `corridor_store.py`, which keeps *resolved* corridors for a week and
 never sees a refusal. A refusal is exactly the run worth reading here.
 """
 

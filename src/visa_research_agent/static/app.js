@@ -680,7 +680,8 @@ const REFUSAL_COPY = {
   check_failed: {
     eyebrow: "Check could not run",
     title: "The check could not run",
-    next: "Trying again in a few minutes may answer it.",
+    next: "Nothing was concluded and nothing was saved. Generate the plan again: this is usually momentary.",
+    retry: true,
   },
   search_unavailable: {
     eyebrow: "Search unavailable",
@@ -736,6 +737,14 @@ function renderRefusal(detail) {
   }
 
   container.append(element("p", "disclaimer", copy.next));
+  // A check that failed on our side is worth one click to try again: the form still holds the trip,
+  // and nothing from the failed run was kept to be served back (entry 258).
+  if (copy.retry) {
+    const again = element("button", "refusal-retry", "Generate the plan again");
+    again.type = "button";
+    again.addEventListener("click", () => form.requestSubmit());
+    container.append(again);
+  }
   results.replaceChildren(container);
 }
 

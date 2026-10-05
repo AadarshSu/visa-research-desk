@@ -110,7 +110,9 @@ defect.
 - **Refusing is a correct output.** A plausible but wrong document checklist is worse than no answer.
   This includes **failing model calls**: a failed role adjudication refuses the corridor rather than
   falling back to the heuristic, which is the decider that produced Brazil's wrong checklist at full
-  confidence (entries 15, 31).
+  confidence (entries 15, 31) — and so does a failed candidate selection, and one naming no page
+  (entry 258). A resolution built while a page it chose to read failed only "for now" is never
+  stored.
 - **Never work around an authority that blocks automated retrieval.** Do not spoof a user agent, do
   not retry to get around a rate limit, do not point the renderer at a page an authority refused. A
   block means *we cannot independently retrieve and verify it here* — mark the source inaccessible,

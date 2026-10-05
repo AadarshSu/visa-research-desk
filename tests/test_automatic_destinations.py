@@ -509,6 +509,41 @@ async def test_a_corridor_past_its_age_is_resolved_again(tmp_path: Path) -> None
     assert len(resolver.trusted_seen) == 2
 
 
+async def test_a_corridor_is_kept_for_a_week_and_no_longer(tmp_path: Path) -> None:
+    """Entry 258: one week, down from three, so a resolution gone wrong is not served for long."""
+
+    provider = StubProvider(["https://france-visas.gouv.fr/en/applying"])
+    resolver = StubResolver(resolved())
+
+    await build_service(tmp_path, provider, resolver).destination_for("France", corridor())
+    six_days = build_service(tmp_path, provider, resolver, now=NOW + timedelta(days=6))
+    assert (await six_days.destination_for("France", corridor())).from_cache
+    eight_days = build_service(tmp_path, provider, resolver, now=NOW + timedelta(days=8))
+    assert not (await eight_days.destination_for("France", corridor())).from_cache
+
+
+async def test_a_corridor_resolved_while_a_chosen_page_was_down_is_not_stored(
+    tmp_path: Path,
+) -> None:
+    """Entry 258: Australia `IN/SG` was resolved while both embassy sites answered `5xx`, stored,
+    and served to every later request. A resolution built around a page that failed only "for now"
+    is used for the request that made it and never kept, so the next request looks again."""
+
+    provider = StubProvider(["https://france-visas.gouv.fr/en/applying"])
+    unlucky = resolved().model_copy(
+        update={"unread_for_now": ["https://france-visas.gouv.fr/en/where-to-apply"]}
+    )
+    resolver = StubResolver(unlucky)
+    service = build_service(tmp_path, provider, resolver)
+
+    first = await service.destination_for("France", corridor())
+    again = await service.destination_for("France", corridor())
+
+    assert first.config.sources, "the request that ran still gets its answer"
+    assert not again.from_cache
+    assert len(resolver.trusted_seen) == 2
+
+
 async def test_every_corridor_is_resolved_through_a_freshly_built_resolver(
     tmp_path: Path,
 ) -> None:

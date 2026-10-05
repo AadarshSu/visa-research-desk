@@ -36,10 +36,11 @@ class Settings(BaseSettings):
     # overwritten, because the question is a day's spend against the provider's bill. Read by
     # nobody at runtime: deleting it costs a question, never an answer.
     model_usage_directory: Path = Path("var/usage")
-    # Three weeks. A corridor is not evidence: which pages answer it changes when a site is
+    # One week — three until entry 258, which found a degraded resolution served for days. A
+    # corridor is not evidence: which pages answer it changes when a site is
     # redesigned, not when its guidance is edited. The pages themselves are re-fetched under the
     # much shorter evidence TTL every time a plan is produced.
-    corridor_maximum_age_hours: float = 24.0 * 21
+    corridor_maximum_age_hours: float = 24.0 * 7
     # Model drafts of a plan, reused for exactly the same inputs within `plan_reuse_hours`, which is
     # runtime policy (DECISIONS entry 178). A draft is kept, never a plan, so deleting the directory
     # costs a model call, never an answer.
@@ -114,6 +115,12 @@ class Settings(BaseSettings):
     personas_base_url: str = "https://personas.ofself.com"
     # Longer than the OpenAI timeout: Personas adds a hop in front of the same call.
     personas_timeout_seconds: float = 120.0
+    # Shorter limits for the two calls that are always quick when they work, so a call stuck behind
+    # Personas' gateway ends the run at once rather than at the gateway's 55 s (entry 258). Over the
+    # logged calls to 2026-10-05: 488 selections succeeded in at most 17.0 s (99% within 9.4 s), 490
+    # role calls in at most 23.2 s. The plan call keeps the general limit: it runs up to 51 s.
+    personas_selection_timeout_seconds: float = 30.0
+    personas_roles_timeout_seconds: float = 40.0
 
     # The plan call's input guard. 80,000 until 2026-09-24, which sat just above normal traffic —
     # median 17,918, 90th percentile 70,448, largest 73,630 over 131 logged plan calls — and

@@ -242,8 +242,10 @@ live.
 | Corridor-dependent? | No | No | Yes |
 | Decided by | **A rule, once per country, committed** | **An offline build, refreshed** | **The machine, every corridor** |
 
-The corridor store (`discovery/corridor_store.py`) keeps a resolution for three weeks, keyed on the
-whole corridor; a refusal is never stored (entry 151). The corridor is keyed on the country slug, so
+The corridor store (`discovery/corridor_store.py`) keeps a resolution for a week, keyed on the
+whole corridor; a refusal is never stored (entry 151), and neither is a resolution that ran without
+search (entry 74) or while a page it chose to read failed for a reason that says only "not now" (entry
+258). The corridor is keyed on the country slug, so
 "USA" and "United States" are one corridor (entry 168). `visa-discover corridor` bypasses the store
 both ways.
 

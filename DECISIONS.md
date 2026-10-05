@@ -72,6 +72,7 @@ not — and stored text ranks, it never speaks).
 ### What a plan may say to a traveller
 | | |
 | --- | --- |
+| [258](#258-a-failed-selection-refuses-research-hit-by-a-temporary-failure-is-never-stored-and-stored-research-lasts-a-week) | **A failed selection refuses; research hit by a temporary failure is never stored; stored research lasts a week** — after Australia `IN/SG` served another country's post for days; quick calls give up at 30 s and 40 s |
 | [257](#257-where-to-apply-shows-only-what-was-stated-each-timeline-step-cites-its-pages-and-the-caveat-closes-the-page) | **Where to apply shows only what was stated**; each timeline step cites its pages; the standing caveat closes the page and *Evidence and caveats* appears only with something particular |
 | [256](#256-travel-dates-on-the-form-in-three-modes-kept-in-the-page-and-out-of-the-research) | **Travel dates on the form** — exact, roughly, not sure; kept in the page, out of the research; a trip line shows the traveller's passport against their dates |
 | [255](#255-an-applications-steps-become-a-timeline-of-two-to-five-of-what-has-to-happen-by-when--asked-for-not-enforced-and-not-measured) | **Steps become a timeline of two to five** — asked for, not enforced, not measured: they were 57% of what the plan call writes; entry plans untouched |
@@ -296,6 +297,45 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 258. A failed selection refuses, research hit by a temporary failure is never stored, and stored research lasts a week
+
+**2026-10-05. The owner's three decisions, after Australia `IN/SG` tourism. Changes
+`discovery/resolver.py`, `discovery/automatic.py`, `discovery/models.py`, `research/personas.py`,
+`discovery/cli.py`, `config/settings.py`, `api/routes.py` and the page.**
+
+**What happened.** The first request took over two minutes and said nowhere to apply could be
+found. The selection call answered Personas' `504` after **55.3 s**; the heuristic ranking chose
+instead and put the **New Delhi** High Commission's page in the application route for a traveller
+living in **Singapore**; both embassy sites answered `500` and `520` while being read; the plan call
+then failed after **36.9 s**. The corridor was stored for three weeks, so the next request was
+served the same choices. Cleared and re-run, the three calls took 5.5, 7.0 and 8.6 s and found
+where to apply. A traveller would not have known to clear anything.
+
+**What the owner decided, and what was built.**
+1. **Refuse rather than fall back.** `SelectionRefusal`: a failed selection call refuses the corridor
+   as a failed check (`adjudication_failed` → `check_failed`), and a selection naming no page refuses
+   as `no_candidates`. Entry 83's reasoning — a worse chooser of what to read is not entry 31's
+   worse decider — still holds as far as it goes; what it missed is that the degraded choice is
+   invisible downstream and was then kept. **End as soon as possible:** selection calls now give up
+   at **30 s** and role calls at **40 s** (`personas_selection_timeout_seconds`,
+   `personas_roles_timeout_seconds`), from the logs: 488 selections succeeded in at most 17.0 s
+   (99% within 9.4 s), 490 role calls in at most 23.2 s. The plan call keeps 120 s — it runs to 51 s.
+   The refusal says nothing was saved and to generate the plan again, with a button that does.
+2. **Never store bad research.** `ResolvedCorridor.unread_for_now` lists the pages a run chose to read
+   that failed with a `429`, a `5xx`, or no answer at all — read from the recorded outcome and status
+   (entry 36), never the sentence. A resolution with any is used for the request that made it and
+   **not stored**, beside entry 74's rule for one that ran without search. A refusal was never stored.
+3. **A week, not three.** `corridor_maximum_age_hours` is 168. Stored research is which pages answer a
+   trip, not evidence, but this showed a wrong choice served for days with nobody told.
+
+**What it costs.** A run that meets a busy embassy site is re-researched on the next request, about a
+minute and $0.31 instead of an instant answer; stored research is re-made weekly rather than every
+three weeks. **Not changed:** the plan draft reuse (entry 178), which is keyed on byte-identical
+inputs and so cannot repeat a different day's failure; and the 55-second gateway itself, which is
+Personas' (OFSELF_FEEDBACK 8.25).
 
 ---
 

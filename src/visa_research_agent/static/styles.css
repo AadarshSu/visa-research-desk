@@ -1360,6 +1360,17 @@ html {
   margin: 0;
 }
 
+.refusal-retry {
+  min-height: 48px;
+  margin-top: 16px;
+  color: var(--night);
+  background: var(--gold);
+}
+
+.refusal-retry:hover {
+  background: var(--gold-deep);
+}
+
 .checked-at {
   font-size: 13px;
 }

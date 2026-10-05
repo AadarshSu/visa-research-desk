@@ -350,13 +350,23 @@ class ResolvedCorridor(StrictModel):
     unresolved_roles: list[DiscoveryRole] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)
 
+    unread_for_now: list[str] = Field(default_factory=list)
+    """Pages this run chose to read that failed for a reason that says only "not now" — a `429`, a
+    `5xx`, a connection that failed or timed out — and say nothing about the page itself.
+
+    Typed, like `ran_without_search`, because the corridor store acts on it: a resolution built
+    around a page that was down when it ran is not stored, so the next request looks again rather
+    than being served that day's bad luck for a week (entry 258). Australia `IN/SG` tourism on
+    2026-10-05 had both embassy sites answering `500` and `520`, and kept that answer.
+    """
+
     ran_without_search: bool = False
     """True when the search provider was unavailable and the stored corpus answered alone.
 
     A **typed** field rather than a sentence in `notes`, for DECISIONS entry 36's reason: what acts
     on a fact must read a recorded outcome, never parse the prose describing it, or rewording a
     message silently changes behaviour. What acts on it is the corridor store, which must not keep
-    a narrower resolution for three weeks and serve it as an ordinary one.
+    a narrower resolution for a week and serve it as an ordinary one.
 
     A corridor may only run this way when a corpus exists to run from. With no corpus there is
     nothing to fall back to and the refusal stands — a `402` must never read as "this country has

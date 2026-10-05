@@ -159,6 +159,7 @@ class PersonasModelClient:
         message: str,
         schema: type[T],
         usage: UsageRecorder | None = None,
+        timeout_seconds: float | None = None,
     ) -> T:
         config = self.config
         body = {
@@ -191,7 +192,7 @@ class PersonasModelClient:
         }
         try:
             async with httpx.AsyncClient(
-                transport=self.transport, timeout=config.timeout_seconds
+                transport=self.transport, timeout=timeout_seconds or config.timeout_seconds
             ) as client:
                 response = await client.post(
                     config.base_url.rstrip("/") + RUN_PATH, content=raw, headers=headers
@@ -271,8 +272,11 @@ PLAN_AGENT = "visa-plan"
 class PersonasRoleAdjudicator:
     """`RoleAdjudicator` through Personas: the OpenAI class's prompt, packet and schema."""
 
-    def __init__(self, client: PersonasModelClient) -> None:
+    def __init__(
+        self, client: PersonasModelClient, *, timeout_seconds: float | None = None
+    ) -> None:
         self.client = client
+        self.timeout_seconds = timeout_seconds
 
     async def adjudicate(
         self, system_prompt: str, packet: str, *, usage: UsageRecorder | None = None
@@ -284,16 +288,20 @@ class PersonasRoleAdjudicator:
                 message=f"{ROLE_REQUEST_PREFIX}{packet}",
                 schema=RoleAdjudication,
                 usage=usage,
+                timeout_seconds=self.timeout_seconds,
             )
         except PersonasError as exc:
             raise AdjudicationError(f"The role adjudication request failed: {exc}") from exc
 
 
 class PersonasCandidateSelector:
-    """`CandidateSelector` through Personas. A failure falls back to the heuristic, as today."""
+    """`CandidateSelector` through Personas. A failure refuses the corridor (entry 258)."""
 
-    def __init__(self, client: PersonasModelClient) -> None:
+    def __init__(
+        self, client: PersonasModelClient, *, timeout_seconds: float | None = None
+    ) -> None:
         self.client = client
+        self.timeout_seconds = timeout_seconds
 
     async def select(
         self, system_prompt: str, packet: str, *, usage: UsageRecorder | None = None
@@ -305,6 +313,7 @@ class PersonasCandidateSelector:
                 message=f"{SELECTION_REQUEST_PREFIX}{packet}",
                 schema=Selection,
                 usage=usage,
+                timeout_seconds=self.timeout_seconds,
             )
         except PersonasError as exc:
             raise SelectionError(f"The candidate selection request failed: {exc}") from exc

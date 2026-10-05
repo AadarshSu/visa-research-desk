@@ -299,7 +299,7 @@ inference, and it waits on a decision entry.
 
 **App-side.** Stores of official government pages and their text, a store of resolved research for
 a combination of destination, passport, country applied from and purpose (country codes only, kept
-three weeks), a store of model drafts reused for 24 hours, and usage logs. None of it is keyed by an
+a week), a store of model drafts reused for 24 hours, and usage logs. None of it is keyed by an
 Ofself user id. In the graph: only what is read, and nothing written.
 
 **Kept in step.** Nothing to keep in step: the traveller's details are read from Paradigm on each

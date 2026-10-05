@@ -345,6 +345,17 @@ TODO item 62, and 8.14–8.16 are what the new sections raised.
   *Suggest:* say which layer flags (Personas or the provider), whether a flag is deterministic,
   and how an app doing non-security work is meant to avoid or appeal one — a production request
   that hits it fails a traveller's plan with no way to rephrase.
+- **8.25 A traveller's plan took over two minutes because two calls in one request failed slowly**
+  [observed, 2026-10-05]. Australia for an Indian passport living in Singapore: the selection call
+  answered `504` after **55.3 s**, and the plan call failed after **36.9 s**; the same three calls
+  on a re-run minutes later took 5.5 s, 7.0 s and 8.6 s. It is 8.22 and 8.23 again, now on a
+  traveller's request rather than a batch. Over this app's logged calls, 488 selections succeeded
+  in at most 17 s, yet a failed one can hold the request for the gateway's full 55 s. Our side now
+  gives up on selection at 30 s and role calls at 40 s, and refuses rather than continuing on a
+  worse path (entry 258). *Suggest*, again: a status page, an error that says whether to retry,
+  `429` with `Retry-After` for load rather than a gateway timeout, and whether a run the gateway
+  abandoned still completes and is billed. A reliability figure for `/run` would let an app set
+  its own limits from a number rather than from its logs.
 
 ## 9. Signing a user in
 
@@ -439,4 +450,5 @@ In order of what would have saved the most time here:
 | May an app propose a change to a `travel-plan` another app wrote? | 10-02 | — | — |
 | Can an app reach a person who isn't on its page, e.g. a notification? | 10-02 | — | — |
 | Does a `belongs_to` edge to another person's node make it readable to them alone? (for travelling with friends, later) | 10-02 | — | — |
+| Is there a status page or reliability figure for Personas `/run`, and does a run the gateway abandoned at 55 s still complete and bill? (8.22, 8.25) | 10-05 | — | — |
 | Assimilation's news plugin: its manifest; can it take a country and date window instead of the person's interests; must it save articles into the user's account; can an app trigger it (guide §11 says only the user, §28 and §31 say an app can); how fast; which sources | 10-05 | — | — |

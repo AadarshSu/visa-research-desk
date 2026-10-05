@@ -53,6 +53,7 @@ from visa_research_agent.discovery.resolver import (
     build_source_id,
     clean_title,
     derive_authority,
+    failed_for_now,
     unread_checklist_pages,
 )
 from visa_research_agent.discovery.scoring import score_link, wrong_audience
@@ -1543,3 +1544,39 @@ def test_at_most_three_likely_checklists_are_named_best_first() -> None:
     )
 
     assert [failure.source_id for failure in named] == ["page_6", "page_5", "page_4"]
+
+
+def test_only_a_failure_waiting_could_change_counts_as_failed_for_now() -> None:
+    """Entry 258. Read from the outcome and status, never the sentence (entry 36): a `5xx`, a
+    `429` and no answer at all are "not now"; a `403`, a `404` and a `Disallow` are facts about
+    the page."""
+
+    def failure(url: str, outcome: str, status: int | None) -> SourceFailure:
+        return SourceFailure.model_validate(
+            {
+                "source_id": url.rsplit("/", 1)[-1],
+                "title": "Page",
+                "authority": "Authority",
+                "outcome": outcome,
+                "detail": "It failed.",
+                "attempted_url": url,
+                "http_status": status,
+            }
+        )
+
+    failures = [
+        failure("https://gov.example/a", "unreachable", 500),
+        failure("https://gov.example/b", "unreachable", 520),
+        failure("https://gov.example/c", "blocked", 429),
+        failure("https://gov.example/d", "unreachable", None),
+        failure("https://gov.example/e", "blocked", 403),
+        failure("https://gov.example/f", "unusable", 404),
+        failure("https://gov.example/g", "disallowed", None),
+    ]
+
+    assert failed_for_now(failures) == [
+        "https://gov.example/a",
+        "https://gov.example/b",
+        "https://gov.example/c",
+        "https://gov.example/d",
+    ]

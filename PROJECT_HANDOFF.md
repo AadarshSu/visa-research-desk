@@ -216,7 +216,7 @@ numbers. Each says what is true now; how it was learned is in the DECISIONS entr
 10. **The model calls are non-deterministic, and that is the main variance left.** Identical packets
     give different roles and decisions — Egypt `BD/SA` credits its decision 1 run in 3 on a
     byte-identical packet (entry 204); South Korea's wrong checklist is ~1 in 18. Because a refusal is
-    never stored and a resolution is kept three weeks, a flipping corridor is retried until one run
+    never stored and a resolution is kept a week (entry 258), a flipping corridor is retried until one run
     resolves — the owner's open decision, parked under TODO item 7 (entry 151).
 
 11. **Bot-blocked portals are a real limit, but not the largest.** `visa-discover audit` buckets every

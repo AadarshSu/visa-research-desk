@@ -16,7 +16,7 @@ happen is a checklist appearing without a source behind it, which `VisaPlan` ref
 
 import re
 import time
-from collections.abc import AsyncIterator, Callable, Collection, Mapping
+from collections.abc import AsyncIterator, Callable, Collection, Mapping, Sequence
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -125,6 +125,7 @@ from visa_research_agent.domain.models import (
     StrictModel,
 )
 from visa_research_agent.domain.trust import host_is_within, host_of, registrable_domain
+from visa_research_agent.research.errors import VisaResearchError
 from visa_research_agent.research.live_sources import LiveSourceFetcher
 from visa_research_agent.research.model_usage import ModelCallRecord, ModelUsageLog
 
@@ -409,6 +410,42 @@ def unread_visa_pages(
         if len(pages) >= MAXIMUM_NAMED_VISA_PAGES:
             break
     return pages
+
+
+def failed_for_now(failures: Sequence[SourceFailure]) -> list[str]:
+    """Pages that failed for a reason waiting could change: a `429`, a `5xx`, or no answer at all.
+
+    Read from the recorded outcome and status, never the sentence (entry 36). A `401`, a bare `403`,
+    a `404`, a `Disallow` or a challenge is a fact about the page and stays out of it.
+    """
+
+    pages: list[str] = []
+    for failure in failures:
+        status = failure.http_status
+        temporary = status == 429 or (status is not None and 500 <= status <= 599)
+        unanswered = failure.outcome == "unreachable" and status is None
+        if failure.attempted_url is not None and (temporary or unanswered):
+            pages.append(str(failure.attempted_url))
+    return sorted(set(pages))
+
+
+class SelectionRefusal(VisaResearchError):
+    """The model chosen to pick what to read did not choose, so the corridor is refused.
+
+    Until entry 258 the heuristic ranking chose instead, and the result was stored, then for three
+    weeks. Australia `IN/SG` tourism, on 2026-10-05, had its selection call time out at Personas'
+    gateway, the heuristic put the New Delhi High Commission's page in the application route for a
+    traveller living in Singapore, and every later request was served that corridor. A worse
+    chooser of what to read is not the worse *decider* entry 31 forbids, but it is a degraded answer
+    that nobody downstream can see — so the run ends, says the check could not run, and stores
+    nothing.
+    `cause` is the recall log's: a failed call is `adjudication_failed`, a model that named no page
+    is `no_candidates`.
+    """
+
+    def __init__(self, reason: str, cause: RefusalCause) -> None:
+        super().__init__(reason)
+        self.cause = cause
 
 
 class AdjudicationRefusal(AdjudicationError):
@@ -1088,9 +1125,14 @@ class CorridorResolver:
         # Timed apart because they fail and improve for different reasons: choosing is a model
         # call over stored text, fetching is the network and the render budget.
         trace.begin("select")
-        shortlist = await self._choose_what_to_read(
-            destination, corridor, candidates, stored_scores, notes, trace
-        )
+        try:
+            shortlist = await self._choose_what_to_read(
+                destination, corridor, candidates, stored_scores, notes, trace
+            )
+        except SelectionRefusal as exc:
+            trace.refusal_cause = exc.cause
+            notes.append(str(exc))
+            return self._refused(corridor, queries, notes, str(exc))
         shortlist = self._with_always_read(shortlist, score, trace)
         trace.shortlisted = {candidate.link.url for candidate in shortlist}
         trace.begin("fetch")
@@ -1201,6 +1243,7 @@ class CorridorResolver:
             pages_fetched=len(shortlist),
             model_calls=model_calls,
             ran_without_search=not searched_without_error,
+            unread_for_now=failed_for_now(fetched.failures),
         )
 
     def _with_always_read(
@@ -1308,20 +1351,19 @@ class CorridorResolver:
             async with self._timed_model_call("select", selection_prompt, packet) as usage:
                 selection = await self.selector.select(selection_prompt, packet, usage=usage)
         except SelectionError as exc:
-            # A failed selection is not a failed corridor: the heuristic still ranks, and saying so
-            # is honest about which decider produced the answer. This is not entry 31's forbidden
-            # fallback — that one substitutes a worse *decider of the visa answer*; this substitutes
-            # a worse chooser of what to read, and the adjudicator still decides.
-            notes.append(f"candidate selection failed ({exc}); the heuristic ranking chose instead")
-            return self._shortlist(list(candidates.values()))
+            # Refused, not handed to the heuristic: see `SelectionRefusal` and entry 258.
+            raise SelectionRefusal(
+                f"candidate selection failed ({exc}), so nothing was chosen to read",
+                "adjudication_failed",
+            ) from exc
 
         chosen, discarded = validated_selection(selection, by_id)
         notes.extend(discarded)
         if not chosen:
-            notes.append(
-                "candidate selection named no page, so the heuristic ranking chose instead"
+            raise SelectionRefusal(
+                "candidate selection named no page among those offered, so nothing was read",
+                "no_candidates",
             )
-            return self._shortlist(list(candidates.values()))
         # Counted among what was shown, not what was pooled: the cut may withhold an admitted page.
         admitted_shown = sum(
             1 for candidate in admitted if candidate.link.url not in trace.withheld_from_selection
