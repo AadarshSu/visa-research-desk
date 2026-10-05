@@ -32,9 +32,9 @@ this phase's work; both are under *Parked* in [TODO.md](TODO.md) and come back a
 propose either unprompted.**
 
 **Next, with the owner: a travel-readiness app for one traveller, built around the dates they enter
-(TODO item 80, entry 251).** The visa answer, news and weather for one date range, and the traveller
-decides. The direction is set; five decisions it needs are the owner's and none is taken. Do not
-build it without the owner.
+(TODO item 80, entry 251).** First piece, decided: optional dates on the form, and travel advice,
+news and weather shown beside the visa plan, never inside it. Six decisions it needs are the
+owner's, none taken. Do not build it without the owner.
 
 **This phase's queue** is TODO's *Now*: 80, then **63** (accurate answers, ongoing), **55** (what is
 left of the Ofself adapter), **79** (a small scoring consistency fix), **4** (the client-side

@@ -59,22 +59,28 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 
 ### 80. A travel-readiness app for one traveller, built around their dates — `explore`, **with the owner; the direction is set, nothing is built**
 
-**The direction — the owner, 2026-10-05 (entry 251).** Someone who has decided to make a trip happen
-opens the app to make sure it goes smoothly. **One traveller**; friends come much later. They enter
-**one date range**, and for that destination and those dates see the visa answer (today's plan),
-**news** and **weather**, and decide for themselves whether to go. Ofself's schemas are read to learn
-about the person and, once allowed, written to record what happened for next time.
+**The direction — the owner, 2026-10-05 (entry 251).** Someone planning a trip enters where and
+when, and sees the visa answer with what else bears on going. **One traveller**; friends come much
+later. **One date range**, entered by the traveller. Ofself's schemas are read to learn about the
+person and, once allowed, written to record what happened for next time.
 
-**Before building, the owner decides** (each set out in entry 251):
-1. Dates, fees and processing times as cited values in a plan.
-2. News: the traveller's own government's travel advice as a new source tier, or labelled headlines.
-3. Weather source, and showing climate averages when the dates are beyond a forecast.
-4. Writing to Ofself — only what the person did, chose or confirmed.
-5. Reading their calendar to flag a clash.
+**First piece — decided:** an optional date range on the form, and **three context panels beside the
+visa plan: travel advice, news and weather.** Each is labelled with its source, linked, and never an
+input to the visa answer; the visa form gets no harder. Mockup with example data:
+`https://claude.ai/artifact/D7yXirsNX4jTBSA4LD71s4`.
+- **Travel advice** from the traveller's own government (US State Department JSON API, GOV.UK
+  content API — both checked; India publishes none found), in the government's words.
+- **News** from Ofself's Assimilation news plugin (switched off; the owner is asking for it). Ask
+  for its manifest first: can it take a country and a date window rather than the person's
+  interests, must it save articles into the traveller's account, can an app trigger it, how fast it
+  answers, which sources.
+- **Weather** from an open weather service; climate averages beyond about two weeks, said so.
 
-**First slice, proposed:** destination and one date range; the plan as today; passport and
-residence-permit validity checked against the dates in code; the "apply by" date against today;
-weather beside it. News once decision 2 is made.
+**Before building, the owner decides** (each set out in entry 251): (1) dates, fees and processing
+times as cited values; (2) the travel-advice source tier and whose advice; (3) the news plugin
+writing into the traveller's account; (4) research-first with a "have you booked?" question, or
+not; (5) writing to Ofself — only what the person did, chose or confirmed; (6) reading their
+calendar.
 
 **To see the form fill from real documents,** a `travel-document` has to exist: no app writes one
 yet. Create one in the owner's account with their developer token, or in the sandbox user, **with
@@ -82,8 +88,8 @@ the owner's yes** — only the fields the app reads, never a number, name or sca
 
 **Rules it meets — each moves only by a decision entry:** nothing written back to Ofself (item 55
 rule 6, entry 44); no submission, booking or form filling, and no promise of approval; any field
-added to `TravellerProfile` reaches the model on every plan (item 55 rule 1) — news and weather
-never do.
+added to `TravellerProfile` reaches the model on every plan (item 55 rule 1) — advice, news and
+weather never do.
 
 ### 63. Make most corridors return accurate and useful information — `ongoing`
 

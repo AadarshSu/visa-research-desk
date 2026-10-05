@@ -458,7 +458,8 @@ One or two runs a case: these show the direction, not a rate. No corridor was ru
 ## 251. The workflow is a travel-readiness app for one traveller, built around the dates they enter
 
 **2026-10-05. The owner's direction for item 80, reached in conversation over 2026-10-01 to 10-05.
-Changes TODO item 80, the handoff and OFSELF_FEEDBACK; no code, and no rule moves.**
+Changes TODO item 80, the handoff and OFSELF_FEEDBACK; no code. No rule moves yet: the new source
+tier and any write each still need their own entry before code.**
 
 ### What the owner said
 
@@ -482,24 +483,57 @@ through to departure. The direction is closest to C with dates added at the star
 rejected; B is explicitly later. Comparing several date ranges was proposed and declined in favour
 of one.
 
+### The first piece: dates and three context panels — decided by the owner
+
+The owner chose to build what every direction needs first: **a place to enter dates, and travel
+advice, news and weather shown beside the visa answer** as outside information that helps the
+traveller decide whether to go. The visa research is not to grow into a bigger hurdle: **the dates
+are optional**, and the panels add nothing to the visa form. A clickable mockup, example data only:
+`https://claude.ai/artifact/D7yXirsNX4jTBSA4LD71s4`.
+
+- **Travel advice** comes from the **traveller's government**, not the destination's, which
+  publishes none about itself — the US State Department's advisories for US travellers are the
+  owner's example. Two readable sources were checked on 2026-10-05: the State Department's JSON API
+  (`cadataapi.state.gov/api/TravelAdvisories`, level 1–4 in the title, FIPS country codes such as
+  `MJ`) and GOV.UK's content API (`/api/content/foreign-travel-advice/<country>`, an
+  `alert_status` list, update dates and a change description). **India publishes none found.**
+  Shown in the government's own words, level and link, never summarised by a model.
+- **News and weather may come from outside government** — the owner's decision. News is to come
+  from **Ofself's Assimilation app**, which has a news plugin, currently switched off; the owner
+  expects it to filter for reliable sources, and Ofself see the integration as a good forcing
+  function for their plugin flow. **That expectation is to be checked against the plugin's
+  manifest, not assumed.** Weather from an open weather service, labelled; a real forecast exists
+  only about two weeks out, so further ahead it shows climate averages and says so.
+- **All three are shown the same way**: a separate panel each, labelled with where it came from,
+  linked, and **never an input to the visa answer.** News is the owner's informed choice against
+  entry 6's warning: a headline can be wrong and alarming, so it is shown as the publisher's, never
+  restated by the app.
+
 ### What it needs, each still the owner's to decide
 
 1. **Dates, fees and processing times as cited values in a plan.** Every "apply by" and every
    validity check against the dates needs them; today a plan states them only in prose. This
    changes what a plan may conclude (entries 206–209).
-2. **News.** Showing general news would put unverified, alarming-if-wrong claims in front of a
-   traveller (entry 6). The proposal is the traveller's *own* government's travel advice instead
-   (FCDO, US State Department) — official, but not the destination's government, so a new source
-   tier like the EU's (entry 201) and its own entry. The alternative is headlines labelled
-   unverified, linked and never summarised.
-3. **Weather** is low-harm and may come from an open weather service, labelled; a real forecast
-   exists only about two weeks out, so months ahead it can show climate averages and must say so.
-4. **Writing to Ofself** (TODO item 55 rule 6, entries 44 and 180). The line proposed: write only
+2. **The travel-advice source tier** — its own decision entry before code, like the EU's (entry
+   201): which governments' domains, confined to the advice panel, and never visa evidence even
+   though FCDO and the State Department publish entry-requirement sections of their own. And **whose
+   advice**: the passport country's, and the country of residence's where the passport country
+   publishes none we can read.
+3. **The news plugin writes into the traveller's account.** An Ofself plugin runs over a user's data
+   and saves its output there (guide §11, §28, §31), and each traveller authorises it separately
+   from this app. That is the first write this app would cause, and it is articles, not anything the
+   person did — under item 55's rule 6 it needs a decision entry. If Assimilation shares its code
+   instead, the app calls a news service itself and nothing is written.
+4. **Research or confirmation.** The owner's concern: a research app is used before anything is
+   decided, and confirming happens elsewhere — group chats, bookings, calendars. Proposed: research
+   first, with one question at the end ("Have you booked this trip?") that writes the `trip` only
+   when it is already true. Not decided.
+5. **Writing to Ofself** (TODO item 55 rule 6, entries 44 and 180). The line proposed: write only
    what the person did, chose or confirmed — the `trip` with its dates, each `travel-obligation`
    step they record, the visa they were granted as a `travel-document`, the `travel-stay` after — and
    never what the app concluded. `travel-requirement`, `fact` and a stored verdict stay out: each is
    an answer.
-5. **Reading the person's calendar** (`event`) to flag a clash with the dates — useful, and a lot of
+6. **Reading the person's calendar** (`event`) to flag a clash with the dates — useful, and a lot of
    personal data.
 
 ### What holds regardless

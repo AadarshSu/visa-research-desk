@@ -33,7 +33,7 @@ acceptable** for anything that makes each live request better (entry 184).
 **This phase (the owner, entry 247): scale and speed are where the owner wants them.** Optimisation
 and expansion are parked in [TODO.md](TODO.md) and come back only as required — do not propose
 either unprompted. Next, **with the owner and not before**, is a travel-readiness app for one
-traveller, built around the dates they enter (TODO item 80, entry 251); its five open decisions are
+traveller, built around the dates they enter (TODO item 80, entry 251); its open decisions are
 the owner's. Where each earlier goal ended is the table at the top of TODO.
 
 **Model calls go through Ofself Personas, from now on** (`model_route: personas`, entry 188); OpenAI

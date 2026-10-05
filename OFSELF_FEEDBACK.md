@@ -439,3 +439,4 @@ In order of what would have saved the most time here:
 | May an app propose a change to a `travel-plan` another app wrote? | 10-02 | — | — |
 | Can an app reach a person who isn't on its page, e.g. a notification? | 10-02 | — | — |
 | Does a `belongs_to` edge to another person's node make it readable to them alone? (for travelling with friends, later) | 10-02 | — | — |
+| Assimilation's news plugin: its manifest; can it take a country and date window instead of the person's interests; must it save articles into the user's account; can an app trigger it (guide §11 says only the user, §28 and §31 say an app can); how fast; which sources | 10-05 | — | — |
