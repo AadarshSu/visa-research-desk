@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from visa_research_agent.api.countries import normalise_country
 from visa_research_agent.config.regions import normalise_region
+from visa_research_agent.discovery.advisories import AdviceLink
 from visa_research_agent.domain.models import TravellerProfile, TravelPurpose
 
 
@@ -34,6 +35,13 @@ class RegionsResponse(ApiModel):
     regions: list[str]
     """Empty for a country the reference data divides into no regions; the form then hides the
     field."""
+
+
+class TravelAdviceResponse(ApiModel):
+    """The traveller's own government's travel advice, as a link only (DECISIONS entry 260)."""
+
+    advice: AdviceLink | None
+    """None where that government publishes no advice we found: the page shows no panel."""
 
 
 class TravellerRequest(ApiModel):

@@ -29,6 +29,7 @@ from visa_research_agent.api.schemas import (
     DestinationSummary,
     HealthResponse,
     RegionsResponse,
+    TravelAdviceResponse,
     VisaPlanRequest,
 )
 from visa_research_agent.api.signin import SignIn, get_sign_in, require_signed_in_for_plans
@@ -39,6 +40,11 @@ from visa_research_agent.config.regions import regions_for
 from visa_research_agent.config.settings import settings
 from visa_research_agent.config.traveller import DEFAULT_TRAVELLER_PROFILE
 from visa_research_agent.discovery.adjudication import AdjudicationError
+from visa_research_agent.discovery.advisories import (
+    advice_link,
+    get_advisory_links,
+    get_advisory_publishers,
+)
 from visa_research_agent.discovery.automatic import (
     AutomaticDestinationService,
     AutomaticDiscoveryError,
@@ -147,6 +153,29 @@ async def regions(country: str) -> RegionsResponse:
     except ValueError as exc:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail={"message": str(exc)}) from exc
     return RegionsResponse(country=code, regions=list(regions_for(code)))
+
+
+@router.get("/travel-advice", response_model=TravelAdviceResponse, tags=["visa research"])
+async def travel_advice(passport: str, destination: str) -> TravelAdviceResponse:
+    """A link to the passport's government's travel advice for this destination, or none.
+
+    A lookup in committed data (entry 260): nothing is fetched, read or quoted, and nothing here
+    reaches the visa answer.
+    """
+
+    try:
+        passport_code = normalise_country(passport)
+        by_slug = next(
+            (c.code for c in get_country_registry().countries if c.slug == destination), None
+        )
+        destination_code = by_slug or normalise_country(destination)
+    except ValueError as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail={"message": str(exc)}) from exc
+    return TravelAdviceResponse(
+        advice=advice_link(
+            passport_code, destination_code, get_advisory_publishers(), get_advisory_links()
+        )
+    )
 
 
 @router.get("/destinations", response_model=DestinationsResponse, tags=["visa research"])

@@ -823,12 +823,64 @@ function renderGlance(plan, documentsShown) {
   return box;
 }
 
+// The traveller's own government's travel advice, as a link and nothing else (DECISIONS entry 260).
+// No word of the advice is shown: the page names whose it is and where it goes. A government that
+// refused us is still linked, and says the link could not be opened from here to check.
+function siteOf(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
+function renderAdvice(advice, destinationName) {
+  if (!advice) return null;
+  const box = element("section", "advice");
+  box.setAttribute("aria-label", "Your government's travel advice");
+  const card = externalLink("", advice.url, "advice-card");
+  const body = element("span", "advice-body");
+  const label = advice.about_destination ? `Travel advice · ${destinationName}` : "Travel advice";
+  body.append(element("span", "advice-label", label));
+  body.append(element("strong", "advice-title", advice.government));
+  const meta = [`Written for ${advice.written_for}`];
+  if (advice.language !== "English") meta.push(`In ${advice.language}`);
+  meta.push(siteOf(advice.url));
+  body.append(element("span", "advice-meta", meta.join(" · ")));
+  if (!advice.about_destination) {
+    body.append(element("span", "advice-meta", `Its travel advice page — we found no separate page for ${destinationName}.`));
+  }
+  if (!advice.checked) {
+    body.append(element("span", "advice-note", "This site would not open for us, so we could not check the link."));
+  }
+  card.append(body, element("span", "advice-arrow", "↗"));
+  card.setAttribute("aria-label", `${advice.government}: travel advice${advice.about_destination ? ` for ${destinationName}` : ""} (opens in a new tab)`);
+  box.append(card);
+  if (advice.english_url) box.append(externalLink("Also published in English ↗", advice.english_url, "advice-alt"));
+  return box;
+}
+
+async function fetchAdvice(request) {
+  try {
+    const query = new URLSearchParams({
+      passport: request.traveller.passport_nationality,
+      destination: request.destination,
+    });
+    const response = await fetch(`/travel-advice?${query}`, { headers: { Accept: "application/json" } });
+    if (!response.ok) return null;
+    return (await response.json()).advice || null;
+  } catch {
+    // The panel is never worth a failed plan: without it the page simply shows none.
+    return null;
+  }
+}
+
 function withId(node, id) {
   if (node) node.id = id;
   return node;
 }
 
-function renderPlan(plan) {
+function renderPlan(plan, advice = null) {
   const ctx = {
     sourceMap: new Map(plan.sources.map((source) => [source.source_id, source])),
     home: assignSourceHomes(plan),
@@ -844,6 +896,7 @@ function renderPlan(plan) {
     ...[
       renderTrip(),
       renderGlance(plan, Boolean(documents)),
+      renderAdvice(advice, optionLabel(destinationSelect, destinationSelect.value)),
       decision,
       apply,
       documents,
@@ -1096,6 +1149,9 @@ async function generatePlan(event) {
       },
     };
     lastRun = { request, stages: [] };
+    // Looked up beside the plan rather than after it, and shown with it: a lookup in committed
+    // data, so it is ready long before the plan (entry 260).
+    const advicePromise = fetchAdvice(request);
     const response = await fetch("/visa-plans/stream", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1111,7 +1167,7 @@ async function generatePlan(event) {
       if (streamed.event === "stage") {
         showStage(streamed.stage);
       } else if (streamed.event === "plan") {
-        renderPlan(streamed.plan);
+        renderPlan(streamed.plan, await advicePromise);
         attachReport("plan", streamed.plan);
         results.scrollIntoView({ behavior: "smooth", block: "start" });
         return;

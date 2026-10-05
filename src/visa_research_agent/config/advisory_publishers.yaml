@@ -1,0 +1,458 @@
+# Governments that publish travel advice for their own citizens, and where (DECISIONS entry 260).
+#
+# REVIEWED, then committed. Built from `visa-discover advisories` and the review of 2026-10-05
+# (`var/advisories/review.tsv`). One row per passport country; a passport with no row gets no panel.
+#
+# The panel shows a link and nothing else — no page is read, quoted or summarised. Each row says:
+#   government / written_for — whose advice it is, as the panel names it.
+#   language     — the language the advice is written in; the panel says so when it is not English.
+#   domains      — the government's own. A domain the own-government rule cannot confirm (no
+#                  governmental marker, or not under the country's own top-level domain) needs
+#                  `evidence`, from entry 111's tiers. Checked when this file loads.
+#   access       — `open` if its pages opened for us; `refused` if it blocked, challenged or
+#                  `Disallow`ed us, or did not answer. A refused government is still linked (the
+#                  owner, entry 260), and the panel says the link could not be opened to check.
+#   page         — its advice page or index, shown when no page for the destination is known.
+#   destinations — how `visa-discover advisory-links` finds the page for each destination. The
+#                  links it finds are checked and written to `advisory_links.yaml`, never here.
+#
+# Not here yet, each for a reason in entry 260: Russia (mid.ru, which links kdmid.ru, has no
+# reviewed evidence), Slovakia, Moldova and Jamaica (a destination page seen once, not confirmed),
+# Jordan (no index found), Malaysia (per-mission pages only), Bhutan ("old" advisory), and the eight
+# unclear governments (Estonia, Turkey, Ukraine, Vietnam, Greece, Lithuania, Latvia, Poland).
+
+schema_version: 1
+publishers:
+  # --- A page per destination, open to us ------------------------------------------------------
+  - code: GB
+    government: UK Foreign, Commonwealth & Development Office
+    written_for: British nationals
+    language: en
+    domains: [www.gov.uk]
+    access: open
+    page: https://www.gov.uk/foreign-travel-advice
+    destinations: {method: index, index: "https://www.gov.uk/foreign-travel-advice", link_prefix: /foreign-travel-advice/}
+  - code: CA
+    government: Government of Canada
+    written_for: Canadians
+    language: en
+    domains: [travel.gc.ca]
+    access: open
+    page: https://travel.gc.ca/travelling/advisories
+    destinations: {method: index, index: "https://travel.gc.ca/travelling/advisories", link_prefix: /destinations/}
+  - code: NZ
+    government: New Zealand Ministry of Foreign Affairs and Trade (SafeTravel)
+    written_for: New Zealanders
+    language: en
+    domains: [safetravel.govt.nz]
+    access: open
+    page: https://www.safetravel.govt.nz/destinations
+    destinations: {method: pattern, pattern: "https://www.safetravel.govt.nz/destinations/{slug}"}
+  - code: SG
+    government: Singapore Ministry of Foreign Affairs
+    written_for: Singaporeans
+    language: en
+    domains: [mfa.gov.sg]
+    access: open
+    access_note: Opens for our own user agent; refused a plain client on 2026-10-05.
+    page: https://www.mfa.gov.sg/travelling-overseas/travel-advisories-notices-and-visa-information/
+    destinations: {method: pattern, pattern: "https://www.mfa.gov.sg/travelling-overseas/travel-advisories-notices-and-visa-information/{slug}/"}
+  - code: RS
+    government: Serbian Ministry of Foreign Affairs
+    written_for: Serbian citizens
+    language: en
+    domains: [mfa.gov.rs]
+    access: open
+    page: https://www.mfa.gov.rs/en/citizens/travel-abroad/visas-and-states-travel-advisory
+    destinations: {method: pattern, pattern: "https://www.mfa.gov.rs/en/citizens/travel-abroad/visas-and-states-travel-advisory/{slug}"}
+  - code: HK
+    government: Hong Kong Security Bureau (Outbound Travel Alerts)
+    written_for: Hong Kong residents
+    language: en
+    domains: [sb.gov.hk]
+    access: open
+    page: https://www.sb.gov.hk/eng/ota/
+    destinations: {method: index, index: "https://www.sb.gov.hk/eng/ota/", link_prefix: /eng/ota/info-}
+  - code: FI
+    government: Finnish Ministry for Foreign Affairs
+    written_for: Finnish citizens
+    language: fi
+    domains: [um.fi]
+    evidence:
+      um.fi: official website of the Ministry for Foreign Affairs of Finland — Wikidata Q2639539, P856/P17, checked 2026-08-25 (authority_domains.yaml).
+    access: open
+    page: https://um.fi/matkustustiedotteet
+    destinations: {method: pattern, pattern: "https://um.fi/matkustustiedote/-/c/{ISO2}"}
+  - code: IT
+    government: Italian Ministry of Foreign Affairs (Viaggiare Sicuri)
+    written_for: Italian citizens
+    language: it
+    domains: [viaggiaresicuri.it]
+    evidence:
+      viaggiaresicuri.it: linked as the ministry's travel-advice service from the home page of esteri.it, the Ministry of Foreign Affairs (Wikidata P856/P17, reviewed in authority_domains.yaml). The page's own words of a reviewed domain, entry 111's second tier. Checked 2026-10-05.
+    access: open
+    page: https://www.viaggiaresicuri.it/home
+    destinations: {method: pattern, pattern: "https://www.viaggiaresicuri.it/find-country/country/{ISO3}"}
+  - code: FR
+    government: French Ministry for Europe and Foreign Affairs
+    written_for: French nationals
+    language: fr
+    domains: [diplomatie.gouv.fr]
+    access: open
+    page: https://www.diplomatie.gouv.fr/fr/conseils-aux-voyageurs/conseils-par-pays-destination/
+    # Its index redirects to plain http:// (2026-10-05); the destination pages answer over https.
+    destinations: {method: pattern, pattern: "https://www.diplomatie.gouv.fr/fr/conseils-aux-voyageurs/conseils-par-pays-destination/{name-slug}/"}
+  - code: DE
+    government: German Federal Foreign Office
+    written_for: German citizens
+    language: de
+    domains: [auswaertiges-amt.de]
+    evidence:
+      auswaertiges-amt.de: official website of the Federal Foreign Office, Germany — Wikidata P856/P17, checked 2026-08-18 (authority_domains.yaml).
+    access: open
+    page: https://www.auswaertiges-amt.de/de/ReiseUndSicherheit/reise-und-sicherheitshinweise
+    destinations: {method: de_feed}
+  - code: ES
+    government: Spanish Ministry of Foreign Affairs
+    written_for: Spanish citizens
+    language: es
+    domains: [exteriores.gob.es]
+    access: open
+    page: https://www.exteriores.gob.es/es/ServiciosAlCiudadano/Paginas/Recomendaciones-de-viaje.aspx
+    destinations: {method: pattern, pattern: "https://www.exteriores.gob.es/es/ServiciosAlCiudadano/Paginas/Detalle-recomendaciones-de-viaje.aspx?trc={name}"}
+  - code: PT
+    government: Portuguese Ministry of Foreign Affairs (Portal das Comunidades)
+    written_for: Portuguese citizens
+    language: pt
+    domains: [mne.gov.pt]
+    access: open
+    page: https://portaldascomunidades.mne.gov.pt/pt/vai-viajar/conselhos-aos-viajantes
+    destinations: {method: index, index: "https://portaldascomunidades.mne.gov.pt/pt/vai-viajar/conselhos-aos-viajantes", link_prefix: /pt/vai-viajar/conselhos-aos-viajantes/, depth: 2}
+  - code: CZ
+    government: Czech Ministry of Foreign Affairs
+    written_for: Czech citizens
+    language: cs
+    domains: [mzv.gov.cz]
+    access: open
+    page: https://mzv.gov.cz/jnp/cz/encyklopedie_statu/index.html
+  - code: NL
+    government: Netherlands Ministry of Foreign Affairs
+    written_for: Dutch nationals
+    language: nl
+    domains: [nederlandwereldwijd.nl]
+    evidence:
+      nederlandwereldwijd.nl: its TLS certificate names the organisation — O=Rijksoverheid (the Dutch central government), L=Den Haag, C=NL — entry 111's first tier. Checked 2026-10-05.
+    access: open
+    page: https://www.nederlandwereldwijd.nl/reisadvies
+    destinations: {method: pattern, pattern: "https://www.nederlandwereldwijd.nl/reisadvies/{name-slug}"}
+  - code: LU
+    government: Luxembourg Ministry of Foreign and European Affairs
+    written_for: Luxembourg nationals
+    language: en
+    domains: [gouvernement.lu]
+    evidence:
+      gouvernement.lu: official website of the Government of Luxembourg — Wikidata Q21479996, P856/P17, checked 2026-08-25 (authority_domains.yaml).
+    access: open
+    page: https://mae.gouvernement.lu/en/services-aux-citoyens/work-travel/depart-luxembourg.html
+    destinations: {method: index, index: "https://mae.gouvernement.lu/en/services-aux-citoyens/work-travel/depart-luxembourg.html", link_prefix: /en/services-aux-citoyens/work-travel/depart-luxembourg/}
+  - code: MT
+    government: Maltese Ministry for Foreign Affairs (ConsularPlus)
+    written_for: Maltese citizens
+    language: en
+    domains: [consularplus.gov.mt]
+    access: refused
+    access_note: Opened for us once, then answered HTTP 403 on 2026-10-05.
+    page: https://consularplus.gov.mt/travel-advice?lang=en
+  - code: CN
+    government: Chinese Ministry of Foreign Affairs (Consular Service)
+    written_for: Chinese citizens
+    language: zh
+    domains: [cs.mfa.gov.cn]
+    access: open
+    page: https://cs.mfa.gov.cn/zggmcg/ljmdd/
+    destinations: {method: index, index: "https://cs.mfa.gov.cn/zggmcg/ljmdd/", link_prefix: /zggmcg/ljmdd/}
+  - code: HR
+    government: Croatian Ministry of Foreign and European Affairs
+    written_for: Croatian citizens
+    language: hr
+    domains: [mvep.gov.hr]
+    access: open
+    page: https://mvep.gov.hr/informacije-za-gradjane-244593/konzularne-informacije-22730/preporuke-za-putovanja-22854/upozorenja/245044
+  - code: KR
+    government: Korean Ministry of Foreign Affairs (Overseas Safety Travel)
+    written_for: Korean citizens
+    language: ko
+    domains: [0404.go.kr]
+    access: open
+    page: https://www.0404.go.kr/
+  - code: ID
+    government: Indonesian Ministry of Foreign Affairs (Safe Travel)
+    written_for: Indonesian citizens
+    language: id
+    domains: [safetravel.kemlu.go.id]
+    access: open
+    page: https://safetravel.kemlu.go.id/
+  - code: BE
+    government: Belgian Federal Public Service Foreign Affairs
+    written_for: Belgian citizens
+    language: en
+    domains: [diplomatie.be]
+    evidence:
+      diplomatie.be: official website of the Belgian foreign ministry — Wikidata P856/P17, checked 2026-08-18 (authority_domains.yaml).
+    access: open
+    page: https://travellersonline.diplomatie.be/
+
+  # --- A page per destination, refused or unanswered — linked, never checked -------------------
+  - code: US
+    government: U.S. Department of State
+    written_for: U.S. citizens
+    language: en
+    domains: [state.gov]
+    access: refused
+    access_note: travel.state.gov answered our client with a bot challenge on 2026-10-05. Its destination links come from the State Department's own published data.
+    page: https://travel.state.gov/en/international-travel/travel-advisories.html
+    destinations: {method: us_feed}
+  - code: AU
+    government: Australian Department of Foreign Affairs and Trade (Smartraveller)
+    written_for: Australians
+    language: en
+    domains: [smartraveller.gov.au]
+    access: refused
+    access_note: Did not answer from here on 2026-10-05.
+    page: https://www.smartraveller.gov.au/destinations
+  - code: IE
+    government: Irish Department of Foreign Affairs
+    written_for: Irish citizens
+    language: en
+    domains: [ireland.ie]
+    evidence:
+      ireland.ie: the official website of Ireland — Wikidata Q27 (Ireland), P856 https://www.ireland.ie/, entry 111's first tier. Checked 2026-10-05.
+    access: refused
+    access_note: Answered HTTP 403 on 2026-10-05.
+    page: https://www.ireland.ie/en/dfa/overseas-travel/advice/
+  - code: CH
+    government: Swiss Federal Department of Foreign Affairs
+    written_for: Swiss citizens
+    language: en
+    domains: [eda.admin.ch]
+    access: refused
+    access_note: Refused us on 2026-10-05.
+    page: https://www.eda.admin.ch/en/travel-advice
+  - code: AT
+    government: Austrian Federal Ministry for European and International Affairs
+    written_for: Austrian citizens
+    language: de
+    domains: [bmeia.gv.at]
+    access: refused
+    access_note: Its robots.txt disallows us.
+    page: https://www.bmeia.gv.at/reise-services/reiseinformation
+  - code: HU
+    government: Hungarian Ministry of Foreign Affairs and Trade
+    written_for: Hungarian citizens
+    language: en
+    domains: [mfa.gov.hu]
+    access: refused
+    access_note: Its robots.txt disallows us.
+    page: https://konzinfo.mfa.gov.hu/en/travel-tips-by-country
+  - code: "NO"  # quoted: YAML reads a bare NO as false
+    government: Norwegian Ministry of Foreign Affairs
+    written_for: Norwegian citizens
+    language: nb
+    domains: [regjeringen.no]
+    evidence:
+      regjeringen.no: the Norwegian Government's own website — reviewer's judgement in authority_domains.yaml (entry 111's third tier).
+    access: refused
+    access_note: Challenged us on 2026-10-05.
+    page: https://www.regjeringen.no/no/tema/utenrikssaker/reiseinformasjon/
+  - code: SE
+    government: Swedish Ministry for Foreign Affairs
+    written_for: Swedish citizens
+    language: sv
+    domains: [regeringen.se]
+    evidence:
+      regeringen.se: official website of the Government of Sweden — Wikidata Q930729, P856 https://regeringen.se, P17 Sweden. Checked 2026-10-05.
+    access: refused
+    access_note: Not opened under our own user agent; government.se challenged us on 2026-10-05.
+    page: https://www.regeringen.se/uds-reseinformation/
+  - code: DK
+    government: Danish Ministry of Foreign Affairs
+    written_for: Danish citizens
+    language: da
+    domains: [um.dk]
+    evidence:
+      um.dk: official website of the Ministry of Foreign Affairs of Denmark — Wikidata P856/P17, checked 2026-08-18 (authority_domains.yaml).
+    access: refused
+    access_note: Its robots.txt could not be read on 2026-10-05.
+    page: https://um.dk/rejse-og-ophold/rejse-til-udlandet/rejsevejledninger
+  - code: RO
+    government: Romanian Ministry of Foreign Affairs
+    written_for: Romanian citizens
+    language: ro
+    domains: [mae.ro]
+    evidence:
+      mae.ro: official website of the Ministry of Foreign Affairs of Romania — Wikidata Q15628977, P856/P17, checked 2026-08-25 (authority_domains.yaml).
+    access: refused
+    access_note: Its robots.txt could not be read on 2026-10-05.
+    page: https://www.mae.ro/travel-alerts
+  - code: BG
+    government: Bulgarian Ministry of Foreign Affairs
+    written_for: Bulgarian citizens
+    language: en
+    domains: [mfa.bg]
+    evidence:
+      mfa.bg: official website of the Ministry of Foreign Affairs of Bulgaria — Wikidata Q1813345, P856/P17, checked 2026-08-25 (authority_domains.yaml).
+    access: refused
+    access_note: Answered with a bot page on 2026-10-05.
+    page: https://www.mfa.bg/en/embassyinfo
+  - code: MX
+    government: Mexican Ministry of Foreign Affairs (Guía del Viajero)
+    written_for: Mexican citizens
+    language: es
+    domains: [sre.gob.mx]
+    access: refused
+    access_note: Challenged us on 2026-10-05.
+    page: https://guiadelviajero.sre.gob.mx/
+  - code: JP
+    government: Japanese Ministry of Foreign Affairs (Overseas Safety)
+    written_for: Japanese nationals
+    language: ja
+    domains: [mofa.go.jp]
+    access: refused
+    access_note: mofa.go.jp refused us on 2026-10-05; the overseas-safety site was not opened.
+    page: https://www.anzen.mofa.go.jp/
+
+  # --- One advice page or list, not per destination -------------------------------------------
+  - code: IN
+    government: Indian Ministry of External Affairs
+    written_for: Indian nationals
+    language: en
+    domains: [mea.gov.in]
+    access: open
+    access_note: India advises on eleven countries; this page lists them.
+    page: https://www.mea.gov.in/travel-advisories
+  - code: AE
+    government: UAE Ministry of Foreign Affairs
+    written_for: Emirati citizens
+    language: en
+    domains: [mofa.gov.ae]
+    access: open
+    page: https://www.mofa.gov.ae/en/travel-updates
+  - code: AR
+    government: Argentine Ministry of Foreign Affairs
+    written_for: Argentine citizens
+    language: es
+    domains: [cancilleria.gob.ar]
+    access: open
+    page: https://cancilleria.gob.ar/es/servicios/viajar-al-exterior/alertas
+  - code: BR
+    government: Brazilian Ministry of Foreign Affairs
+    written_for: Brazilian citizens
+    language: pt
+    domains: [www.gov.br]
+    access: open
+    page: https://www.gov.br/mre/pt-br/assuntos/portal-consular/alertas%20e%20noticias
+  - code: KI
+    government: Kiribati Ministry of Foreign Affairs
+    written_for: I-Kiribati citizens
+    language: en
+    domains: [mfa.gov.ki]
+    access: open
+    page: https://www.mfa.gov.ki/travel-advisory/
+  - code: QA
+    government: Qatar Ministry of Foreign Affairs
+    written_for: Qatari citizens
+    language: en
+    domains: [mofa.gov.qa]
+    access: open
+    page: https://mofa.gov.qa/en/consular-services/travel-advisory/travel-advice
+  - code: SI
+    government: Government of Slovenia (eUprava)
+    written_for: Slovenian citizens
+    language: en
+    domains: [e-uprava.gov.si]
+    access: open
+    page: https://e-uprava.gov.si/en/podrocja/travel/travel-information.html
+  - code: TH
+    government: Thai Ministry of Foreign Affairs (Department of Consular Affairs)
+    written_for: Thai citizens
+    language: th
+    domains: [consular.mfa.go.th]
+    access: open
+    page: https://consular.mfa.go.th/th/publicservice/travel-advisory-2
+  - code: TW
+    government: Taiwan Bureau of Consular Affairs
+    written_for: Taiwanese citizens
+    language: zh
+    domains: [boca.gov.tw]
+    access: open
+    page: https://www.boca.gov.tw/sp-trwa-list-1.html
+  - code: VU
+    government: Vanuatu Ministry of Foreign Affairs
+    written_for: Ni-Vanuatu citizens
+    language: en
+    domains: [mfaicet.gov.vu]
+    access: open
+    page: https://mfaicet.gov.vu/index.php/consular-services/travel-advisory
+  - code: ZA
+    government: Government of South Africa
+    written_for: South African citizens
+    language: en
+    domains: [www.gov.za]
+    access: open
+    page: https://www.gov.za/services/services-residents/travel-outside-sa/advice-south-african-nationals-travelling-abroad
+  - code: CY
+    government: Government of Cyprus
+    written_for: Cypriot citizens
+    language: en
+    domains: [www.gov.cy]
+    access: refused
+    access_note: Challenged us on 2026-10-05.
+    page: https://www.gov.cy/en/information/travel-advice/
+  - code: IL
+    government: Israeli National Security Council
+    written_for: Israeli citizens
+    language: en
+    domains: [www.gov.il]
+    access: refused
+    access_note: Challenged us on 2026-10-05.
+    page: https://www.gov.il/en/departments/dynamiccollectors/travel-warnings-nsc
+  - code: KE
+    government: Kenyan Ministry of Foreign and Diaspora Affairs
+    written_for: Kenyan citizens
+    language: en
+    domains: [mfa.go.ke]
+    access: refused
+    access_note: Its robots.txt could not be read on 2026-10-05.
+    page: https://mfa.go.ke/advisory/
+  - code: KW
+    government: Kuwaiti Ministry of Foreign Affairs
+    written_for: Kuwaiti citizens
+    language: en
+    domains: [mofa.gov.kw]
+    access: refused
+    access_note: Challenged us on 2026-10-05.
+    page: https://www.mofa.gov.kw/en/kuwait-missions/travel-guidance/
+  - code: NG
+    government: Nigerian Ministry of Foreign Affairs
+    written_for: Nigerian citizens
+    language: en
+    domains: [foreignaffairs.gov.ng]
+    access: refused
+    access_note: Its robots.txt could not be read on 2026-10-05.
+    page: https://www.foreignaffairs.gov.ng/travel-advisory/
+  - code: PH
+    government: Philippine Department of Foreign Affairs
+    written_for: Filipino citizens
+    language: en
+    domains: [dfa.gov.ph]
+    access: refused
+    access_note: Challenged us on 2026-10-05.
+    page: https://dfa.gov.ph/230-travel-advisories
+  - code: PK
+    government: Pakistani Ministry of Foreign Affairs
+    written_for: Pakistani citizens
+    language: en
+    domains: [mofa.gov.pk]
+    access: refused
+    access_note: Its robots.txt could not be read on 2026-10-05.
+    page: https://mofa.gov.pk/travel-advisory

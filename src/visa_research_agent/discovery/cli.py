@@ -19,6 +19,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TextIO
 
+import httpx
+
 from visa_research_agent.config.loader import (
     config_path,
     get_destination_registry,
@@ -34,11 +36,28 @@ from visa_research_agent.discovery.adjudication import (
     LangChainRoleAdjudicator,
     RoleAdjudicator,
 )
+from visa_research_agent.discovery.advisories import (
+    LINKS_FILENAME,
+    get_advisory_publishers,
+    load_advisory_links,
+)
 from visa_research_agent.discovery.advisories_build import (
     SurveyProgress,
     build_advisory_survey,
     load_advisory_survey,
     write_advisory_survey,
+)
+from visa_research_agent.discovery.advisory_links import (
+    NAMES_FILENAME,
+    Destination,
+    LinkChecker,
+    PublisherBuild,
+    build_advisory_links,
+    load_names,
+    names_from_wikidata,
+    wikidata_query,
+    write_links,
+    write_names,
 )
 from visa_research_agent.discovery.audit import (
     CAUSE_LABELS,
@@ -170,7 +189,9 @@ from visa_research_agent.research.rendering import (
     PlaywrightPageRenderer,
     build_page_renderer,
 )
+from visa_research_agent.research.robots import RobotsCache
 from visa_research_agent.research.source_cache import FileSourceCache
+from visa_research_agent.research.tls import build_ssl_context
 
 
 def build_search_provider() -> BraveSearchProvider:
@@ -595,6 +616,74 @@ async def run_advisories(args: argparse.Namespace, stream: TextIO) -> int:
         for code, reason in sorted(failures.items()):
             print(f"  {code}  {reason}", file=stream)
         return 2
+    return 0
+
+
+async def run_country_names(args: argparse.Namespace, stream: TextIO) -> int:
+    """Regenerate `country_names.yaml` from Wikidata — offline, for matching advice indexes."""
+
+    async with httpx.AsyncClient(
+        headers={
+            "User-Agent": settings.source_user_agent,
+            "Accept": "application/sparql-results+json",
+        },
+        verify=build_ssl_context(),
+        timeout=180,
+    ) as client:
+        response = await client.get(
+            "https://query.wikidata.org/sparql", params={"query": wikidata_query()}
+        )
+    response.raise_for_status()
+    codes = [country.code for country in get_country_registry().countries]
+    names = names_from_wikidata(response.json(), codes)
+    destination = config_path(NAMES_FILENAME)
+    write_names(names, destination)
+    print(f"{len(names)} countries' names written to {destination}", file=stream)
+    return 0
+
+
+async def run_advisory_links(args: argparse.Namespace, stream: TextIO) -> int:
+    """Build and check each government's travel-advice link per destination (entry 260)."""
+
+    countries = {country.code: country for country in get_country_registry().countries}
+    names = load_names(config_path(NAMES_FILENAME))
+    # The destinations the page offers: every country in the authority registry.
+    destinations = [
+        Destination(countries[row.code], names.get(row.code, {}))
+        for row in get_authority_registry().countries
+        if row.code in countries
+    ]
+    target = config_path(LINKS_FILENAME)
+    existing = load_advisory_links(target) if target.exists() else None
+    only = {code.strip().upper() for code in args.only.split(",") if code.strip()} or None
+
+    def report(build: PublisherBuild) -> None:
+        line = f"  {build.code}  {len(build.links)} linked"
+        if build.missing:
+            line += f", {len(build.missing)} not: {', '.join(build.missing[:6])}"
+            line += " …" if len(build.missing) > 6 else ""
+        print(line, file=stream)
+        for problem in build.problems:
+            print(f"      {problem}", file=stream)
+
+    async with httpx.AsyncClient(
+        headers={"User-Agent": settings.source_user_agent},
+        verify=build_ssl_context(),
+        follow_redirects=True,
+        timeout=25,
+    ) as client:
+        checker = LinkChecker(client, RobotsCache(user_agent=settings.source_user_agent))
+        links, _ = await build_advisory_links(
+            get_advisory_publishers(),
+            destinations,
+            checker,
+            existing=existing,
+            only=only,
+            on_progress=report,
+        )
+    write_links(links, target)
+    total = sum(len(by_destination) for by_destination in links.links.values())
+    print(f"\n{total} links for {len(links.links)} governments written to {target}", file=stream)
     return 0
 
 
@@ -1938,6 +2027,14 @@ def build_parser() -> argparse.ArgumentParser:
         "--only", default="", help="comma-separated ISO codes to survey, e.g. GB,US,IN"
     )
 
+    commands.add_parser(
+        "country-names", help="regenerate country names in publisher languages from Wikidata"
+    )
+    advisory_links = commands.add_parser(
+        "advisory-links", help="build and check each government's travel-advice links, entry 260"
+    )
+    advisory_links.add_argument("--only", default="", help="comma-separated passport codes")
+
     eu_store = commands.add_parser(
         "eu-store",
         help="refresh a union's shared store (the EU's regulation and ETIAS page), entry 201",
@@ -2116,6 +2213,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             return asyncio.run(run_bootstrap(args, sys.stderr))
         if args.command == "registry":
             return asyncio.run(run_registry(args, sys.stderr))
+        if args.command == "country-names":
+            return asyncio.run(run_country_names(args, sys.stderr))
+        if args.command == "advisory-links":
+            return asyncio.run(run_advisory_links(args, sys.stderr))
         if args.command == "advisories":
             return asyncio.run(run_advisories(args, sys.stderr))
         if args.command == "corpus":

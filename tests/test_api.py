@@ -781,3 +781,31 @@ async def test_only_a_stated_refusal_is_handed_over_as_a_page_to_open(
     assert detail["cause"] == "pages_unreadable"
     assert detail["unreadable_pages"] == [REFUSED_PAGE]
     assert detail["reasons"] == ["Visa page could not be used"]
+
+
+@pytest.mark.anyio
+async def test_travel_advice_is_a_link_from_the_passports_government(
+    client: httpx.AsyncClient,
+) -> None:
+    """Entry 260: a lookup in committed data — a link, whose it is, and nothing of the advice."""
+
+    response = await client.get("/travel-advice", params={"passport": "GB", "destination": "japan"})
+
+    assert response.status_code == 200
+    advice = response.json()["advice"]
+    assert advice["url"].startswith("https://www.gov.uk/foreign-travel-advice")
+    assert advice["written_for"] == "British nationals"
+    assert set(advice) == {
+        "url", "government", "written_for", "language", "about_destination", "checked",
+        "english_url",
+    }  # fmt: skip
+
+
+@pytest.mark.anyio
+async def test_no_travel_advice_where_the_government_publishes_none(
+    client: httpx.AsyncClient,
+) -> None:
+    response = await client.get("/travel-advice", params={"passport": "PW", "destination": "japan"})
+
+    assert response.status_code == 200
+    assert response.json() == {"advice": None}
