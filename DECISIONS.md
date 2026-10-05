@@ -285,6 +285,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [251](#251-the-workflow-is-a-travel-readiness-app-for-one-traveller-built-around-the-dates-they-enter) | **The workflow is a travel-readiness app for one traveller** — the owner's direction for item 80: one date range the traveller enters; the visa answer, news and weather shown, the traveller decides; friends much later. Five decisions it needs, none taken |
 | [247](#247-scale-and-speed-are-where-the-owner-wants-them-optimisation-and-expansion-wait-until-required-and-a-workflow-on-ofselfs-schemas-is-next-to-explore) | **Scale and speed are where the owner wants them** — optimisation and expansion are parked until something requires them; TODO is cut to this phase's work; growing the app into a workflow on Ofself's schemas is next to explore, with nothing designed |
 | [182](#182-the-owner-names-five-goals-unordered-and-the-docs-are-brought-back-to-where-things-are) | **The owner names five goals, unordered** — model calls through Ofself Personas, ~30s with progress on screen, a URL, accurate and useful answers, 100+ countries; what each waits on, and where two of them pull against each other |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
@@ -378,6 +379,72 @@ One or two runs a case: these show the direction, not a rate. No corridor was ru
 - **Discovery does not use the region.** Scoring the traveller's own post above another post's
   within the same country — Korea's rare wrong checklist was the Chennai consulate's page — is a
   scoring change and would need its own measurement.
+
+---
+
+## 251. The workflow is a travel-readiness app for one traveller, built around the dates they enter
+
+**2026-10-05. The owner's direction for item 80, reached in conversation over 2026-10-01 to 10-05.
+Changes TODO item 80, the handoff and OFSELF_FEEDBACK; no code, and no rule moves.**
+
+### What the owner said
+
+- **The theme is travel readiness.** The app is what someone opens once they have decided to make a
+  trip happen, to make sure it goes smoothly.
+- **One traveller.** Travelling with friends is set aside "until much later": no invites, no shared
+  board, no group sharing.
+- **The dates are central, and the traveller enters them** — one date range, not several to compare.
+- **More than a checklist.** For that destination and those dates the app shows the visa answer
+  (today's plan), and news and weather, and **the traveller decides for themselves whether to go.**
+  The app informs; it does not recommend.
+- Reading and writing Ofself's schemas is wanted, both to learn about the person and to record what
+  happened for next time.
+
+### What was explored and set aside
+
+Three directions were laid out side by side (the owner's comparison page, private:
+`https://claude.ai/artifact/MqoipvT94MFqPD9Uc8eJMH`): **A**, one traveller comparing several
+destinations; **B**, a group trip, one destination and several travellers; **C**, one plan followed
+through to departure. The direction is closest to C with dates added at the start. A and B are not
+rejected; B is explicitly later. Comparing several date ranges was proposed and declined in favour
+of one.
+
+### What it needs, each still the owner's to decide
+
+1. **Dates, fees and processing times as cited values in a plan.** Every "apply by" and every
+   validity check against the dates needs them; today a plan states them only in prose. This
+   changes what a plan may conclude (entries 206–209).
+2. **News.** Showing general news would put unverified, alarming-if-wrong claims in front of a
+   traveller (entry 6). The proposal is the traveller's *own* government's travel advice instead
+   (FCDO, US State Department) — official, but not the destination's government, so a new source
+   tier like the EU's (entry 201) and its own entry. The alternative is headlines labelled
+   unverified, linked and never summarised.
+3. **Weather** is low-harm and may come from an open weather service, labelled; a real forecast
+   exists only about two weeks out, so months ahead it can show climate averages and must say so.
+4. **Writing to Ofself** (TODO item 55 rule 6, entries 44 and 180). The line proposed: write only
+   what the person did, chose or confirmed — the `trip` with its dates, each `travel-obligation`
+   step they record, the visa they were granted as a `travel-document`, the `travel-stay` after — and
+   never what the app concluded. `travel-requirement`, `fact` and a stored verdict stay out: each is
+   an answer.
+5. **Reading the person's calendar** (`event`) to flag a clash with the dates — useful, and a lot of
+   personal data.
+
+### What holds regardless
+
+News, weather and anything else shown beside the plan **never reach the model call that decides the
+visa answer, and never change it**; they are a separate section. The passport's expiry is compared
+with the destination's rule in code, so it does not reach the model either (item 55 rule 1). No
+booking, applying, form filling or promise of approval.
+
+### Found along the way
+
+- **There is no schema called `preferences`** in Ofself's registry; `work-preferences` and
+  `user-preferences` belong to other domains. `constraint` (hard or soft must-haves, as the
+  Decisions app uses them) is the nearest to what an Ofself developer described.
+- **No app writes `travel-document` yet**, so the import built in item 55 has never filled the form
+  from a real record. The owner's developer token can create one in their own account
+  (`POST /api/v1/nodes`, guide §2.1); the app's sandbox user can hold made-up ones.
+- Name candidates were discussed (Clearance, Window, Passage, Leeway); none chosen.
 
 ---
 

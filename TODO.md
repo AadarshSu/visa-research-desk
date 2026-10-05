@@ -15,8 +15,8 @@ The numbers are names, not an order: the section decides the order. Finished ite
 **The owner is largely happy with where the project is on scale and performance**, and is still
 running their own performance and accuracy checks. Optimising it further and adding countries are
 **not this phase's work**: they come back when something requires them, and are under *Parked* until
-then. **Do not propose one unprompted.** What the owner wants to explore next is growing the project
-from a single answer into a workflow, on the schemas Ofself's users already hold data in (item 80).
+then. **Do not propose one unprompted.** What the owner wants next is a travel-readiness app for one
+traveller, built around the dates they enter (item 80, entry 251).
 
 Where entry 182's goals ended:
 
@@ -44,7 +44,7 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 
 | | | |
 | --- | --- | --- |
-| **Now** | 80. Explore growing from an answer into a workflow, on Ofself's schemas | `explore`, with the owner |
+| **Now** | 80. A travel-readiness app for one traveller, built around their dates | `explore`, with the owner |
 |  | 63. Make most corridors return accurate and useful information | `ongoing` |
 |  | 55. Take the traveller from Ofself's shared identity, through one adapter | `soon` |
 |  | 79. Score pages fetched live with the post-aware stored-text fixes | `soon` |
@@ -57,25 +57,33 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 
 ## Now — this phase's work
 
-### 80. Explore growing from an answer into a workflow, on Ofself's schemas — `explore`, **with the owner; nothing is designed yet**
+### 80. A travel-readiness app for one traveller, built around their dates — `explore`, **with the owner; the direction is set, nothing is built**
 
-**Why — the owner, 2026-09-30 (entry 247).** The app is part of Ofself's ecosystem, so it can read
-the schemas a person already holds data in. Today it turns one traveller and one destination into
-one plan. The owner wants to explore what it would be as more of a **workflow**. **This item is
-deliberately vague**: what the workflow is, which schemas it uses and what it does with them are all
-open. Explore it with the owner before designing or building anything.
+**The direction — the owner, 2026-10-05 (entry 251).** Someone who has decided to make a trip happen
+opens the app to make sure it goes smoothly. **One traveller**; friends come much later. They enter
+**one date range**, and for that destination and those dates see the visa answer (today's plan),
+**news** and **weather**, and decide for themselves whether to go. Ofself's schemas are read to learn
+about the person and, once allowed, written to record what happened for next time.
 
-**To start from:** item 55's adapter and what it already reads (`work-authorization`,
-`travel-document`, `travel-plan`, `place`); [CRUX.md](CRUX.md); Ofself's guides in
-[docs/ofself/](docs/ofself/README.md); what the platform has surprised us with in
-[OFSELF_FEEDBACK.md](OFSELF_FEEDBACK.md).
+**Before building, the owner decides** (each set out in entry 251):
+1. Dates, fees and processing times as cited values in a plan.
+2. News: the traveller's own government's travel advice as a new source tier, or labelled headlines.
+3. Weather source, and showing climate averages when the dates are beyond a forecast.
+4. Writing to Ofself — only what the person did, chose or confirmed.
+5. Reading their calendar to flag a clash.
 
-**Rules a workflow will meet — each moves only by a decision entry:**
-- Nothing is written back to Ofself (item 55's rule 6, entry 44). The app's Ofself readiness is
-  capped at 2 of 5 for exactly this reason.
-- No application submission, appointment booking or form filling, and no promise of approval
-  (CLAUDE.md).
-- Any field added to `TravellerProfile` is sent to the model on every plan (item 55's rule 1).
+**First slice, proposed:** destination and one date range; the plan as today; passport and
+residence-permit validity checked against the dates in code; the "apply by" date against today;
+weather beside it. News once decision 2 is made.
+
+**To see the form fill from real documents,** a `travel-document` has to exist: no app writes one
+yet. Create one in the owner's account with their developer token, or in the sandbox user, **with
+the owner's yes** — only the fields the app reads, never a number, name or scan.
+
+**Rules it meets — each moves only by a decision entry:** nothing written back to Ofself (item 55
+rule 6, entry 44); no submission, booking or form filling, and no promise of approval; any field
+added to `TravellerProfile` reaches the model on every plan (item 55 rule 1) — news and weather
+never do.
 
 ### 63. Make most corridors return accurate and useful information — `ongoing`
 

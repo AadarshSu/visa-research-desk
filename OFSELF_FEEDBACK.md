@@ -180,6 +180,12 @@ rather than deleting it.
   as evidence. Worth a note on what `basis` and `source` establish.
 - **6.5 `schema search` repeats names** [observed], e.g. `nutrition:food`, apparently once per
   version.
+- **6.6 No `preferences` schema** [observed, 2026-10-01]. An Ofself developer suggested using a
+  person's preferences; the registry has only `work-preferences` and `user-preferences`, both for
+  other domains. `constraint` is the nearest. Worth naming which schema is meant.
+- **6.7 Nothing writes `travel-document`** [observed, 2026-10-04]. The schema is ready for an upload
+  (`photo_ids`, per-field `field_provenance`), but no app we know of turns an uploaded passport into
+  one, so a reader has nothing to read until the person types it in somewhere.
 
 ## 7. Security and setup
 
@@ -429,3 +435,7 @@ In order of what would have saved the most time here:
 | Will the authorize redirect echo `state`? (9.3) | 09-17 | — | — |
 | Is `redirect_uri` checked at approval? (9.5) | 09-17 | — | — |
 | Is a 30-day grant expiry the default? (9.8) | 09-18 | — | — |
+| Does an upload to Ofself produce a `travel-document`, and is there a screen to add one by hand? (6.7) | 10-04 | — | — |
+| May an app propose a change to a `travel-plan` another app wrote? | 10-02 | — | — |
+| Can an app reach a person who isn't on its page, e.g. a notification? | 10-02 | — | — |
+| Does a `belongs_to` edge to another person's node make it readable to them alone? (for travelling with friends, later) | 10-02 | — | — |
