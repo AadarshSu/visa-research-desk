@@ -254,6 +254,7 @@ after a push costs a second commit for one concern; before it, the change folds 
 .venv/bin/visa-discover coverage --country NL  # does the store hold the answer? no network, no model
 .venv/bin/visa-discover reports                # travellers' problem reports, each with its re-run line
 .venv/bin/visa-discover regions --geonames admin1CodesASCII.txt  # regenerate the region list (entry 252)
+.venv/bin/visa-discover advisories --only GB,IN  # survey who publishes travel advice; a draft to review (entry 260)
 .venv/bin/visa-discover selection-recall       # does the corridor find it? no network, no model
 .venv/bin/visa-discover contention --destination czechia --nationality IN --from GB --outside-pool \
     --role document_checklist                  # curate an oracle row, including outside the pool

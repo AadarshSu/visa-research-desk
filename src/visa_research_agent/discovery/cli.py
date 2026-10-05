@@ -34,6 +34,12 @@ from visa_research_agent.discovery.adjudication import (
     LangChainRoleAdjudicator,
     RoleAdjudicator,
 )
+from visa_research_agent.discovery.advisories_build import (
+    SurveyProgress,
+    build_advisory_survey,
+    load_advisory_survey,
+    write_advisory_survey,
+)
 from visa_research_agent.discovery.audit import (
     CAUSE_LABELS,
     CAUSE_ORDER,
@@ -526,6 +532,65 @@ async def run_registry(args: argparse.Namespace, stream: TextIO) -> int:
     if failures:
         # Named rather than counted: these are not in the file at all, so a later run will retry
         # exactly these, and a reader has to be able to tell them from a country that was refused.
+        print(f"{len(failures)} could not be searched and were left out:", file=stream)
+        for code, reason in sorted(failures.items()):
+            print(f"  {code}  {reason}", file=stream)
+        return 2
+    return 0
+
+
+async def run_advisories(args: argparse.Namespace, stream: TextIO) -> int:
+    """Survey where each passport country's government publishes travel advice (entry 260).
+
+    Writes a survey for a person to review, never `advisory_publishers.yaml`. Costs three searches a
+    country and resumes from what the file already holds.
+    """
+
+    destination = Path(args.output)
+    existing = load_advisory_survey(destination)
+    countries = get_country_registry()
+    if args.only:
+        wanted = {code.strip().upper() for code in args.only.split(",") if code.strip()}
+        unknown = wanted - {country.code for country in countries.countries}
+        if unknown:
+            print(f"not in countries.yaml: {', '.join(sorted(unknown))}", file=stream)
+            return 3
+        countries = CountryRegistry(
+            schema_version=1, countries=[c for c in countries.countries if c.code in wanted]
+        )
+    remaining = sum(1 for c in countries.countries if not (existing and existing.get(c.code)))
+    print(f"{remaining} countries to survey, about {remaining * 3} searches\n", file=stream)
+
+    def report(progress: SurveyProgress) -> None:
+        if progress.error is not None:
+            print(f"  {progress.country.code}  FAILED  {progress.error}", file=stream)
+            return
+        row = progress.row
+        assert row is not None
+        own = ", ".join(c.domain for c in row.own_government) or "(none of its own)"
+        print(f"  {row.code}  {own}", file=stream)
+        if row.unconfirmable:
+            print(
+                f"      unconfirmable: {', '.join(c.domain for c in row.unconfirmable)}",
+                file=stream,
+            )
+
+    survey, failures = await build_advisory_survey(
+        countries,
+        build_search_provider(),
+        get_denylist(),
+        existing=existing,
+        on_progress=report,
+        write=lambda current: write_advisory_survey(current, destination),
+    )
+    write_advisory_survey(survey, destination)
+    found = sum(1 for row in survey.countries if row.own_government or row.unconfirmable)
+    print(
+        f"\n{len(survey.countries)} countries in {destination}; {found} with a candidate of their "
+        f"own government's, {len(survey.countries) - found} with none found.",
+        file=stream,
+    )
+    if failures:
         print(f"{len(failures)} could not be searched and were left out:", file=stream)
         for code, reason in sorted(failures.items()):
             print(f"  {code}  {reason}", file=stream)
@@ -1860,6 +1925,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="comma-separated ISO codes to build, e.g. FR,DE,JP; the rest of the file is kept",
     )
 
+    advisories = commands.add_parser(
+        "advisories",
+        help="survey where each passport country's government publishes travel advice, entry 260",
+    )
+    advisories.add_argument(
+        "--output",
+        default="var/advisories/survey.yaml",
+        help="where to write the survey; resumed from if it exists",
+    )
+    advisories.add_argument(
+        "--only", default="", help="comma-separated ISO codes to survey, e.g. GB,US,IN"
+    )
+
     eu_store = commands.add_parser(
         "eu-store",
         help="refresh a union's shared store (the EU's regulation and ETIAS page), entry 201",
@@ -2038,6 +2116,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return asyncio.run(run_bootstrap(args, sys.stderr))
         if args.command == "registry":
             return asyncio.run(run_registry(args, sys.stderr))
+        if args.command == "advisories":
+            return asyncio.run(run_advisories(args, sys.stderr))
         if args.command == "corpus":
             return asyncio.run(run_corpus(args, sys.stderr))
         if args.command == "eu-store":

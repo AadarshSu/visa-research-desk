@@ -291,7 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
-| [260](#260-travel-advice-is-a-third-trust-tier-the-travellers-own-government-read-for-one-panel-and-never-for-the-visa-answer) | **Travel advice is a third trust tier** — the passport's government, found offline for all 198 passports and reviewed; read and quoted word for word, or linked where it refuses us; never visa evidence |
+| [260](#260-travel-advice-is-a-third-trust-tier-the-travellers-own-government-read-for-one-panel-and-never-for-the-visa-answer) | **Travel advice is a third trust tier** — the passport's government, found offline for all 198 passports and reviewed; cut from the page by selectors in its row, no model; linked where it refuses us or states no level; never visa evidence |
 | [259](#259-travel-advice-shows-only-where-the-travellers-government-publishes-it-and-weather-waits-for-a-place-within-the-country) | **Travel advice only where the traveller's government publishes it; weather waits** — six governments publish a feed, a dozen more a page; a capital's weather misleads for a large country |
 | [251](#251-the-workflow-is-a-travel-readiness-app-for-one-traveller-built-around-the-dates-they-enter) | **The workflow is a travel-readiness app for one traveller** — the owner's direction for item 80: one date range the traveller enters; the visa answer, news and weather shown, the traveller decides; friends much later. Five decisions it needs, none taken |
 | [247](#247-scale-and-speed-are-where-the-owner-wants-them-optimisation-and-expansion-wait-until-required-and-a-workflow-on-ofselfs-schemas-is-next-to-explore) | **Scale and speed are where the owner wants them** — optimisation and expansion are parked until something requires them; TODO is cut to this phase's work; growing the app into a workflow on Ofself's schemas is next to explore, with nothing designed |
@@ -307,8 +307,9 @@ s more pressing |
 **2026-10-05. The owner's decision, approved after two revisions. Answers decision 2 of entry 251
 and the three questions entry 259 left. Adds `config/advisory_publishers.yaml`
 and an advice panel; changes nothing the visa answer reads. Revised on the owner's review: the list
-covers all 198 passports, a publisher we cannot read is linked, and advice is quoted in its own
-language.**
+covers all 198 passports, a publisher we cannot read is linked, advice is quoted in its own
+language, each government's page is read by selectors in its row with no model, a government that
+states no level is linked, and the panel appears with the plan.**
 
 ### The tier
 
@@ -316,8 +317,8 @@ language.**
   none we can read, there is no panel (entry 259); the country of residence is never substituted.
 - **Which domains:** a new file, `config/advisory_publishers.yaml`, beside `authority_domains.yaml`
   and `supranational_authorities.yaml` and never in either. One row per publishing government: its
-  country code, its domains, where its advice is found (a feed or an index of pages), and its
-  language. **Every domain carries independent evidence** under entry 111's first tier, as the EU's
+  country code, its domains, where its advice is found (a feed or an index of pages), its
+  language, and **where on its pages the level and the date sit** (below). **Every domain carries independent evidence** under entry 111's first tier, as the EU's
   do (entry 201): Wikidata `P856` for the foreign ministry, or a TLS certificate naming it. A
   domain enters only by a reviewed row.
 - **Officialness is still a property of the domain.** Every rule a fetched page meets still holds:
@@ -343,6 +344,10 @@ language.**
 
 **Three outcomes, by what could be read:**
 - **Read:** the level, a quote, the date and the link, as below.
+- **Linked, because no level is stated:** a government whose advice states no level or status — prose
+  only — is linked, with its name and nothing quoted (the owner, 2026-10-05). Choosing which
+  sentence of prose stands for the advice would be a judgement the app makes on the government's
+  behalf.
 - **Linked:** the publisher refused, challenged or `Disallow`ed us (Singapore, Ireland, Norway,
   Finland, the Philippines on 2026-10-05), or reading failed. The panel names the government and
   links its advice, saying we could not open it to check — the owner's call: their advice is still
@@ -356,20 +361,24 @@ When read, only the government's own words: **the level or status as written** (
 Caution"), **one sentence quoted from the advice**, **the date the government says it updated it**,
 the publisher's name, "written for <nationals>", and the link.
 
-- **From a feed**, code reads the fields, and no model is involved.
-- **From a page**, one model call **selects** those three from the page text; it writes none of them.
-  **Code then checks that each one appears word for word in the fetched text** (whitespace
-  normalised). This is selection, not summary, so entry 251's "never summarised by a model" holds
-  unchanged.
-- **Anything that fails** (a check, the model call, the fetch) **shows the link alone.** Unlike a
-  failed visa adjudication, this does not refuse: a link states nothing, so it cannot be wrong.
+- **No model at request time — the owner, 2026-10-05.** A government's advice pages share one
+  layout, so its row records where on them each piece sits: CSS selectors for a page, field names
+  for a feed. One shared reader applies any row; adding a government is a row, not code. The text
+  shown is cut from the page, so it is the government's words by construction.
+- **Selectors are drafted offline**, during the survey, where a model may help, and a person reviews
+  them with the rest of the row.
+- **Anything that fails** (a selector matching nothing, the fetch) **shows the link alone**, so a
+  redesign produces a missing answer, never a wrong one. Unlike a failed visa adjudication, this
+  does not refuse: a link states nothing, so it cannot be wrong.
 - **No common scale.** Each government's level is shown in its own terms; none is mapped to a
   colour or a score.
 
 ### Freshness and storage
 
 - **Read live, through the retrieval cache, in parallel with the plan**, so the visa answer waits on
-  nothing new. No offline store: the panel needs one page per request, and a store would make stored
+  nothing new. **Shown at the same moment as the plan**, not ahead of it (the owner): advice is ready
+  in about 0.3–4.4 s measured and a fresh plan takes about 55 s, so one reveal costs nothing and
+  nothing on the page arrives one piece at a time. No offline store: the panel needs one page per request, and a store would make stored
   text speak, against entries 78 and 83, for no gain in correctness.
 - **Limits:** cached for **6 hours**, the owner's choice (the visa pages' 24 is too long for a level
   raised overnight); a failed refresh may serve the cached copy for at most **24 hours**, showing its
@@ -384,6 +393,16 @@ the government's.
 ### Still open
 
 - **Japan's per-country file** and South Korea's keyed API are not yet read.
+- **The survey** (`visa-discover advisories`) is the first build step: it proposes, a person reviews,
+  and only reviewed rows reach `config/advisory_publishers.yaml`. It writes
+  `var/advisories/survey.yaml`, never the config: three searches a passport country, the
+  own-government rule keeping that government's domains and reporting its unmarked ones
+  (`auswaertiges-amt.de`, `netherlandsworldwide.nl`) as unconfirmable.
+- **First run, 15 passports:** every one had a candidate of its own government's. It found what
+  entry 259 missed: **India advises its citizens on 11 countries** — Myanmar, Russia, Ukraine, Iran,
+  Yemen, China, Iraq, Syria, Libya, Cambodia, Niger — at `mea.gov.in/travel-advisories`, and marks
+  the rest as having none. **Not decided:** whether that mark may be shown ("India has issued no
+  advisory for Japan"); it is the government's statement, but an absence.
 
 ---
 
@@ -423,7 +442,8 @@ words without a model or a scraper:
 - **Refused or unanswered from here:** Ireland and Singapore (bare `403`), France's RSS (`403`),
   Norway, Finland and the Philippines (Cloudflare challenge), Australia and Malaysia (no answer).
   Under entries 35 and 41 none is worked around.
-- **None found:** India. South Korea's is on `data.go.kr` behind an API key, not tried.
+- **None found:** India — **wrong; see entry 260**: India advises on 11 countries only. South
+  Korea's is on `data.go.kr` behind an API key, not tried.
 
 Every one writes for its own nationals, uses its own scale (1–4, 0–3, flags, colours, a list), and
 most write in their own language. The scales are not comparable and are never mapped onto one.
