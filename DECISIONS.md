@@ -72,6 +72,7 @@ not — and stored text ranks, it never speaks).
 ### What a plan may say to a traveller
 | | |
 | --- | --- |
+| [256](#256-travel-dates-on-the-form-in-three-modes-kept-in-the-page-and-out-of-the-research) | **Travel dates on the form** — exact, roughly, not sure; kept in the page, out of the research; a trip line shows the traveller's passport against their dates |
 | [253](#253-a-plan-opens-with-three-answers-at-a-glance-the-visa-where-to-apply-and-the-documents) | **A plan opens with three answers at a glance** — visa, where to apply, documents; each derived from the fields its section renders and linking to it |
 | [254](#254-a-partial-plan-says-why-and-the-evidence-list-appears-only-with-a-page-to-name) | **A partial plan says why** — the chip names the reason ("Depends on your trip", "No checklist confirmed"); the generic incomplete-evidence lines are gone; the evidence list shows only with a page to name; no "Visa type unresolved" prefix |
 | [6](#6-structured-conflict-detection-built-then-deliberately-deleted) | Conflict detection: built, then deliberately deleted |
@@ -293,6 +294,44 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 256. Travel dates on the form, in three modes, kept in the page and out of the research
+
+**2026-10-05. The owner's decisions; the first piece of entry 251's dates. Changes
+`templates/index.html`, `static/app.js` and `static/styles.css`; nothing sent to the server changes.**
+
+**The owner's three answers.** Three modes — *Exact dates*, *Roughly*, *Not sure yet*; the field
+sits after Purpose; and dates **will** go into the plan itself later — the owner is keen — but this
+first version leaves them out, to test the interface on its own.
+
+**What was built.**
+- **The field.** *Not sure yet* is the default and changes nothing. *Exact dates* is two native date
+  pickers, today at the earliest and the return after leaving, with the night count said back.
+  *Roughly* is a month, or a span of months up to two years out — the grain an Ofself trip idea's
+  `window` holds, and the grain someone deciding "maybe Italy in spring" has.
+- **An Ofself trip idea fills *Roughly*,** as months, labelled as coming from the plan, and only while
+  the traveller has chosen nothing. `travel-plan.window` is soft by its own schema, and is never
+  promoted to exact dates.
+- **The route ticket** restates the dates after the purpose.
+- **Above a plan, a "Your trip" line**: the dates, the nights, how far off they are ("You leave in 27
+  weeks", "About 6 months away"), and — where the passport came from Ofself with an expiry — **the
+  traveller's own passport against their own dates**: "expires on 3 Sept 2027, 4 months after you
+  return", or "before you return" in amber. A rough span is measured from the last day of its last
+  month. It is a fact, never a ruling: whether that is long enough is the destination's rule, which
+  the plan states and this line does not, until a plan states the rule as a value (entry 251,
+  decision 1). A typed-in expiry says so.
+
+**What was kept out, and why.** The plan request is unchanged, so a plan with dates is the same plan
+as one without; stored research and draft reuse (entry 178) are not split by date; nothing new
+reaches the model (item 55, rule 1). **Next, as the owner wants:** the length of stay into the plan,
+where it would settle conditional answers like Spain's study visa over 90 days (entry 250) — a change
+to what a plan concludes and to the reuse key, so its own entry.
+
+**Checked** in the browser: each mode, a past departure and a return before departure refused by the
+pickers, a rough single month and span, a trip idea's window filling *Roughly*, the trip line with a
+passport expiring four months after return and one expiring mid-trip, and the form at phone width.
 
 ---
 

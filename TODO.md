@@ -64,6 +64,10 @@ when, and sees the visa answer with what else bears on going. **One traveller**;
 later. **One date range**, entered by the traveller. Ofself's schemas are read to learn about the
 person and, once allowed, written to record what happened for next time.
 
+**Built (entry 256):** the date field — exact, roughly, not sure — after Purpose, kept in the page and
+out of the research, and a "Your trip" line above a plan with the traveller's passport expiry
+against their dates. **Next, the owner wants:** the length of stay into the plan itself.
+
 **First piece — decided:** an optional date range on the form, and **three context panels beside the
 visa plan: travel advice, news and weather.** Each is labelled with its source, linked, and never an
 input to the visa answer; the visa form gets no harder. Mockup with example data:

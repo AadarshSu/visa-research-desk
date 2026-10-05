@@ -64,7 +64,7 @@
                   <strong id="route-to">—</strong>
                 </div>
               </div>
-              <p class="route-passport" aria-hidden="true">Passport <strong id="route-passport">—</strong> · <span id="route-purpose">—</span></p>
+              <p class="route-passport" aria-hidden="true">Passport <strong id="route-passport">—</strong> · <span id="route-purpose">—</span><span id="route-dates" hidden></span></p>
             </div>
 
             <div class="ticket-body">
@@ -123,7 +123,7 @@
                   <div id="residence-choices" class="field-choices" hidden></div>
                 </div>
                 <div id="region-group" class="field-group" hidden>
-                  <label for="region">State or region <span class="field-optional">optional</span></label>
+                  <label for="region">State or region <span class="field-optional">(optional)</span></label>
                   <select
                     id="region"
                     name="region"
@@ -145,6 +145,38 @@
                   </select>
                   <p id="purpose-note" class="field-note" role="status" hidden></p>
                 </div>
+                <fieldset id="dates-group" class="field-group dates-field">
+                  <legend>Travel dates <span class="field-optional">(optional)</span></legend>
+                  <div class="date-modes">
+                    <input type="radio" id="dates-mode-exact" name="dates-mode" value="exact">
+                    <label for="dates-mode-exact">Exact dates</label>
+                    <input type="radio" id="dates-mode-rough" name="dates-mode" value="rough">
+                    <label for="dates-mode-rough">Roughly</label>
+                    <input type="radio" id="dates-mode-unsure" name="dates-mode" value="unsure" checked>
+                    <label for="dates-mode-unsure">Not sure yet</label>
+                  </div>
+                  <div id="dates-exact" class="date-pair" hidden>
+                    <span class="date-input">
+                      <label for="dates-depart">Leave</label>
+                      <input type="date" id="dates-depart">
+                    </span>
+                    <span class="date-input">
+                      <label for="dates-return">Return</label>
+                      <input type="date" id="dates-return">
+                    </span>
+                  </div>
+                  <div id="dates-rough" class="date-pair" hidden>
+                    <span class="date-input">
+                      <label for="dates-from-month">From</label>
+                      <select id="dates-from-month"></select>
+                    </span>
+                    <span class="date-input">
+                      <label for="dates-to-month">Until <span class="field-optional">(optional)</span></label>
+                      <select id="dates-to-month"></select>
+                    </span>
+                  </div>
+                  <p id="dates-note" class="field-note" role="status" hidden></p>
+                </fieldset>
                 <button id="generate-button" type="submit" {% if plans_locked %}disabled{% endif %}>
                   Generate plan <span aria-hidden="true">→</span>
                 </button>

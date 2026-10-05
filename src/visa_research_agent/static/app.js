@@ -811,7 +811,9 @@ function renderPlan(plan) {
   const steps = renderSteps(plan, ctx);
   const evidence = withId(renderReliability(plan), "plan-evidence");
   results.replaceChildren(
-    ...[renderGlance(plan, Boolean(documents)), decision, apply, documents, steps, evidence].filter(Boolean),
+    ...[renderTrip(), renderGlance(plan, Boolean(documents)), decision, apply, documents, steps, evidence].filter(
+      Boolean,
+    ),
   );
 }
 
@@ -1207,11 +1209,15 @@ function describePassport(passport, lead, extra) {
   showNote(passportNote, [`${lead}${expiry.text}${extra}`], expiry.tone);
 }
 
+// The Ofself passport this trip is on, when there is one: its expiry is set beside the trip's dates.
+let chosenPassport = null;
+
 function prefillPassport(payload) {
   const passports = payload.passports || [];
   const extra = passportSentences(payload);
   const pick = (passport) => {
     nationalitySelect.value = passport.nationality;
+    chosenPassport = passport;
     describePassport(passport, "From your Ofself account. Change it if this trip is on another passport.", extra);
   };
   if (passports.length === 1) {
@@ -1237,8 +1243,10 @@ function prefillPassport(payload) {
   nationalitySelect.addEventListener("change", () => {
     markChoice(passportChoices, nationalitySelect.value);
     const chosen = passports.find((passport) => passport.nationality === nationalitySelect.value);
+    chosenPassport = chosen || null;
     if (chosen) describePassport(chosen, "From your Ofself account.", extra);
     else showNote(passportNote, []);
+    refreshTripStrip();
   });
 }
 
@@ -1303,6 +1311,7 @@ function prefillDestination(payload) {
   const pick = ({ plan, candidate }) => {
     destinationSelect.value = candidate.destination_slug;
     showNote(destinationNote, [`From your Ofself plan “${plan.label}”${windowSentence(plan)}.${unresolved}`]);
+    prefillWindow(plan);
     if (candidate.purpose) {
       purposeSelect.value = candidate.purpose;
       showNote(purposeNote, ["From the same plan."]);
@@ -1388,6 +1397,238 @@ function formSentence(payload) {
   if (!found) return "Nothing shared from your Ofself account fills this form yet. Fill it in yourself.";
   return "Fields filled from your Ofself account say so. Check them, and fill in the rest.";
 }
+
+// Travel dates (TODO item 80, DECISIONS entry 256). Optional, and kept in this page: nothing here is
+// sent with the plan request, so a plan without dates is exactly today's plan and stored research is
+// reused as before. The dates shape what is shown beside the plan, never what the plan concludes.
+const datesExact = document.querySelector("#dates-exact");
+const datesRough = document.querySelector("#dates-rough");
+const datesDepart = document.querySelector("#dates-depart");
+const datesReturn = document.querySelector("#dates-return");
+const datesFromMonth = document.querySelector("#dates-from-month");
+const datesToMonth = document.querySelector("#dates-to-month");
+const datesNote = document.querySelector("#dates-note");
+const routeDates = document.querySelector("#route-dates");
+const DAY_MS = 86_400_000;
+let datesFromOfself = "";
+
+function today() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+function isoDay(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function parseDay(value) {
+  return value ? new Date(`${value}T00:00:00`) : null;
+}
+
+function monthValue(date) {
+  return isoDay(date).slice(0, 7);
+}
+
+function monthLabel(date, withYear = true) {
+  return date.toLocaleDateString(undefined, withYear ? { month: "long", year: "numeric" } : { month: "long" });
+}
+
+function dayLabel(date, withYear = true) {
+  return date.toLocaleDateString(
+    undefined,
+    withYear ? { day: "numeric", month: "short", year: "numeric" } : { day: "numeric", month: "short" },
+  );
+}
+
+// Two years of months, from this one: "roughly" is a month or a span of them.
+function fillMonths() {
+  const first = today();
+  datesToMonth.append(new Option("Same month", ""));
+  for (let offset = 0; offset < 24; offset += 1) {
+    const month = new Date(first.getFullYear(), first.getMonth() + offset, 1);
+    datesFromMonth.append(new Option(monthLabel(month), monthValue(month)));
+    datesToMonth.append(new Option(monthLabel(month), monthValue(month)));
+  }
+}
+
+function datesMode() {
+  return form.querySelector('input[name="dates-mode"]:checked').value;
+}
+
+function setDatesMode(mode) {
+  form.querySelector(`#dates-mode-${mode}`).checked = true;
+}
+
+// The trip as this page holds it, or null. A rough span runs from the first of its first month to
+// the last day of its last, so a passport is measured against the latest the trip could end.
+function tripDates() {
+  const mode = datesMode();
+  if (mode === "exact") {
+    const start = parseDay(datesDepart.value);
+    const end = parseDay(datesReturn.value);
+    if (!start || !end || start < today() || end < start) return null;
+    return { mode, start, end };
+  }
+  if (mode === "rough" && datesFromMonth.value) {
+    const from = datesFromMonth.value;
+    const to = datesToMonth.value && datesToMonth.value > from ? datesToMonth.value : from;
+    const [fromYear, fromMonth] = from.split("-").map(Number);
+    const [toYear, toMonth] = to.split("-").map(Number);
+    return { mode, start: new Date(fromYear, fromMonth - 1, 1), end: new Date(toYear, toMonth, 0) };
+  }
+  return null;
+}
+
+function tripRange(trip) {
+  if (trip.mode === "exact") {
+    const sameYear = trip.start.getFullYear() === trip.end.getFullYear();
+    return `${dayLabel(trip.start, !sameYear)} – ${dayLabel(trip.end)}`;
+  }
+  if (monthValue(trip.start) === monthValue(trip.end)) return monthLabel(trip.start);
+  const sameYear = trip.start.getFullYear() === trip.end.getFullYear();
+  return `${monthLabel(trip.start, !sameYear)} – ${monthLabel(trip.end)}`;
+}
+
+function tripLength(trip) {
+  if (trip.mode !== "exact") return "";
+  const nights = Math.round((trip.end - trip.start) / DAY_MS);
+  return nights === 1 ? "1 night" : `${nights} nights`;
+}
+
+// Shows the part of the field the mode needs, keeps the date pickers to possible dates, and says
+// back what was chosen — or where it came from, until the traveller changes it.
+function updateDates() {
+  const mode = datesMode();
+  datesExact.hidden = mode !== "exact";
+  datesRough.hidden = mode !== "rough";
+  datesDepart.min = isoDay(today());
+  datesReturn.min = datesDepart.value || isoDay(today());
+  datesDepart.required = mode === "exact";
+  datesReturn.required = mode === "exact";
+  datesDepart.setCustomValidity(
+    mode === "exact" && datesDepart.value && parseDay(datesDepart.value) < today()
+      ? "Choose a day from today on."
+      : "",
+  );
+  datesReturn.setCustomValidity(
+    mode === "exact" && datesDepart.value && datesReturn.value && datesReturn.value < datesDepart.value
+      ? "Choose a return day after you leave."
+      : "",
+  );
+
+  const trip = tripDates();
+  routeDates.hidden = !trip;
+  routeDates.textContent = trip ? ` · ${tripRange(trip)}` : "";
+  if (datesFromOfself && mode === "rough") {
+    showNote(datesNote, [datesFromOfself]);
+  } else if (trip) {
+    const length = tripLength(trip);
+    const sameYear = trip.start.getFullYear() === trip.end.getFullYear();
+    const rough =
+      monthValue(trip.start) === monthValue(trip.end)
+        ? `Sometime in ${tripRange(trip)}.`
+        : `Sometime between ${monthLabel(trip.start, !sameYear)} and ${monthLabel(trip.end)}.`;
+    showNote(datesNote, [length ? `${length}.` : rough]);
+  } else {
+    showNote(datesNote, []);
+  }
+  refreshTripStrip();
+}
+
+function weeksOrDays(days) {
+  if (days <= 0) return "You leave today";
+  if (days < 14) return `You leave in ${days} ${days === 1 ? "day" : "days"}`;
+  return `You leave in ${Math.round(days / 7)} weeks`;
+}
+
+function countdown(trip) {
+  const days = Math.round((trip.start - today()) / DAY_MS);
+  if (trip.mode === "exact") return weeksOrDays(days);
+  const months =
+    (trip.start.getFullYear() - today().getFullYear()) * 12 + trip.start.getMonth() - today().getMonth();
+  if (months <= 0) return "This month";
+  return months === 1 ? "Next month" : `About ${months} months away`;
+}
+
+function wholeMonthsBetween(from, to) {
+  let months = (to.getFullYear() - from.getFullYear()) * 12 + to.getMonth() - from.getMonth();
+  if (to.getDate() < from.getDate()) months -= 1;
+  return months;
+}
+
+// The traveller's own passport beside their own dates: a fact, never a ruling. Whether it is long
+// enough is the destination's rule, which the plan states and this line does not (entry 256).
+function passportLine(trip) {
+  const passport = chosenPassport;
+  if (!passport || !passport.expires_at || passport.nationality !== nationalitySelect.value) return null;
+  const expiry = parseDay(passport.expires_at);
+  const back = trip.mode === "exact" ? "you return" : `the end of ${monthLabel(trip.end)}`;
+  const typed = passport.expiry_attested ? "" : " That date was entered in Ofself; check it against the passport.";
+  if (expiry < trip.end) {
+    return { text: `Your passport expires on ${dayLabel(expiry)}, before ${back}.${typed}`, tone: "warn" };
+  }
+  const months = wholeMonthsBetween(trip.end, expiry);
+  const gap =
+    months < 1 ? "less than a month" : months === 1 ? "1 month" : `${months} months`;
+  return {
+    text: `Your passport expires on ${dayLabel(expiry)}, ${gap} after ${back}. Compare it with the passport rule in the plan.${typed}`,
+    tone: "",
+  };
+}
+
+function renderTrip() {
+  const trip = tripDates();
+  if (!trip) return null;
+  const strip = element("section", "trip-strip");
+  strip.setAttribute("aria-label", "Your trip");
+  const head = element("p", "trip-strip-head");
+  head.append(element("span", "trip-strip-label", "Your trip"), element("strong", "", tripRange(trip)));
+  const length = tripLength(trip);
+  if (length) head.append(element("span", "", length));
+  head.append(element("span", "trip-strip-countdown", countdown(trip)));
+  strip.append(head);
+  const passport = passportLine(trip);
+  if (passport) {
+    strip.append(element("p", passport.tone ? `trip-strip-passport trip-strip-passport--${passport.tone}` : "trip-strip-passport", passport.text));
+  }
+  return strip;
+}
+
+// A plan already on screen follows the dates as they change; nothing is shown before a plan.
+function refreshTripStrip() {
+  if (!results.querySelector(".glance")) return;
+  const old = results.querySelector(".trip-strip");
+  const fresh = renderTrip();
+  if (old && fresh) old.replaceWith(fresh);
+  else if (old) old.remove();
+  else if (fresh) results.prepend(fresh);
+}
+
+// A trip idea's window is soft — the schema says never to promote it to firm dates — so it fills
+// "Roughly", as months, and only while the traveller has not chosen dates themselves.
+function prefillWindow(plan) {
+  if (datesMode() !== "unsure" || (!plan.earliest && !plan.latest)) return;
+  const first = parseDay(plan.earliest || plan.latest);
+  const last = parseDay(plan.latest || plan.earliest);
+  if (monthValue(last) < monthValue(today())) return;
+  setDatesMode("rough");
+  datesFromMonth.value = monthValue(first < today() ? today() : first);
+  datesToMonth.value = monthValue(last) > datesFromMonth.value ? monthValue(last) : "";
+  datesFromOfself = `From your Ofself plan “${plan.label}”, as a rough window. Change it if you know your dates.`;
+  updateDates();
+}
+
+const datesField = document.querySelector("#dates-group");
+datesField.addEventListener("input", () => {
+  datesFromOfself = "";
+  updateDates();
+});
+datesField.addEventListener("change", () => {
+  datesFromOfself = "";
+  updateDates();
+});
+fillMonths();
+updateDates();
 
 const routeFrom = document.querySelector("#route-from");
 const routeTo = document.querySelector("#route-to");
