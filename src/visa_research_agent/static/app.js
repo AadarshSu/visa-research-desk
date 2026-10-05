@@ -903,8 +903,25 @@ async function fetchWeather(destination, city = null) {
   }
 }
 
+// Every temperature in both scales, each labelled: "32°C / 90°F". The forecast and the averages
+// are in Celsius; Fahrenheit is converted here, for display only.
+function inCelsius(value) {
+  return value === null || value === undefined ? "–" : `${Math.round(value)}°C`;
+}
+
+function inFahrenheit(value) {
+  return value === null || value === undefined ? "–" : `${Math.round((value * 9) / 5 + 32)}°F`;
+}
+
 function degrees(value) {
-  return value === null || value === undefined ? "–" : `${Math.round(value)}°`;
+  return value === null || value === undefined ? "–" : `${inCelsius(value)} / ${inFahrenheit(value)}`;
+}
+
+// A high and a low in one scale: "32° / 26°C".
+function pair(high, low, scale) {
+  const convert = scale === "F" ? (v) => Math.round((v * 9) / 5 + 32) : (v) => Math.round(v);
+  const show = (v) => (v === null || v === undefined ? "–" : `${convert(v)}°`);
+  return `${show(high)} / ${show(low)}${scale}`;
 }
 
 // The widget's pictures, drawn rather than fetched: one small vocabulary of sky, from the forecast's
@@ -1009,8 +1026,27 @@ function renderWeather(weather, destination) {
   const box = element("section", `weather weather--${skyMood(heroKind, heroHigh)}`);
   box.setAttribute("aria-label", "Weather for your dates");
 
+  // One header row: the opening day (or month) on the left, the city on the right.
   const head = element("div", "weather-head");
-  head.append(element("span", "weather-label", "Weather"));
+  const hero = element("div", "weather-hero");
+  hero.append(weatherIcon(heroKind, 44));
+  const heroText = element("div", "weather-hero-text");
+  const heroTemp = element("p", "weather-hero-temp");
+  heroTemp.append(element("strong", "", inCelsius(heroHigh)), element("span", "weather-hero-f", inFahrenheit(heroHigh)));
+  heroText.append(heroTemp);
+  if (first) {
+    const covered = weather.trip_days && weather.trip_days > weather.forecast.length
+      ? `forecast for ${weather.forecast.length} of your ${weather.trip_days} days`
+      : "forecast for your dates";
+    heroText.append(element("span", "weather-hero-line", `${first.summary} · ${shortDay(first.day)} ${shortDate(first.day)} · ${covered}`));
+  } else {
+    heroText.append(element("span", "weather-hero-line", `Typical high in ${firstMonth.name} · too far ahead to forecast`));
+  }
+  hero.append(heroText);
+  head.append(hero);
+
+  const place = element("div", "weather-place");
+  place.append(element("span", "weather-label", "Weather in"));
   if (weather.cities.length > 1) {
     const picker = element("select", "weather-city");
     picker.setAttribute("aria-label", "City");
@@ -1023,94 +1059,67 @@ function renderWeather(weather, destination) {
       if (fresh) box.replaceWith(fresh);
       else picker.disabled = false;
     });
-    head.append(picker);
+    place.append(picker);
   } else {
-    head.append(element("strong", "weather-city-name", weather.city));
+    place.append(element("strong", "weather-city-name", weather.city));
   }
+  head.append(place);
   box.append(head);
 
-  // The hero: the trip's first forecast day, or the first month's typical high.
-  const hero = element("div", "weather-hero");
-  hero.append(weatherIcon(heroKind, 72));
-  const heroText = element("div", "weather-hero-text");
-  heroText.append(element("strong", "weather-hero-temp", degrees(heroHigh)));
-  if (first) {
-    heroText.append(element("span", "weather-hero-line", `${first.summary} · ${shortDay(first.day)} ${shortDate(first.day)}`));
-    const covered = weather.trip_days && weather.trip_days > weather.forecast.length
-      ? `Forecast for ${weather.forecast.length} of your ${weather.trip_days} days`
-      : "Forecast for your dates";
-    heroText.append(element("span", "weather-hero-sub", covered));
-  } else {
-    heroText.append(element("span", "weather-hero-line", `Typical high in ${firstMonth.name}`));
-    heroText.append(element("span", "weather-hero-sub", "Too far ahead to forecast — averages, not a forecast"));
-  }
-  hero.append(heroText);
-  box.append(hero);
+  // One strip: forecast days, then the typical months beyond them, outlined so they never read as
+  // a forecast. A month carries a thermometer bar on one fixed scale for every city.
+  const strip = element("ol", "weather-days");
+  strip.setAttribute("aria-label", "High and low by day, then typical highs by month");
+  weather.forecast.forEach((day) => {
+    const tile = element("li", "weather-day");
+    tile.title = `${day.summary}: high ${degrees(day.high_c)}, low ${degrees(day.low_c)}, ${Math.round(day.rain_mm)} mm rain`;
+    tile.append(
+      element("span", "weather-day-name", `${shortDay(day.day)} ${shortDate(day.day).split(" ")[0]}`),
+      weatherIcon(skyKind(day.summary), 24),
+      element("span", "weather-day-high", pair(day.high_c, day.low_c, "C")),
+      element("span", "weather-day-low", pair(day.high_c, day.low_c, "F")),
+      element("span", "weather-day-rain", day.rain_mm >= 0.5 ? `${Math.round(day.rain_mm)} mm` : "dry"),
+    );
+    strip.append(tile);
+  });
+  if (weather.forecast.length) box.append(strip);
 
-  if (weather.forecast.length) {
-    const strip = element("ol", "weather-days");
-    strip.setAttribute("aria-label", "Forecast by day");
-    weather.forecast.forEach((day) => {
-      const tile = element("li", "weather-day");
-      tile.title = `${day.summary}, high ${degrees(day.high_c)}, low ${degrees(day.low_c)}, ${Math.round(day.rain_mm)} mm rain`;
-      tile.append(
-        element("span", "weather-day-name", shortDay(day.day)),
-        element("span", "weather-day-date", shortDate(day.day)),
-        weatherIcon(skyKind(day.summary), 30),
-        element("span", "weather-day-high", degrees(day.high_c)),
-        element("span", "weather-day-low", degrees(day.low_c)),
-        element("span", "weather-day-rain", day.rain_mm >= 0.5 ? `${Math.round(day.rain_mm)} mm` : "dry"),
-      );
-      strip.append(tile);
-    });
-    box.append(strip);
-  }
-
+  // The months beyond the forecast: one chip each, outlined so they never read as a forecast, with
+  // a thermometer bar on one fixed scale for every city.
+  const source = weather.averages_source;
   if (weather.averages.length) {
-    const block = element("figure", "weather-months");
-    block.append(element("figcaption", "weather-kind", weather.forecast.length ? "Then, typically" : "Typical for your months"));
-    // One series — the average high — as thermometer bars on one fixed scale for every city, so a
-    // bar means the same warmth wherever it is shown and a month below zero is never drawn as a
-    // positive bar from zero. Rain is a second measure: it stays in words, never on a second scale.
-    const chart = element("div", "weather-bars");
-    const source = weather.averages_source;
+    const typical = element("ol", "weather-typical");
+    typical.setAttribute("aria-label", "Typical highs by month");
     weather.averages.forEach((month) => {
-      const column = element("div", "weather-bar-col");
+      const chip = element("li", "weather-month");
       const low = month.low_c !== null ? `, low ${degrees(month.low_c)}` : "";
       const rain = month.rain_mm !== null ? `, ${Math.round(month.rain_mm)} mm rain` : "";
-      column.title = `${month.name}: average high ${degrees(month.high_c)}${low}${rain} (${source.first_year}–${source.last_year})`;
-      column.setAttribute("role", "img");
-      column.setAttribute("aria-label", column.title);
-      const bar = element("span", "weather-bar");
-      bar.style.height = `${thermometer(month.high_c)}%`;
-      const track = element("span", "weather-bar-track");
-      track.append(element("span", "weather-bar-value", degrees(month.high_c)), bar);
-      column.append(
-        track,
-        weatherIcon(monthKind(month), 22),
-        element("span", "weather-bar-month", month.name.slice(0, 3)),
-        element("span", "weather-bar-rain", month.rain_mm !== null ? `${Math.round(month.rain_mm)} mm` : "—"),
+      chip.title = `${month.name}, typical: average high ${degrees(month.high_c)}${low}${rain} (${source.first_year}–${source.last_year})`;
+      const gauge = element("span", "weather-gauge");
+      const fill = element("span", "weather-gauge-fill");
+      fill.style.width = `${thermometer(month.high_c)}%`;
+      gauge.append(fill);
+      chip.append(
+        weatherIcon(monthKind(month), 20),
+        element("strong", "weather-month-name", month.name.slice(0, 3)),
+        element("span", "weather-month-high", `${degrees(month.high_c)} high`),
+        gauge,
+        element("span", "weather-month-rain", month.rain_mm !== null ? `${Math.round(month.rain_mm)} mm` : ""),
       );
-      chart.append(column);
+      typical.append(chip);
     });
-    block.append(chart);
-    box.append(block);
+    const label = element("p", "weather-typical-label", weather.forecast.length ? "Then, typically" : "Typically, for your months");
+    box.append(label, typical);
   }
 
-  const foot = element("div", "weather-foot");
+  const foot = element("p", "weather-foot");
   if (weather.forecast.length) {
-    const credit = element("span", "");
-    credit.append("Forecast: MET Norway, CC BY 4.0 · ");
-    credit.append(externalLink("Yr ↗", weather.forecast_link));
-    foot.append(credit);
+    foot.append("Forecast: MET Norway (CC BY 4.0), ");
+    foot.append(externalLink("Yr ↗", weather.forecast_link));
+    foot.append(weather.averages.length ? ". " : "");
   }
   if (weather.averages.length) {
-    const source = weather.averages_source;
-    foot.append(element(
-      "span",
-      "",
-      `Averages ${source.first_year}–${source.last_year} from NOAA's ${stationName(source.station)} station, ${Math.round(source.distance_km)} km away. A forecast reaches only about nine days ahead.`,
-    ));
+    foot.append(`Typical months: ${source.first_year}–${source.last_year} averages, NOAA ${stationName(source.station)} station, ${Math.round(source.distance_km)} km away — not a forecast.`);
   }
   box.append(foot);
   return box;

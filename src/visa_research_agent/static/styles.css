@@ -1206,17 +1206,13 @@ html {
    be absent; the one left takes the row. They stack on a narrow screen. */
 .context-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2.2fr);
   gap: 16px;
-  align-items: stretch;
+  align-items: start;
 }
 
 .context-row > :only-child {
   grid-column: 1 / -1;
-}
-
-.context-row .advice {
-  grid-template-rows: 1fr auto;
 }
 
 .context-row .advice-card {
@@ -1229,20 +1225,20 @@ html {
   }
 }
 
-/* Weather for the trip's dates (DECISIONS entry 261), as a widget whose sky follows the weather it
-   opens with. Every sky is deep enough for white text — 4.5:1 or better at its lighter end and on a day tile —
-   so secondary text is told apart by size and weight, never by fading it. */
+/* Weather for the trip's dates (DECISIONS entry 261), as a compact widget whose sky follows the
+   weather it opens with. Every sky is deep enough for white text — 4.5:1 or better at its lighter
+   end and on a tile — so secondary text is told apart by size and weight, never by fading it. */
 .weather {
   --sky-top: #1a5687;
   --sky-bottom: #22649a;
   display: grid;
-  gap: 18px;
-  padding: 20px 22px 16px;
-  border-radius: 20px;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px 16px 12px;
+  border-radius: 18px;
   color: #fff;
   background: linear-gradient(160deg, var(--sky-top), var(--sky-bottom));
   box-shadow: var(--shadow);
-  overflow: hidden;
 }
 
 .weather--hot { --sky-top: #8a3209; --sky-bottom: #a8480f; }
@@ -1254,12 +1250,54 @@ html {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 12px;
+  justify-content: space-between;
+  gap: 10px 16px;
 }
 
-.weather-label,
-.weather-kind {
-  color: #fff;
+.weather-hero {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.weather-hero-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.weather-hero-temp {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  line-height: 1;
+}
+
+.weather-hero-temp strong {
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.weather-hero-f {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.weather-hero-line {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.weather-place {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.weather-label {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -1269,13 +1307,13 @@ html {
 .weather-city {
   width: auto;
   max-width: 100%;
-  padding: 5px 30px 5px 12px;
+  padding: 4px 28px 4px 11px;
   border: 1px solid rgb(255 255 255 / 45%);
   border-radius: 999px;
   color: #fff;
-  background: rgb(255 255 255 / 14%) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='white' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 12px center;
+  background: rgb(255 255 255 / 14%) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='white' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 11px center;
   font: inherit;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   appearance: none;
   cursor: pointer;
@@ -1291,35 +1329,7 @@ html {
 }
 
 .weather-city-name {
-  font-size: 16px;
-}
-
-.weather-hero {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.weather-hero-text {
-  display: grid;
-  gap: 2px;
-}
-
-.weather-hero-temp {
-  font-size: clamp(40px, 6vw, 56px);
-  font-weight: 300;
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
-
-.weather-hero-line {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.weather-hero-sub {
-  color: #fff;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 /* The drawn sky: sun, cloud, rain, snow, fog, storm. */
@@ -1333,118 +1343,104 @@ html {
 .icon-cloud { fill: rgb(255 255 255 / 96%); }
 .icon-drop { stroke: #bfe3ff; stroke-width: 2.4; stroke-linecap: round; }
 .icon-flake { fill: #fff; }
-.icon-fog { stroke: rgb(255 255 255 / 85%); stroke-width: 2.4; stroke-linecap: round; }
+.icon-fog { stroke: #fff; stroke-width: 2.4; stroke-linecap: round; }
 .icon-bolt { fill: #ffd36b; }
 
-/* Forecast days: a row of tiles, scrolling sideways when the trip is long. */
+/* One strip: forecast days, then typical months outlined so they never read as a forecast. It
+   scrolls sideways when the trip is long. */
 .weather-days {
   display: grid;
-  grid-auto-columns: minmax(76px, 1fr);
+  grid-auto-columns: minmax(74px, 1fr);
   grid-auto-flow: column;
-  gap: 8px;
+  gap: 6px;
   margin: 0;
   padding: 0 0 4px;
   overflow-x: auto;
   list-style: none;
   scroll-snap-type: x mandatory;
+  scrollbar-color: rgb(255 255 255 / 45%) transparent;
+  scrollbar-width: thin;
 }
 
 .weather-day {
   display: grid;
   justify-items: center;
-  gap: 3px;
-  padding: 10px 6px;
-  border-radius: 14px;
+  align-content: start;
+  gap: 2px;
+  padding: 7px 4px;
+  border: 1px solid transparent;
+  border-radius: 12px;
   background: rgb(255 255 255 / 10%);
   scroll-snap-align: start;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
+
 .weather-day-name {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 800;
 }
 
-.weather-day-date,
-.weather-day-low,
-.weather-day-rain {
-  color: #fff;
-  font-size: 12px;
-}
-
 .weather-day-high {
-  font-size: 18px;
-  font-weight: 700;
-}
-
-/* Typical months: one bar per month from a common zero, labelled; rain in words beneath. */
-.weather-months {
-  display: grid;
-  gap: 10px;
-  margin: 0;
-}
-
-.weather-bars {
-  display: flex;
-  gap: 6px;
-  align-items: stretch;
-  justify-content: flex-start;
-}
-
-.weather-bar-col {
-  display: grid;
-  flex: 1 1 0;
-  max-width: 84px;
-  justify-items: center;
-  gap: 4px;
-  min-width: 0;
-  padding: 4px 0 8px;
-  border-radius: 12px;
-  font-variant-numeric: tabular-nums;
-}
-
-.weather-bar-col:hover {
-  background: rgb(255 255 255 / 10%);
-}
-
-.weather-bar-track {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 4px;
-  height: 76px;
-}
-
-.weather-bar-value {
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.weather-bar {
-  width: 14px;
-  border-radius: 4px 4px 0 0;
-  background: rgb(255 255 255 / 85%);
-}
-
-.weather-bar-month {
   font-size: 13px;
   font-weight: 700;
 }
 
-.weather-bar-rain {
-  color: #fff;
+/* Typical months: chips outlined so they never read as a forecast, wrapping onto a second line. */
+.weather-typical-label {
+  margin: 0 0 -6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.weather-typical {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.weather-month {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px 4px 7px;
+  border: 1px dashed rgb(255 255 255 / 70%);
+  border-radius: 999px;
   font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.weather-month-high {
+  font-weight: 600;
+}
+
+/* A typical month's high on one fixed scale, -10 °C to 40 °C, for every city. */
+.weather-gauge {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 25%);
+}
+
+.weather-gauge-fill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: #ffd36b;
 }
 
 .weather-foot {
-  display: grid;
-  gap: 2px;
-  padding-top: 10px;
-  border-top: 1px solid rgb(255 255 255 / 22%);
-  color: #fff;
-  font-size: 12px;
-  line-height: 1.45;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .weather-foot a {
