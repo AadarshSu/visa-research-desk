@@ -360,6 +360,17 @@ days"), then each later month's averages. With **rough months**, averages only �
 never shown for a span the traveller has not fixed. With **no dates, no panel.** It appears with
 the plan and follows the dates and the chosen city as they change.
 
+**Laid out beside the travel advice, as a widget — the owner, 2026-10-06.** The two panels share one
+row under the at-a-glance box (advice narrower, weather wider; stacked on a phone; either takes the
+row alone). The weather is a card whose sky follows the weather it opens with — blue, amber when
+hot, slate when cloudy, deep grey-blue for rain, icy when cold — every sky checked for white text at
+4.5:1 or better, so secondary text is told apart by size, never by fading. It opens with a drawn
+icon and the first day's high (or, too far ahead to forecast, the first month's typical high, said
+so), then a row of day tiles, then the typical months as thermometer bars on **one fixed scale,
+−10 °C to 40 °C, for every city**: a bar means the same warmth wherever it is shown, and a month
+below zero (Sapporo in January, −0.5 °C) is never drawn as a positive bar from zero. Rain stays in
+words under each bar, never on a second scale. Sources close the card.
+
 ---
 
 ## 260. Travel advice is a third trust tier: the traveller's own government, read for one panel and never for the visa answer

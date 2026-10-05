@@ -1202,142 +1202,254 @@ html {
   font-weight: 700;
 }
 
-/* Weather for the trip's dates (DECISIONS entry 261): forecast days, then typical months, each with
-   where it came from. Same family as the advice card above it. */
-.weather {
+/* The two panels beside the plan, side by side: travel advice, then the weather widget. Either may
+   be absent; the one left takes the row. They stack on a narrow screen. */
+.context-row {
   display: grid;
-  gap: 14px;
-  padding: 18px 22px;
-  border: 1.5px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr);
+  gap: 16px;
+  align-items: stretch;
 }
+
+.context-row > :only-child {
+  grid-column: 1 / -1;
+}
+
+.context-row .advice {
+  grid-template-rows: 1fr auto;
+}
+
+.context-row .advice-card {
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .context-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Weather for the trip's dates (DECISIONS entry 261), as a widget whose sky follows the weather it
+   opens with. Every sky is deep enough for white text — 4.5:1 or better at its lighter end and on a day tile —
+   so secondary text is told apart by size and weight, never by fading it. */
+.weather {
+  --sky-top: #1a5687;
+  --sky-bottom: #22649a;
+  display: grid;
+  gap: 18px;
+  padding: 20px 22px 16px;
+  border-radius: 20px;
+  color: #fff;
+  background: linear-gradient(160deg, var(--sky-top), var(--sky-bottom));
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.weather--hot { --sky-top: #8a3209; --sky-bottom: #a8480f; }
+.weather--cloudy { --sky-top: #36424e; --sky-bottom: #55616d; }
+.weather--rainy { --sky-top: #1c2b3c; --sky-bottom: #354c64; }
+.weather--cold { --sky-top: #183b5a; --sky-bottom: #33608a; }
 
 .weather-head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px 14px;
+  gap: 8px 12px;
 }
 
 .weather-label,
 .weather-kind {
-  color: var(--muted);
+  color: #fff;
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-}
-
-.weather-kind {
-  margin: 0 0 8px;
 }
 
 .weather-city {
   width: auto;
-  min-width: 0;
   max-width: 100%;
-  padding: 6px 10px;
-  border: 1.5px solid var(--line);
-  border-radius: 8px;
-  color: var(--ink);
-  background: var(--paper);
+  padding: 5px 30px 5px 12px;
+  border: 1px solid rgb(255 255 255 / 45%);
+  border-radius: 999px;
+  color: #fff;
+  background: rgb(255 255 255 / 14%) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='white' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 12px center;
   font: inherit;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
+  appearance: none;
+  cursor: pointer;
+}
+
+.weather-city option {
+  color: var(--ink);
+}
+
+.weather-city:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 
 .weather-city-name {
-  font-size: 17px;
+  font-size: 16px;
 }
 
-.weather-block {
+.weather-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.weather-hero-text {
   display: grid;
+  gap: 2px;
 }
 
-.weather-days,
-.weather-months {
-  display: grid;
-  gap: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.weather-hero-temp {
+  font-size: clamp(40px, 6vw, 56px);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.02em;
 }
 
-.weather-day,
-.weather-month {
-  display: grid;
-  grid-template-columns: 8.5rem minmax(0, 1fr) auto 3.5rem;
-  align-items: baseline;
-  gap: 12px;
-  padding: 8px 0;
-  border-top: 1px solid var(--line);
-  font-size: 15px;
-}
-
-.weather-month {
-  grid-template-columns: 8.5rem minmax(0, 1fr);
-}
-
-.weather-rain {
-  text-align: right;
-}
-
-.weather-date {
-  font-weight: 700;
-}
-
-.weather-summary,
-.weather-rain {
-  color: var(--muted);
-}
-
-.weather-temps {
-  font-variant-numeric: tabular-nums;
-}
-
-.weather-note,
-.weather-source {
-  margin: 8px 0 0;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-.weather-source a {
-  color: var(--green);
+.weather-hero-line {
+  font-size: 16px;
   font-weight: 600;
 }
 
-@media (max-width: 560px) {
-  .weather-day {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "date temps"
-      "summary rain";
-    row-gap: 2px;
-  }
+.weather-hero-sub {
+  color: #fff;
+  font-size: 13px;
+}
 
-  .weather-day .weather-date {
-    grid-area: date;
-  }
+/* The drawn sky: sun, cloud, rain, snow, fog, storm. */
+.weather-icon {
+  flex: none;
+  overflow: visible;
+}
 
-  .weather-day .weather-temps {
-    grid-area: temps;
-  }
+.icon-sun line { stroke: #ffd36b; stroke-width: 2.4; stroke-linecap: round; }
+.icon-sun circle { fill: #ffd36b; }
+.icon-cloud { fill: rgb(255 255 255 / 96%); }
+.icon-drop { stroke: #bfe3ff; stroke-width: 2.4; stroke-linecap: round; }
+.icon-flake { fill: #fff; }
+.icon-fog { stroke: rgb(255 255 255 / 85%); stroke-width: 2.4; stroke-linecap: round; }
+.icon-bolt { fill: #ffd36b; }
 
-  .weather-day .weather-summary {
-    grid-area: summary;
-  }
+/* Forecast days: a row of tiles, scrolling sideways when the trip is long. */
+.weather-days {
+  display: grid;
+  grid-auto-columns: minmax(76px, 1fr);
+  grid-auto-flow: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0 0 4px;
+  overflow-x: auto;
+  list-style: none;
+  scroll-snap-type: x mandatory;
+}
 
-  .weather-day .weather-rain {
-    grid-area: rain;
-  }
+.weather-day {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  padding: 10px 6px;
+  border-radius: 14px;
+  background: rgb(255 255 255 / 10%);
+  scroll-snap-align: start;
+  font-variant-numeric: tabular-nums;
+}
 
-  .weather-month {
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: 2px;
-  }
+.weather-day-name {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.weather-day-date,
+.weather-day-low,
+.weather-day-rain {
+  color: #fff;
+  font-size: 12px;
+}
+
+.weather-day-high {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Typical months: one bar per month from a common zero, labelled; rain in words beneath. */
+.weather-months {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.weather-bars {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+.weather-bar-col {
+  display: grid;
+  flex: 1 1 0;
+  max-width: 84px;
+  justify-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 4px 0 8px;
+  border-radius: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.weather-bar-col:hover {
+  background: rgb(255 255 255 / 10%);
+}
+
+.weather-bar-track {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+  height: 76px;
+}
+
+.weather-bar-value {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.weather-bar {
+  width: 14px;
+  border-radius: 4px 4px 0 0;
+  background: rgb(255 255 255 / 85%);
+}
+
+.weather-bar-month {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.weather-bar-rain {
+  color: #fff;
+  font-size: 12px;
+}
+
+.weather-foot {
+  display: grid;
+  gap: 2px;
+  padding-top: 10px;
+  border-top: 1px solid rgb(255 255 255 / 22%);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.weather-foot a {
+  color: #fff;
+  font-weight: 700;
 }
 
 .advice-alt {

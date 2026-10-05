@@ -907,22 +907,115 @@ function degrees(value) {
   return value === null || value === undefined ? "–" : `${Math.round(value)}°`;
 }
 
-function rainfall(value) {
-  return value === null || value === undefined ? null : `${Math.round(value)} mm rain`;
+// The widget's pictures, drawn rather than fetched: one small vocabulary of sky, from the forecast's
+// own words for a day or, for a typical month, from its rain and warmth.
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+function svgNode(tag, attributes) {
+  const node = document.createElementNS(SVG_NS, tag);
+  Object.entries(attributes).forEach(([key, value]) => node.setAttribute(key, value));
+  return node;
+}
+
+function skyKind(summary) {
+  const text = (summary || "").toLowerCase();
+  if (text.includes("thunder")) return "storm";
+  if (text.includes("snow") || text.includes("sleet")) return "snow";
+  if (text.includes("rain") || text.includes("shower")) return "rain";
+  if (text.includes("fog")) return "fog";
+  if (text === "cloudy") return "cloud";
+  if (text.includes("partly") || text.includes("mostly")) return "partly";
+  return "sun";
+}
+
+function monthKind(month) {
+  if (month.high_c !== null && month.high_c < 3) return "snow";
+  if (month.rain_mm !== null && month.rain_mm >= 150) return "rain";
+  if (month.rain_mm !== null && month.rain_mm >= 70) return "partly";
+  return "sun";
+}
+
+const CLOUD_PATH = "M15 36h19a8 8 0 0 0 1-15.9A11 11 0 0 0 13.6 21 7.5 7.5 0 0 0 15 36z";
+
+function weatherIcon(kind, size) {
+  const svg = svgNode("svg", { viewBox: "0 0 48 48", width: size, height: size, "aria-hidden": "true", class: "weather-icon" });
+  const sun = (cx, cy, r) => {
+    const group = svgNode("g", { class: "icon-sun" });
+    for (let i = 0; i < 8; i += 1) {
+      const angle = (Math.PI / 4) * i;
+      group.append(svgNode("line", {
+        x1: cx + Math.cos(angle) * (r + 3), y1: cy + Math.sin(angle) * (r + 3),
+        x2: cx + Math.cos(angle) * (r + 7), y2: cy + Math.sin(angle) * (r + 7),
+      }));
+    }
+    group.append(svgNode("circle", { cx, cy, r }));
+    return group;
+  };
+  const cloud = (shift = 0) => svgNode("path", { d: CLOUD_PATH, class: "icon-cloud", transform: `translate(0 ${shift})` });
+  if (kind === "sun") svg.append(sun(24, 24, 8));
+  if (kind === "partly") svg.append(sun(18, 17, 6.5), cloud(4));
+  if (kind === "cloud") svg.append(cloud(0));
+  if (kind === "fog") {
+    svg.append(cloud(-4));
+    [38, 43].forEach((y) => svg.append(svgNode("line", { x1: 11, y1: y, x2: 37, y2: y, class: "icon-fog" })));
+  }
+  if (kind === "rain" || kind === "storm" || kind === "snow") {
+    svg.append(cloud(-5));
+    if (kind === "storm") {
+      svg.append(svgNode("path", { d: "M25 30l-5 8h5l-3 7 8-10h-5l3-5z", class: "icon-bolt" }));
+    } else {
+      [17, 24, 31].forEach((x) => {
+        svg.append(kind === "snow"
+          ? svgNode("circle", { cx: x, cy: 39, r: 1.8, class: "icon-flake" })
+          : svgNode("line", { x1: x, y1: 35, x2: x - 2, y2: 41, class: "icon-drop" }));
+      });
+    }
+  }
+  return svg;
+}
+
+const THERMOMETER_FLOOR = -10;
+const THERMOMETER_CEILING = 40;
+
+function thermometer(celsius) {
+  const share = ((celsius ?? THERMOMETER_FLOOR) - THERMOMETER_FLOOR) / (THERMOMETER_CEILING - THERMOMETER_FLOOR);
+  return Math.round(Math.min(1, Math.max(0.04, share)) * 100);
+}
+
+// The card's sky follows the weather it opens with: a hot day warms it, rain greys it.
+function skyMood(kind, high) {
+  if (kind === "rain" || kind === "storm") return "rainy";
+  if (kind === "snow" || (high !== null && high < 8)) return "cold";
+  if (kind === "cloud" || kind === "fog") return "cloudy";
+  if (high !== null && high >= 30) return "hot";
+  return "sunny";
+}
+
+function shortDay(value) {
+  return parseDay(value).toLocaleDateString(undefined, { weekday: "short" });
+}
+
+function shortDate(value) {
+  return parseDay(value).toLocaleDateString(undefined, { day: "numeric", month: "short" });
 }
 
 function renderWeather(weather, destination) {
   if (!weather) return null;
-  const box = element("section", "weather");
+  const first = weather.forecast[0];
+  const firstMonth = weather.averages[0];
+  const heroKind = first ? skyKind(first.summary) : monthKind(firstMonth);
+  const heroHigh = first ? first.high_c : firstMonth.high_c;
+
+  const box = element("section", `weather weather--${skyMood(heroKind, heroHigh)}`);
   box.setAttribute("aria-label", "Weather for your dates");
+
   const head = element("div", "weather-head");
   head.append(element("span", "weather-label", "Weather"));
   if (weather.cities.length > 1) {
     const picker = element("select", "weather-city");
     picker.setAttribute("aria-label", "City");
     weather.cities.forEach((name) => {
-      const label = name === weather.capital_city ? `${name} (capital)` : name;
-      picker.append(new Option(label, name, false, name === weather.city));
+      picker.append(new Option(name === weather.capital_city ? `${name} (capital)` : name, name, false, name === weather.city));
     });
     picker.addEventListener("change", async () => {
       picker.disabled = true;
@@ -936,56 +1029,90 @@ function renderWeather(weather, destination) {
   }
   box.append(head);
 
+  // The hero: the trip's first forecast day, or the first month's typical high.
+  const hero = element("div", "weather-hero");
+  hero.append(weatherIcon(heroKind, 72));
+  const heroText = element("div", "weather-hero-text");
+  heroText.append(element("strong", "weather-hero-temp", degrees(heroHigh)));
+  if (first) {
+    heroText.append(element("span", "weather-hero-line", `${first.summary} · ${shortDay(first.day)} ${shortDate(first.day)}`));
+    const covered = weather.trip_days && weather.trip_days > weather.forecast.length
+      ? `Forecast for ${weather.forecast.length} of your ${weather.trip_days} days`
+      : "Forecast for your dates";
+    heroText.append(element("span", "weather-hero-sub", covered));
+  } else {
+    heroText.append(element("span", "weather-hero-line", `Typical high in ${firstMonth.name}`));
+    heroText.append(element("span", "weather-hero-sub", "Too far ahead to forecast — averages, not a forecast"));
+  }
+  hero.append(heroText);
+  box.append(hero);
+
   if (weather.forecast.length) {
-    const block = element("div", "weather-block");
-    block.append(element("p", "weather-kind", "Forecast"));
-    const days = element("ol", "weather-days");
+    const strip = element("ol", "weather-days");
+    strip.setAttribute("aria-label", "Forecast by day");
     weather.forecast.forEach((day) => {
-      const date = parseDay(day.day);
-      const item = element("li", "weather-day");
-      item.append(
-        element("span", "weather-date", date.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" })),
-        element("span", "weather-summary", day.summary),
-        element("span", "weather-temps", `${degrees(day.high_c)} / ${degrees(day.low_c)}`),
-        element("span", "weather-rain", day.rain_mm >= 0.5 ? `${Math.round(day.rain_mm)} mm` : "Dry"),
+      const tile = element("li", "weather-day");
+      tile.title = `${day.summary}, high ${degrees(day.high_c)}, low ${degrees(day.low_c)}, ${Math.round(day.rain_mm)} mm rain`;
+      tile.append(
+        element("span", "weather-day-name", shortDay(day.day)),
+        element("span", "weather-day-date", shortDate(day.day)),
+        weatherIcon(skyKind(day.summary), 30),
+        element("span", "weather-day-high", degrees(day.high_c)),
+        element("span", "weather-day-low", degrees(day.low_c)),
+        element("span", "weather-day-rain", day.rain_mm >= 0.5 ? `${Math.round(day.rain_mm)} mm` : "dry"),
       );
-      days.append(item);
+      strip.append(tile);
     });
-    block.append(days);
-    if (weather.trip_days && weather.trip_days > weather.forecast.length) {
-      block.append(element("p", "weather-note", `The forecast reaches ${weather.forecast.length} of your ${weather.trip_days} days.`));
-    }
-    const credit = element("p", "weather-source");
-    credit.append("Forecast from MET Norway (CC BY 4.0) · ");
-    credit.append(externalLink("See it on Yr ↗", weather.forecast_link));
-    block.append(credit);
-    box.append(block);
+    box.append(strip);
   }
 
   if (weather.averages.length) {
-    const block = element("div", "weather-block");
-    block.append(element("p", "weather-kind", weather.forecast.length ? "Then, typically" : "Typically"));
-    const months = element("ul", "weather-months");
-    weather.averages.forEach((month) => {
-      const item = element("li", "weather-month");
-      const values = [`High ${degrees(month.high_c)}`];
-      if (month.low_c !== null) values.push(`low ${degrees(month.low_c)}`);
-      const rain = rainfall(month.rain_mm);
-      if (rain) values.push(rain);
-      item.append(element("span", "weather-date", month.name), element("span", "weather-temps", values.join(" · ")));
-      months.append(item);
-    });
-    block.append(months);
+    const block = element("figure", "weather-months");
+    block.append(element("figcaption", "weather-kind", weather.forecast.length ? "Then, typically" : "Typical for your months"));
+    // One series — the average high — as thermometer bars on one fixed scale for every city, so a
+    // bar means the same warmth wherever it is shown and a month below zero is never drawn as a
+    // positive bar from zero. Rain is a second measure: it stays in words, never on a second scale.
+    const chart = element("div", "weather-bars");
     const source = weather.averages_source;
-    block.append(
-      element(
-        "p",
-        "weather-source",
-        `Averages for ${source.first_year}–${source.last_year}, not a forecast, from NOAA's record for ${stationName(source.station)} (${Math.round(source.distance_km)} km away). A forecast reaches only about nine days ahead.`,
-      ),
-    );
+    weather.averages.forEach((month) => {
+      const column = element("div", "weather-bar-col");
+      const low = month.low_c !== null ? `, low ${degrees(month.low_c)}` : "";
+      const rain = month.rain_mm !== null ? `, ${Math.round(month.rain_mm)} mm rain` : "";
+      column.title = `${month.name}: average high ${degrees(month.high_c)}${low}${rain} (${source.first_year}–${source.last_year})`;
+      column.setAttribute("role", "img");
+      column.setAttribute("aria-label", column.title);
+      const bar = element("span", "weather-bar");
+      bar.style.height = `${thermometer(month.high_c)}%`;
+      const track = element("span", "weather-bar-track");
+      track.append(element("span", "weather-bar-value", degrees(month.high_c)), bar);
+      column.append(
+        track,
+        weatherIcon(monthKind(month), 22),
+        element("span", "weather-bar-month", month.name.slice(0, 3)),
+        element("span", "weather-bar-rain", month.rain_mm !== null ? `${Math.round(month.rain_mm)} mm` : "—"),
+      );
+      chart.append(column);
+    });
+    block.append(chart);
     box.append(block);
   }
+
+  const foot = element("div", "weather-foot");
+  if (weather.forecast.length) {
+    const credit = element("span", "");
+    credit.append("Forecast: MET Norway, CC BY 4.0 · ");
+    credit.append(externalLink("Yr ↗", weather.forecast_link));
+    foot.append(credit);
+  }
+  if (weather.averages.length) {
+    const source = weather.averages_source;
+    foot.append(element(
+      "span",
+      "",
+      `Averages ${source.first_year}–${source.last_year} from NOAA's ${stationName(source.station)} station, ${Math.round(source.distance_km)} km away. A forecast reaches only about nine days ahead.`,
+    ));
+  }
+  box.append(foot);
   return box;
 }
 
@@ -998,6 +1125,15 @@ function stationName(text) {
     .replace(/\b([a-z])/g, (letter) => letter.toUpperCase());
 }
 
+// The two panels beside the plan share one row: advice, then weather. Either may be absent.
+function renderContext(advice, weather) {
+  const parts = [advice, weather].filter(Boolean);
+  if (!parts.length) return null;
+  const row = element("div", "context-row");
+  row.append(...parts);
+  return row;
+}
+
 // A plan already on screen follows the dates: the panel is fetched again, for the city chosen.
 let weatherTimer;
 
@@ -1008,7 +1144,11 @@ async function refreshWeather() {
   const fresh = renderWeather(await fetchWeather(lastRun.request.destination, city), lastRun.request.destination);
   if (old && fresh) old.replaceWith(fresh);
   else if (old) old.remove();
-  else if (fresh) (results.querySelector(".advice") || results.querySelector(".glance")).after(fresh);
+  else if (fresh) {
+    const row = results.querySelector(".context-row");
+    if (row) row.append(fresh);
+    else results.querySelector(".glance").after(renderContext(null, fresh));
+  }
 }
 
 function withId(node, id) {
@@ -1032,8 +1172,10 @@ function renderPlan(plan, advice = null, weather = null) {
     ...[
       renderTrip(),
       renderGlance(plan, Boolean(documents)),
-      renderAdvice(advice, optionLabel(destinationSelect, destinationSelect.value)),
-      renderWeather(weather, destinationSelect.value),
+      renderContext(
+        renderAdvice(advice, optionLabel(destinationSelect, destinationSelect.value)),
+        renderWeather(weather, destinationSelect.value),
+      ),
       decision,
       apply,
       documents,
