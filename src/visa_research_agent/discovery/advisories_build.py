@@ -33,25 +33,31 @@ from visa_research_agent.discovery.models import SearchResult
 from visa_research_agent.discovery.search import SearchError, SearchProvider, search_all
 from visa_research_agent.domain.models import StrictModel
 
-# Three queries a country; spaced by country as the registry build is.
+# Two queries a top-level domain; spaced by country as the registry build is.
 DEFAULT_SECONDS_BETWEEN_COUNTRIES = 1.0
 RESULTS_PER_QUERY = 10
+# Most countries have one; a few list a second (`gov` for the US). Bounds the searches a country.
+MAXIMUM_TLDS_SEARCHED = 2
 
 
 def advisory_queries(country: Country) -> list[str]:
     """Queries for where a government advises its own citizens about travelling abroad.
 
-    Several and overlapping, as `bootstrap_queries` are, so a domain that ranks for one lucky
-    phrasing needs a second before it is proposed. English only: a government publishing advice in
-    another language usually also ranks for its ministry's English name, and the reviewer reads the
-    unconfirmable list for the ones that do not.
+    **Restricted to the country's own top-level domains with `site:`.** Asked unrestricted ("Czechia
+    government travel advice"), search reads the country as the *destination* and returns the US,
+    UK, Swiss and Canadian advice about it — all correctly dropped by the own-government rule, which
+    left 118 of 198 countries with nothing on the first full run (entry 260). Two phrasings a
+    domain, overlapping as `bootstrap_queries` are. English only: the reviewer reads the URLs, and a
+    government publishing only in its own language may still need finding by hand.
     """
 
-    demonym = country.demonyms[0] if country.demonyms else country.name
     return [
-        f"{country.name} government travel advice for citizens travelling abroad",
-        f"{country.name} ministry of foreign affairs travel advisory by country",
-        f"{demonym} citizens travel warnings official",
+        query
+        for tld in country.tlds[:MAXIMUM_TLDS_SEARCHED]
+        for query in (
+            f"travel advice for citizens abroad site:{tld}",
+            f"ministry of foreign affairs travel warnings by country site:{tld}",
+        )
     ]
 
 

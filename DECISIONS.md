@@ -291,7 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
-| [260](#260-travel-advice-is-a-third-trust-tier-the-travellers-own-government-read-for-one-panel-and-never-for-the-visa-answer) | **Travel advice is a third trust tier** — the passport's government, found offline for all 198 passports and reviewed; cut from the page by selectors in its row, no model; linked where it refuses us or states no level; never visa evidence |
+| [260](#260-travel-advice-is-a-third-trust-tier-the-travellers-own-government-read-for-one-panel-and-never-for-the-visa-answer) | **Travel advice is a third trust tier** — the passport's government, found offline for all 198 passports and reviewed; **linked, never read or quoted**, each link checked offline; never visa evidence |
 | [259](#259-travel-advice-shows-only-where-the-travellers-government-publishes-it-and-weather-waits-for-a-place-within-the-country) | **Travel advice only where the traveller's government publishes it; weather waits** — six governments publish a feed, a dozen more a page; a capital's weather misleads for a large country |
 | [251](#251-the-workflow-is-a-travel-readiness-app-for-one-traveller-built-around-the-dates-they-enter) | **The workflow is a travel-readiness app for one traveller** — the owner's direction for item 80: one date range the traveller enters; the visa answer, news and weather shown, the traveller decides; friends much later. Five decisions it needs, none taken |
 | [247](#247-scale-and-speed-are-where-the-owner-wants-them-optimisation-and-expansion-wait-until-required-and-a-workflow-on-ofselfs-schemas-is-next-to-explore) | **Scale and speed are where the owner wants them** — optimisation and expansion are parked until something requires them; TODO is cut to this phase's work; growing the app into a workflow on Ofself's schemas is next to explore, with nothing designed |
@@ -307,9 +307,8 @@ s more pressing |
 **2026-10-05. The owner's decision, approved after two revisions. Answers decision 2 of entry 251
 and the three questions entry 259 left. Adds `config/advisory_publishers.yaml`
 and an advice panel; changes nothing the visa answer reads. Revised on the owner's review: the list
-covers all 198 passports, a publisher we cannot read is linked, advice is quoted in its own
-language, each government's page is read by selectors in its row with no model, a government that
-states no level is linked, and the panel appears with the plan.**
+covers all 198 passports; the panel appears with the plan; and, after the owner saw what each
+government's pages hold, **the panel links the advice and shows none of it**.**
 
 ### The tier
 
@@ -317,8 +316,7 @@ states no level is linked, and the panel appears with the plan.**
   none we can read, there is no panel (entry 259); the country of residence is never substituted.
 - **Which domains:** a new file, `config/advisory_publishers.yaml`, beside `authority_domains.yaml`
   and `supranational_authorities.yaml` and never in either. One row per publishing government: its
-  country code, its domains, where its advice is found (a feed or an index of pages), its
-  language, and **where on its pages the level and the date sit** (below). **Every domain carries independent evidence** under entry 111's first tier, as the EU's
+  country code, its domains, how to reach its page for a destination (below), and its language. **Every domain carries independent evidence** under entry 111's first tier, as the EU's
   do (entry 201): Wikidata `P856` for the foreign ministry, or a TLS certificate naming it. A
   domain enters only by a reviewed row.
 - **Officialness is still a property of the domain.** Every rule a fetched page meets still holds:
@@ -331,68 +329,55 @@ states no level is linked, and the panel appears with the plan.**
   `authority_domains.yaml`, and a person reviews each row. A government found to publish nothing
   gets a row saying so, with what was searched, so "none" is a finding and not a gap.
 
+### Links only — the owner, 2026-10-05
+
+**The panel links the government's advice and shows none of it.** It names the government, says the
+advice is written for its citizens, names the language when it is not English, and links the page
+for this destination. Nothing from the page is read, quoted, summarised or translated.
+
+**Why, from what the pages hold** (Japan and Thailand, read 2026-10-05). Reading by selectors in each
+government's row, with no model, was the plan until the owner asked to see the output first:
+- Only the **US** ("Level 1: Exercise Normal Precautions") and **Canada** ("Exercise a high degree of
+  caution (with regional advisories)") state a level as one clean line, with a date.
+- The **UK** gives codes (`avoid_all_but_essential_travel_to_parts`) and nothing for Japan, and the
+  first text on its page was a banner about the Middle East — what a "first paragraph" selector would
+  have shown a traveller going to Japan.
+- **Germany** gives yes/no flags under a generic title; the **Netherlands** a colour code inside Dutch
+  prose; **France** a colour on a map image, with only a date in the text.
+
+Most would have been links under the rule that a government stating no level is linked, and quoting
+the rest means a parser per government that fails silently when a site changes. A link cannot
+misquote anyone. Adding the level line for the US and Canada stays possible, by its own entry.
+
+**What this removes:** no request-time fetch, no model, no selectors, no cache limits and no
+language rule — the page is the government's, in the government's language. The 6-hour cache and
+the quoting rule decided earlier the same day are superseded.
+
+### The links, and how they are kept honest
+
+- **Each reviewed row records how to reach a destination's page:** an address pattern
+  (`gov.uk/foreign-travel-advice/<slug>`) with the destination's slug in that government's own
+  spelling, or a per-destination list, or — where neither exists — the government's advice index.
+- **Every link is checked offline before it ships:** fetched once under our own user agent, obeying
+  `robots.txt`, through the same domain checks after every redirect. A link that opens ships; one
+  that does not falls back to the index. A government that refuses or challenges us (Singapore,
+  Ireland, Norway, Finland, the Philippines on 2026-10-05) is still linked — the owner's call: their
+  advice is good and necessary — and the panel says we could not open it to check. Entry 27 allows
+  a blocked page to be **named, never read**, and this only names it.
+- **The check reads nothing into the panel.** It asks whether the page opens, and keeps no text.
+
 ### Confined to the panel
 
 - **Never visa evidence.** An advice page is never a `ConfiguredSource`, never enters a research
   packet, and never reaches the model call that decides the visa answer, **including the "Entry
-  requirements" sections the FCDO and the State Department publish.** Enforced in code by a separate
-  module whose types the packet builder does not accept, with a test that the plan call's input is
-  byte-identical with and without advice.
-- **Never changes the plan.** A Level 4 does not make a plan partial, refused or unverified.
-
-### What the panel shows, and how it meets entry 251
-
-**Three outcomes, by what could be read:**
-- **Read:** the level, a quote, the date and the link, as below.
-- **Linked, because no level is stated:** a government whose advice states no level or status — prose
-  only — is linked, with its name and nothing quoted (the owner, 2026-10-05). Choosing which
-  sentence of prose stands for the advice would be a judgement the app makes on the government's
-  behalf.
-- **Linked:** the publisher refused, challenged or `Disallow`ed us (Singapore, Ireland, Norway,
-  Finland, the Philippines on 2026-10-05), or reading failed. The panel names the government and
-  links its advice, saying we could not open it to check — the owner's call: their advice is still
-  good and necessary. Entry 27 already allows a blocked page to be **named, never read**; nothing
-  from it is shown or inferred. The link is the destination's page where the reviewed row records
-  its address pattern, and the government's advice index otherwise, so it is never a guessed URL
-  presented as checked.
-- **None:** the passport's government publishes no advice we found. No panel.
-
-When read, only the government's own words: **the level or status as written** ("Level 2: Exercise Increased
-Caution"), **one sentence quoted from the advice**, **the date the government says it updated it**,
-the publisher's name, "written for <nationals>", and the link.
-
-- **No model at request time — the owner, 2026-10-05.** A government's advice pages share one
-  layout, so its row records where on them each piece sits: CSS selectors for a page, field names
-  for a feed. One shared reader applies any row; adding a government is a row, not code. The text
-  shown is cut from the page, so it is the government's words by construction.
-- **Selectors are drafted offline**, during the survey, where a model may help, and a person reviews
-  them with the rest of the row.
-- **Anything that fails** (a selector matching nothing, the fetch) **shows the link alone**, so a
-  redesign produces a missing answer, never a wrong one. Unlike a failed visa adjudication, this
-  does not refuse: a link states nothing, so it cannot be wrong.
-- **No common scale.** Each government's level is shown in its own terms; none is mapped to a
-  colour or a score.
-
-### Freshness and storage
-
-- **Read live, through the retrieval cache, in parallel with the plan**, so the visa answer waits on
-  nothing new. **Shown at the same moment as the plan**, not ahead of it (the owner): advice is ready
-  in about 0.3–4.4 s measured and a fresh plan takes about 55 s, so one reveal costs nothing and
-  nothing on the page arrives one piece at a time. No offline store: the panel needs one page per request, and a store would make stored
-  text speak, against entries 78 and 83, for no gain in correctness.
-- **Limits:** cached for **6 hours**, the owner's choice (the visa pages' 24 is too long for a level
-  raised overnight); a failed refresh may serve the cached copy for at most **24 hours**, showing its
-  date; past that, the link alone.
-
-### Language — the owner's
-
-Advice in another language is read and **quoted in that language**, labelled with it ("in
-Japanese"), never dropped and never translated: a model translation would be the app's words, not
-the government's.
+  requirements" sections the FCDO and the State Department publish.** With links only, nothing of
+  the page reaches the app at request time at all.
+- **Never changes the plan**, and **shown at the same moment as the plan** (the owner): it is a
+  lookup in committed data, so it costs nothing to the plan's time.
+- **None:** where the passport's government publishes nothing we found, there is no panel.
 
 ### Still open
 
-- **Japan's per-country file** and South Korea's keyed API are not yet read.
 - **The survey** (`visa-discover advisories`) is the first build step: it proposes, a person reviews,
   and only reviewed rows reach `config/advisory_publishers.yaml`. It writes
   `var/advisories/survey.yaml`, never the config: three searches a passport country, the
@@ -403,6 +388,15 @@ the government's.
   Yemen, China, Iraq, Syria, Libya, Cambodia, Niger — at `mea.gov.in/travel-advisories`, and marks
   the rest as having none. **Not decided:** whether that mark may be shown ("India has issued no
   advisory for Japan"); it is the government's statement, but an absence.
+- **Full run, 198 passports, twice.** The first, unconfined, found a candidate of the government's
+  own for 80 and nothing for 118 — Czechia, Hungary, Thailand, Argentina among them. Search read
+  the country as the **destination**: "Czechia government travel advice" returns the US, UK, Swiss,
+  Canadian and Irish advice about Czechia, every one correctly dropped. Confined to the country's
+  own top-level domains with `site:`, the second found a candidate for **197 of 198** (Palau none),
+  and for **138** a URL that reads as advice — Thailand's `consular.mfa.go.th/.../travel-advisory`,
+  Hungary's `konzinfo.mfa.gov.hu/.../travel-tips-by-country/thailand`, Pakistan's
+  `mofa.gov.pk/travel-advisory`, Nigeria's and Kenya's. **A candidate is not a publisher:** many are
+  COVID-era or embassy pages, and only the review decides. Both runs are in `var/advisories/`.
 
 ---
 

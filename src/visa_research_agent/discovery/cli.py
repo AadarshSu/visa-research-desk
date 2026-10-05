@@ -542,8 +542,8 @@ async def run_registry(args: argparse.Namespace, stream: TextIO) -> int:
 async def run_advisories(args: argparse.Namespace, stream: TextIO) -> int:
     """Survey where each passport country's government publishes travel advice (entry 260).
 
-    Writes a survey for a person to review, never `advisory_publishers.yaml`. Costs three searches a
-    country and resumes from what the file already holds.
+    Writes a survey for a person to review, never `advisory_publishers.yaml`. Costs two searches a
+    top-level domain and resumes from what the file already holds.
     """
 
     destination = Path(args.output)
@@ -559,7 +559,7 @@ async def run_advisories(args: argparse.Namespace, stream: TextIO) -> int:
             schema_version=1, countries=[c for c in countries.countries if c.code in wanted]
         )
     remaining = sum(1 for c in countries.countries if not (existing and existing.get(c.code)))
-    print(f"{remaining} countries to survey, about {remaining * 3} searches\n", file=stream)
+    print(f"{remaining} countries to survey, about {remaining * 2} searches\n", file=stream)
 
     def report(progress: SurveyProgress) -> None:
         if progress.error is not None:

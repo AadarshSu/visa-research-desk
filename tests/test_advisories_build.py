@@ -40,7 +40,7 @@ def denylist() -> Denylist:
 
 
 class StubProvider:
-    """The same URLs for every query naming a country, and a failure for any named in `failing`."""
+    """Fixed URLs for any query containing a key like `site:uk`; fails for keys in `failing`."""
 
     def __init__(self, by_country: dict[str, list[str]], failing: set[str] | None = None) -> None:
         self.by_country = by_country
@@ -70,7 +70,7 @@ async def test_only_the_countrys_own_government_is_kept() -> None:
 
     provider = StubProvider(
         {
-            "United Kingdom": [
+            "site:uk": [
                 "https://travel.state.gov/content/travel/en/traveladvisories/united-kingdom.html",
                 "https://www.gov.uk/foreign-travel-advice",
                 "https://www.traveladvisory-agency.com/uk",
@@ -99,7 +99,7 @@ async def test_a_ministry_with_no_marker_is_reported_never_kept() -> None:
 
     provider = StubProvider(
         {
-            "Germany": [
+            "site:de": [
                 "https://www.auswaertiges-amt.de/de/ReiseUndSicherheit/reise-und-sicherheitshinweise"
             ]
         }
@@ -120,7 +120,7 @@ async def test_a_ministry_with_no_marker_is_reported_never_kept() -> None:
 
 async def test_a_failed_search_is_left_out_rather_than_written_as_publishing_nothing() -> None:
     provider = StubProvider(
-        {"Japan": ["https://www.anzen.mofa.go.jp/"], "India": []}, failing={"India"}
+        {"site:jp": ["https://www.anzen.mofa.go.jp/"], "site:in": []}, failing={"site:in"}
     )
     survey, failures = await build_advisory_survey(
         countries(country("JP", "Japan", ["jp"]), country("IN", "India", ["in"])),
@@ -135,7 +135,7 @@ async def test_a_failed_search_is_left_out_rather_than_written_as_publishing_not
 
 
 async def test_a_survey_resumes_rather_than_searching_again() -> None:
-    provider = StubProvider({"India": []})
+    provider = StubProvider({"site:in": []})
     existing = AdvisorySurvey(
         generated_at=NOW, countries=[AdvisorySurveyRow(code="JP", name="Japan")]
     )
@@ -150,17 +150,18 @@ async def test_a_survey_resumes_rather_than_searching_again() -> None:
     )
 
     assert [row.code for row in survey.countries] == ["IN", "JP"]
-    assert all("Japan" not in query for query in provider.queries)
+    assert all("site:jp" not in query for query in provider.queries)
     # Searched and nothing of its own found: a row, empty, which is a finding to check.
     assert survey.get("IN") == AdvisorySurveyRow(code="IN", name="India")
 
 
-def test_the_queries_name_the_country_and_its_citizens() -> None:
-    queries = advisory_queries(
-        Country(code="GB", alpha3="GBR", name="United Kingdom", demonyms=["British"], tlds=["uk"])
-    )
-    assert len(queries) == 3
-    assert any("British citizens" in query for query in queries)
+def test_every_query_is_confined_to_the_countrys_own_domains() -> None:
+    """Unconfined, search reads the country as the destination and returns other governments'
+    advice about it, which left 118 of 198 countries empty on the first full run."""
+
+    queries = advisory_queries(Country(code="CZ", alpha3="CZE", name="Czechia", tlds=["cz"]))
+    assert len(queries) == 2
+    assert all(query.endswith("site:cz") for query in queries)
 
 
 def test_a_survey_round_trips_through_its_file(tmp_path: Path) -> None:

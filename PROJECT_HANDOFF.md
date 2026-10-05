@@ -34,9 +34,9 @@ propose either unprompted.**
 **Next, with the owner: a travel-readiness app for one traveller, built around the dates they enter
 (TODO item 80, entry 251).** Built so far: optional dates on the form (entry 256) and the
 at-a-glance box (entry 253). **Next to explore:** a travel-advice panel below the at-a-glance box,
-from the passport's government, quoted word for word or linked where it refuses us; the source tier
-is approved (entry 260). The survey command is built and run on 15 passports; the full 198 run and
-the review into `config/advisory_publishers.yaml` are next. Weather is on the back burner
+from the passport's government, **links only** — nothing read or quoted (entry 260). The survey
+command is built and run on all 198 passports; reviewing it into `config/advisory_publishers.yaml`,
+with every link checked offline, is next. Weather is on the back burner
 (entry 259). Never an input to the visa answer.
 
 **This phase's queue** is TODO's *Now*: 80, then **63** (accurate answers, ongoing), **55** (what is

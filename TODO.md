@@ -71,11 +71,11 @@ documents (entry 253).
 **Next — explore with the owner:** a **travel-advice** panel **below the at-a-glance box**, shown
 **only** where the traveller's government publishes advice we can read (entry 259). Six publish a
 feed (US, UK, Canada, Germany, Netherlands, Japan), a dozen more only a page. Before code, the owner
-has approved the source tier (entry 260). **Built:** `visa-discover advisories`, run on 15
-passports (`var/advisories/survey.yaml`). **Next:** run it over all 198 (about 600 searches), review
-rows into `config/advisory_publishers.yaml` with each government's selectors, then the panel — cut
-from the page by the row's selectors with no model, quoted in the publisher's language, linked where
-it refuses us or states no level, shown with the plan, cached 6 hours. **Open:** whether India's
+has approved the source tier (entry 260). **Built:** `visa-discover advisories`, run on all 198
+passports (`var/advisories/survey.yaml`). **Links only** (the owner, entry 260): the panel names the
+government and links its advice for this destination; nothing is read or quoted. **Next:** review
+the full survey into `config/advisory_publishers.yaml` — each government's domains and how to reach
+its page for a destination — check every link offline, then the panel, shown with the plan. **Open:** whether India's
 "no advisory for this country" may be shown (entry 260). **Weather is on the back
 burner** until the form names a place within the country (entry 259). **News**, once integrated, is
 expected on every corridor. Later, the owner wants the length of stay in the plan itself.
