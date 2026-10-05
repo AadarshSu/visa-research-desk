@@ -73,9 +73,11 @@ documents (entry 253).
 feed (US, UK, Canada, Germany, Netherlands, Japan), a dozen more only a page. Before code, the owner
 has approved the source tier (entry 260). **Built:** `visa-discover advisories`, run on all 198
 passports (`var/advisories/survey.yaml`). **Links only** (the owner, entry 260): the panel names the
-government and links its advice for this destination; nothing is read or quoted. **Next:** review
-the full survey into `config/advisory_publishers.yaml` — each government's domains and how to reach
-its page for a destination — check every link offline, then the panel, shown with the plan. **Open:** whether India's
+government and links its advice for this destination; nothing is read or quoted. **Reviewed** (entry
+260, `var/advisories/review.tsv`): 38 governments publish per destination, 21 one page, 8 unclear,
+131 none found. **Next:** each of the 38's index read offline into a destination-to-link list,
+reviewed rows with domain evidence into `config/advisory_publishers.yaml`, every link checked, then
+the panel, shown with the plan. **Open:** whether India's
 "no advisory for this country" may be shown (entry 260). **Weather is on the back
 burner** until the form names a place within the country (entry 259). **News**, once integrated, is
 expected on every corridor. Later, the owner wants the length of stay in the plan itself.

@@ -397,6 +397,22 @@ the quoting rule decided earlier the same day are superseded.
   Hungary's `konzinfo.mfa.gov.hu/.../travel-tips-by-country/thailand`, Pakistan's
   `mofa.gov.pk/travel-advisory`, Nigeria's and Kenya's. **A candidate is not a publisher:** many are
   COVID-era or embassy pages, and only the review decides. Both runs are in `var/advisories/`.
+- **The review, 2026-10-05 — done by Claude at the owner's request, not one row at a time by a
+  person.** For each government's ministry domains, search asked for its page on Japan and on
+  Brazil, and each hit was fetched as the app fetches (own agent, `robots.txt`, block and challenge
+  rules); every country's results were then read and judged (`var/advisories/review.tsv`, with the
+  scripts beside it). **38 governments publish advice per destination** — 25 open for us, 13 refuse,
+  challenge or could not be checked (the US, Switzerland, Ireland, Austria, Hungary, Norway,
+  Mexico among them). **21 publish one advice page or list** — India's eleven, Thailand's, Qatar's.
+  **8 are unclear**: expected to publish, not found (Estonia, Turkey, Ukraine, Vietnam, Greece,
+  Lithuania, Latvia, Poland). **131 found none.** A judgement from search and fetch, not a
+  certainty: "none" means no advice section was found, and the unmarked domains among the 38
+  (`nederlandwereldwijd.nl`, `viaggiaresicuri.it`) still need reviewed rows with evidence.
+- **What a destination link needs:** a government's own spelling (`brasilien`, `japonsko`,
+  `japon`) or its own id (`safetravel.kemlu.go.id/country-info/<uuid>`) for each destination — so
+  each of the 38 needs its index read once, offline, into a destination-to-link list. Finland's
+  (`um.fi/matkustustiedote/-/c/JP`) and Italy's (`viaggiaresicuri.it/.../country/JPN`) use ISO
+  codes and need no list; the US publishes every link in its JSON.
 
 ---
 
