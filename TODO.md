@@ -44,7 +44,7 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 
 | | | |
 | --- | --- | --- |
-| **Now** | 80. A travel-readiness app for one traveller — next, an advice and weather panel | `explore`, with the owner |
+| **Now** | 80. A travel-readiness app for one traveller — next, a travel-advice panel | `explore`, with the owner |
 |  | 63. Make most corridors return accurate and useful information | `ongoing` |
 |  | 55. Take the traveller from Ofself's shared identity, through one adapter | `soon` |
 |  | 79. Score pages fetched live with the post-aware stored-text fixes | `soon` |
@@ -68,9 +68,12 @@ person and, once allowed, written to record what happened for next time.
 a "Your trip" line above the plan (entry 256); the at-a-glance box of visa, where to apply and
 documents (entry 253).
 
-**Next — explore with the owner:** a panel **below the at-a-glance box** with **travel advice** and
-**weather for the dates**. Start from the mockup and the two advice sources below; advice needs
-decision (2) first. Later, the owner wants the length of stay in the plan itself.
+**Next — explore with the owner:** a **travel-advice** panel **below the at-a-glance box**, shown
+**only** where the traveller's government publishes advice we can read (entry 259). Six publish a
+feed (US, UK, Canada, Germany, Netherlands, Japan), a dozen more only a page. Before code, the owner
+decides: feeds only or pages too, the language, and the source tier entry. **Weather is on the back
+burner** until the form names a place within the country (entry 259). **News**, once integrated, is
+expected on every corridor. Later, the owner wants the length of stay in the plan itself.
 
 **First piece — decided:** an optional date range on the form, and **three context panels beside the
 visa plan: travel advice, news and weather.** Each is labelled with its source, linked, and never an
@@ -83,6 +86,9 @@ input to the visa answer; the visa form gets no harder. Mockup with example data
   interests, must it save articles into the traveller's account, can an app trigger it, how fast it
   answers, which sources.
 - **Weather** from an open weather service; climate averages beyond about two weeks, said so.
+  **On the back burner** (entry 259): it needs a place, not a country. When it returns, the
+  averages come from past years' observations, never Open-Meteo's `climate` API, which is one
+  model's simulation of that future year.
 
 **Before building, the owner decides** (each set out in entry 251): (1) dates, fees and processing
 times as cited values; (2) the travel-advice source tier and whose advice; (3) the news plugin

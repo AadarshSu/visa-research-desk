@@ -291,12 +291,67 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [259](#259-travel-advice-shows-only-where-the-travellers-government-publishes-it-and-weather-waits-for-a-place-within-the-country) | **Travel advice only where the traveller's government publishes it; weather waits** — six governments publish a feed, a dozen more a page; a capital's weather misleads for a large country |
 | [251](#251-the-workflow-is-a-travel-readiness-app-for-one-traveller-built-around-the-dates-they-enter) | **The workflow is a travel-readiness app for one traveller** — the owner's direction for item 80: one date range the traveller enters; the visa answer, news and weather shown, the traveller decides; friends much later. Five decisions it needs, none taken |
 | [247](#247-scale-and-speed-are-where-the-owner-wants-them-optimisation-and-expansion-wait-until-required-and-a-workflow-on-ofselfs-schemas-is-next-to-explore) | **Scale and speed are where the owner wants them** — optimisation and expansion are parked until something requires them; TODO is cut to this phase's work; growing the app into a workflow on Ofself's schemas is next to explore, with nothing designed |
 | [182](#182-the-owner-names-five-goals-unordered-and-the-docs-are-brought-back-to-where-things-are) | **The owner names five goals, unordered** — model calls through Ofself Personas, ~30s with progress on screen, a URL, accurate and useful answers, 100+ countries; what each waits on, and where two of them pull against each other |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 259. Travel advice shows only where the traveller's government publishes it, and weather waits for a place within the country
+
+**2026-10-05. The owner's decisions on item 80's panels, after a survey of who publishes advice. No
+code. Decision 2 of entry 251 is narrowed, not closed: the source tier still needs its own entry.**
+
+### What the owner said
+
+- **Travel advice is conditional.** It renders only for a traveller whose government publishes
+  advice we can read; for anyone else there is no panel. No fallback was asked for.
+- **News, once integrated, is expected on every corridor**, unlike advice.
+- **Weather is on the back burner.** The form names a country, not a place in it, and a capital's
+  weather misleads for a large country; nothing in the repository holds coordinates.
+
+### Who publishes, checked live on 2026-10-05
+
+The owner's search was right that far more than four governments publish advice. What differs is
+whether it can be read **as data**, which decides whether it can be shown in the government's own
+words without a model or a scraper:
+
+- **A machine-readable feed, read:** the US (`cadataapi.state.gov/api/TravelAdvisories`, one JSON for
+  226 destinations, level 1–4 in the title, FIPS codes — Japan is `JA`; 55 not updated since before
+  2026), the UK (`gov.uk/api/content/foreign-travel-advice/<slug>`, `alert_status`, `updated_at`,
+  `change_description`; Open Government Licence), Canada
+  (`data.international.gc.ca/travel-voyage/index-updated.json`, ISO codes, `advisory-state` 0–3,
+  English and French), Germany (`auswaertiges-amt.de/opendata/travelwarning`, ISO codes, warning
+  flags, German), the Netherlands
+  (`opendata.nederlandwereldwijd.nl/v2/sources/nederlandwereldwijd/infotypes/countries/<iso3>/traveladvice`,
+  colour code in Dutch prose; v1 answers `410`), Japan (`ezairyu.mofa.go.jp/opendata/`, XML updated
+  every five minutes, free for any use, Japanese; the newest-notices feed was read, the per-country
+  file name not yet found).
+- **A page, no feed found:** France, Switzerland, Austria, Italy, Spain, Denmark, Sweden, Belgium,
+  Taiwan, China, Hong Kong, New Zealand. Showing these in the government's words needs a parser per
+  site, or only a link.
+- **Refused or unanswered from here:** Ireland and Singapore (bare `403`), France's RSS (`403`),
+  Norway, Finland and the Philippines (Cloudflare challenge), Australia and Malaysia (no answer).
+  Under entries 35 and 41 none is worked around.
+- **None found:** India. South Korea's is on `data.go.kr` behind an API key, not tried.
+
+Every one writes for its own nationals, uses its own scale (1–4, 0–3, flags, colours, a list), and
+most write in their own language. The scales are not comparable and are never mapped onto one.
+
+### Left for the owner
+
+1. **Feeds only, or pages too:** a page source shown as a link alone, or read by a per-site parser.
+2. **Language:** a German or Japanese passport holder reads their government's own language, but a
+   model translation is the app restating the government (entry 251 forbids a model summary).
+3. **The source tier entry:** these domains, confined to the advice panel, never visa evidence.
+
+### What holds
+
+Advice never reaches the model call that decides the visa answer and never changes it (entry 251).
 
 ---
 

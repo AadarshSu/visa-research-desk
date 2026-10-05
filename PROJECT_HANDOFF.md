@@ -33,9 +33,9 @@ propose either unprompted.**
 
 **Next, with the owner: a travel-readiness app for one traveller, built around the dates they enter
 (TODO item 80, entry 251).** Built so far: optional dates on the form (entry 256) and the
-at-a-glance box (entry 253). **Next to explore:** a panel below the at-a-glance box with travel
-advice and weather for the dates — never an input to the visa answer. Do not build it without the
-owner.
+at-a-glance box (entry 253). **Next to explore:** a travel-advice panel below the at-a-glance box,
+shown only where the traveller's government publishes advice we can read; weather is on the back
+burner (entry 259). Never an input to the visa answer. Do not build it without the owner.
 
 **This phase's queue** is TODO's *Now*: 80, then **63** (accurate answers, ongoing), **55** (what is
 left of the Ofself adapter), **79** (a small scoring consistency fix), **4** (the client-side
