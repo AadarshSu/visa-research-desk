@@ -317,8 +317,6 @@ numbers. Each says what is true now; how it was learned is in the DECISIONS entr
     selector pool for Australia `US/US` tourism in three runs, so the plan keeps reading the
     embassy's "a visa or travel authority" and answering null 1 time in 3. A ranking miss on a
     readable answer page; diagnose with `selection-recall` before touching ranking (entries 78–87).
-    `foreignminister.gov.au` was removed from Australia's `trusted` by hand, and a registry
-    regeneration would undo it.
 
 **Retired numbers**, kept so the numbering keeps its meaning: **44** (entry 263), **1** (entry 58), **3** (entries 34,
 38), **4** (entries 56, 57), **7** (entry 152), **18** (entry 42), **21** and **22** (entry 157),

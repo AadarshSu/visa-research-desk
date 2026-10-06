@@ -291,7 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
-| [265](#265-australiacom-is-a-reviewed-australian-domain-and-a-person-can-add-named-pages-to-a-corpus) | **australia.com reviewed for Australia; `corpus-add` stores named pages with no crawl** — foreignminister.gov.au gives way under the cap; the FAQ reached the pool and was never picked (it says it is not the visa authority); Home Affairs' ETA (601) page, added, never reached the pool — a ranking miss |
+| [265](#265-australiacom-is-a-reviewed-australian-domain-and-a-person-can-add-named-pages-to-a-corpus) | **australia.com tried as a reviewed Australian domain and withdrawn the same day; `corpus-add` stores named pages with no crawl** — foreignminister.gov.au gives way under the cap; the FAQ reached the pool and was never picked (it says it is not the visa authority); Home Affairs' ETA (601) page, added, never reached the pool — a ranking miss |
 | [264](#264-rule-8k-states-the-side-an-ordinary-trip-of-the-purpose-falls-on) | **8k states the side an ordinary trip falls on** — not the side needing a visa (part-reverses 250); United States `GB/GB` 2 of 5 "no visa" → 5 of 5, New Zealand `US/US` 9 → 10 of 10, France `US/US` study steadied; the rarer case stays as the condition |
 | [263](#263-a-permission-the-border-grants-by-itself-is-not-a-visa-new-zealands-waiver-is-no-visa-and-the-nzeta-a-travel-authorisation) | **A permission the border grants by itself is not a visa** — 8g narrowed to a visa applied or paid for on arrival; New Zealand `US/US` reads "no visa", its NZeTA shown as a travel authorisation, never as a visa; 0 of 13 runs counted the border "visa" after, against 6 of 14 before |
 | [262](#262-plans-without-sign-in-ten-free-plans-per-address-and-ofself-sign-in-offered-for-importing-details) | **Plans without sign-in** — ten free plans per address, counted under a keyed hash and spent only once a request is answerable; Ofself sign-in offered for importing details and for no limit; `REQUIRE_SIGN_IN` now defaults off (part-reverses 191) |
@@ -311,6 +311,10 @@ s more pressing |
 
 **2026-10-06. The owner** asked for Tourism Australia's visa FAQ to count for Australia: "just this
 exact link is fine".
+
+**Withdrawn the same day, by the owner:** "we don't have to use australia.com if we can use the
+homeaffairs page". Australia's domains are back to the five machine-confirmed ones,
+foreignminister.gov.au included. What follows records what was tried and measured.
 
 **Trust.** australia.com fails the automatic rule: it is not under `.au`. It is now a `reviewed`
 domain, with its tier stated as **the owner's judgement**:
