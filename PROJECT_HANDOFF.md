@@ -306,6 +306,14 @@ numbers. Each says what is true now; how it was learned is in the DECISIONS entr
     side a source states and shows the fact beside it ("Only if …"), graded `partial`; no field was
     added, and the search queries do not need one. A corridor still refuses where no page about the
     purpose was read — Japan, Vietnam, Switzerland and Thailand transit.
+44. **New Zealand on a US passport flips between "visa required" and "no visa required".** Two runs
+    of `new-zealand` US/US tourism on 2026-10-06, minutes apart, read the same page — the US is a
+    visa-waiver country, an NZeTA is needed, and a "Visa Waiver Visitor Visa" is granted at the
+    border. One applied 8g ("a visa on arrival is a visa") and said **visa required**, with the NZeTA
+    as the application route. The other said **no visa required**, with the NZeTA as the first entry
+    step. Both are defensible readings of 8g's bound; which is meant is the owner's decision
+    (entries 199, 206). Either way the page now puts the NZeTA at the top: in "Where to apply" for
+    the first, on the verdict band's "Before you go" for the second.
 
 **Retired numbers**, kept so the numbering keeps its meaning: **1** (entry 58), **3** (entries 34,
 38), **4** (entries 56, 57), **7** (entry 152), **18** (entry 42), **21** and **22** (entry 157),

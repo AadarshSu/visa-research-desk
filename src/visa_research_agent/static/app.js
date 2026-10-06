@@ -768,14 +768,16 @@ function glanceDecision(plan) {
 function glanceApply(plan) {
   const location = plan.where_to_apply;
   if (!location) {
+    // "Nowhere" is about the visa only: an ETA or arrival card may still be due, and is on the band.
     return needsNoVisa(plan)
-      ? { value: "Nowhere", note: "No visa, so no application" }
+      ? { value: "No visa application", note: plan.application_steps.length ? "What to do instead is listed above" : "" }
       : { value: "Not confirmed", note: "See what we found" };
   }
   // The authority leads because it is the shortest true thing a plan holds: the location and method
   // are the model's sentences, often a full address, and are clipped here and given in full below.
-  // Under it, the stated location, or the method where no location is stated.
-  const place = location.location || location.application_method;
+  // Under it, the method — what to do, such as requesting an NZeTA before travel — or the location
+  // where no method is stated. A location alone ("New Zealand border") hid the step that matters.
+  const place = location.application_method || location.location;
   const inPerson = location.in_person === "required" ? "In person" : "";
   return { value: location.authority, note: [inPerson, place].filter(Boolean).join(" · ") };
 }
@@ -808,6 +810,31 @@ function glanceDocuments(plan, documentsShown) {
 // holds only on a fact about the trip carries that fact beside the headline and a stamp saying so.
 const VERDICT_STAMPS = { visa: "Visa required", "no-visa": "Visa free", uncertain: "Unconfirmed" };
 
+// A traveller who needs no visa may still have to act before they fly: an ETA, ESTA or NZeTA, or an
+// arrival declaration. Those are as much a condition of entry as a visa, so they sit on the band
+// under "No visa required", in the plan's own words: its entry steps, by title. A plan that names
+// an application route and no steps (an electronic authorisation is applied for, entry 96) shows
+// the route instead. Nothing is shown where the plan states neither — no step is ever made up.
+const BEFORE_YOU_GO_SHOWN = 4;
+
+function beforeYouGo(plan) {
+  if (!needsNoVisa(plan)) return null;
+  let titles = plan.application_steps.map((step) => step.title);
+  if (!titles.length && plan.where_to_apply) {
+    titles = [plan.where_to_apply.application_method || plan.where_to_apply.authority];
+  }
+  if (!titles.length) return null;
+  const box = element("span", "verdict-before");
+  box.append(element("span", "verdict-before-label", "Before you go"));
+  const list = element("span", "verdict-before-list");
+  titles.slice(0, BEFORE_YOU_GO_SHOWN).forEach((title) => list.append(element("span", "verdict-before-step", title)));
+  if (titles.length > BEFORE_YOU_GO_SHOWN) {
+    list.append(element("span", "verdict-before-more", `+${titles.length - BEFORE_YOU_GO_SHOWN} more`));
+  }
+  box.append(list);
+  return box;
+}
+
 function renderGlance(plan, documentsShown, applyShown) {
   const box = element("section", "glance");
   box.setAttribute("aria-label", "At a glance");
@@ -822,6 +849,8 @@ function renderGlance(plan, documentsShown, applyShown) {
   ].join(" · ");
   const text = element("span", "verdict-text");
   text.append(element("span", "verdict-kicker", kicker), element("strong", "verdict-headline", decision.value));
+  const before = beforeYouGo(plan);
+  if (before) text.append(before);
   if (decision.note) text.append(element("span", conditional ? "verdict-condition" : "verdict-note", decision.note));
   text.append(element("span", "verdict-more", "Why, with sources ↓"));
   const stamp = element("span", "verdict-stamp");
@@ -836,8 +865,11 @@ function renderGlance(plan, documentsShown, applyShown) {
   const facts = element("div", "verdict-facts");
   [
     ["Where to apply", glanceApply(plan), applyShown ? "plan-apply" : null, "⌂"],
-    ["Documents", glanceDocuments(plan, documentsShown), documentsShown ? "plan-documents" : applyShown ? "plan-apply" : null, "☰"],
-  ].forEach(([label, fact, target, glyph]) => {
+    // With no visa there are no documents to gather; what to do instead is on the band above.
+    needsNoVisa(plan)
+      ? null
+      : ["Documents", glanceDocuments(plan, documentsShown), documentsShown ? "plan-documents" : applyShown ? "plan-apply" : null, "☰"],
+  ].filter(Boolean).forEach(([label, fact, target, glyph]) => {
     // With no section below to read more in, the cell is the whole answer and links nowhere.
     const cell = element(target ? "a" : "div", target ? "glance-cell" : "glance-cell glance-cell--final");
     if (target) cell.href = `#${target}`;

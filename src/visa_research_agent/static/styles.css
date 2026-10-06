@@ -1118,6 +1118,48 @@ html {
   line-height: 1.4;
 }
 
+/* What a traveller who needs no visa must still do before they fly (an ETA, an arrival card): on
+   the band, under the headline, because without it they are turned away just the same. */
+.verdict-before {
+  display: grid;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.verdict-before-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.verdict-before-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.verdict-before-step {
+  padding: 8px 14px 8px 32px;
+  border-radius: 999px;
+  color: var(--ink);
+  background: #fff8e6 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='9' fill='none' stroke='%239b5c12' stroke-width='2'/%3E%3C/svg%3E") 10px center / 14px no-repeat;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 15%);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.verdict-before-more {
+  align-self: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.verdict-facts > :only-child {
+  grid-column: 1 / -1;
+}
+
 .verdict-more {
   font-size: 14px;
   font-weight: 700;
