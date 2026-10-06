@@ -664,9 +664,6 @@ def score_body(
 
     post_aware = residence is not None
     haystack = f"{title}\n{text}".lower()
-    # Where the page says it is about this nationality, as opposed to merely mentioning it. A host
-    # names the post that published the page, never who it is for, once the post is known.
-    identity = f"{title}\n{searchable_url(_path_of(url) if post_aware else url)}".lower()
     scores: dict[str, float] = {}
     signals: dict[str, list[str]] = {}
 
@@ -709,9 +706,7 @@ def score_body(
     # harmless. Japan's ministry-wide checklist names India once, inside a table of nationality
     # exceptions; that made it read as a page written for Indians and beat the UK post's own
     # tourism checklist. Singapore's genuinely per-nationality page says so in its URL.
-    written_for_nationality = any(
-        _contains_phrase(identity, token) for token in nationality.text_tokens
-    )
+    written_for_nationality = _names_nationality(title, url, nationality, post_aware=post_aware)
     if written_for_nationality:
         shared += lexicon.nationality_weight
         shared_reasons.append(f"body-nationality:{nationality.code}+{lexicon.nationality_weight:g}")
@@ -761,6 +756,38 @@ def score_body(
     if residence is not None:
         _credit_the_post(scores, signals, url, title, lexicon, nationality, residence, other_posts)
     return RoleScores(scores=scores, signals=signals)
+
+
+def _names_nationality(title: str, url: str, nationality: Country, *, post_aware: bool) -> bool:
+    """Whether a page's title or address says it is written for this nationality, on whole words.
+
+    It used to be a substring test over the title and the flattened URL, so the United States'
+    token "us" matched "a**us**tralia", "b**us**iness" and "about-us": for an American going to
+    Australia, Peru's "Passports for Australians" and Sri Lanka's job vacancies read as written for
+    Americans and took +40 each, above Home Affairs' own ETA page (entry 266). `_contains_word`
+    exists for exactly this, and the link scorer already uses it.
+
+    A two-letter token is also an English word ("us", "in"), so it counts in a title only in
+    capitals ("Visas for US citizens", not "Contact us"), and in a path only as a whole segment
+    (`/us/`, not `/about-us/`). Longer tokens match as whole words, or as a run of a segment's
+    hyphenated words ("united-states").
+    """
+
+    short = [token for token in nationality.text_tokens if len(token) <= 2]
+    long = [token for token in nationality.text_tokens if len(token) > 2]
+    if any(_contains_word(title, token) for token in long):
+        return True
+    if any(re.search(rf"\b{re.escape(token.upper())}\b", title) for token in short):
+        return True
+    segments = [segment.split(".")[0] for segment in path_segments(url)]
+    if not post_aware:
+        segments += host_of(url).split(".")
+    for segment in segments:
+        if any(segment == token for token in short):
+            return True
+        if any(_segment_names(segment, token) for token in long):
+            return True
+    return False
 
 
 def _path_of(url: str) -> str:

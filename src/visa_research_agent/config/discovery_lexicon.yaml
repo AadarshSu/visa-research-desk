@@ -89,6 +89,12 @@ roles:
       # that scored −14, so the list never reached the selector.
       - {phrase: required to hold a visa, weight: 22}
       - {phrase: must hold a visa, weight: 22}
+      # Added 2026-10-06 (entry 266). An authority may state the answer as eligibility rather than
+      # as a requirement: Home Affairs' ETA page says "You must hold a valid passport from one of
+      # these countries… to be eligible" above its list of passports, and matched only "must hold a
+      # visa" (+22), 61st of 82 for Australia `US/US`.
+      - {phrase: eligible passport, weight: 25}
+      - {phrase: passport from one of these countries, weight: 25}
 
   document_checklist:
     terms:

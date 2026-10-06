@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [266](#266-a-two-letter-nationality-token-matches-only-a-whole-word-and-an-eligibility-list-states-the-visa-decision) | **"us" no longer matches "Australia"; eligibility phrasing is a visa-decision term** — the stored-text nationality check ran on substrings; Home Affairs' ETA page rises 65th → 55th for Australia `US/US`, still outside the pool (the breadth penalty); oracle: 15 answers up one place, none down |
 | [265](#265-australiacom-is-a-reviewed-australian-domain-and-a-person-can-add-named-pages-to-a-corpus) | **australia.com tried as a reviewed Australian domain and withdrawn the same day; `corpus-add` stores named pages with no crawl** — foreignminister.gov.au gives way under the cap; the FAQ reached the pool and was never picked (it says it is not the visa authority); Home Affairs' ETA (601) page, added, never reached the pool — a ranking miss |
 | [264](#264-rule-8k-states-the-side-an-ordinary-trip-of-the-purpose-falls-on) | **8k states the side an ordinary trip falls on** — not the side needing a visa (part-reverses 250); United States `GB/GB` 2 of 5 "no visa" → 5 of 5, New Zealand `US/US` 9 → 10 of 10, France `US/US` study steadied; the rarer case stays as the condition |
 | [263](#263-a-permission-the-border-grants-by-itself-is-not-a-visa-new-zealands-waiver-is-no-visa-and-the-nzeta-a-travel-authorisation) | **A permission the border grants by itself is not a visa** — 8g narrowed to a visa applied or paid for on arrival; New Zealand `US/US` reads "no visa", its NZeTA shown as a travel authorisation, never as a visa; 0 of 13 runs counted the border "visa" after, against 6 of 14 before |
@@ -304,6 +305,46 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 266. A two-letter nationality token matches only a whole word, and an eligibility list states the visa decision
+
+**2026-10-06. The owner, on why Home Affairs' ETA page misses Australia `US/US` (entry 265).** It sat
+65th of 83 pages by stored text for `visa_decision`, against a pool that takes about 20 per role.
+Two of the three causes found are fixed here.
+
+**1. The nationality credit ran on substrings.** `score_body` gives a page +40 where its title or
+path says it is written for the traveller's nationality, and tested that with `_contains_phrase`. So
+the United States' token "us" matched "a**us**tralia", "b**us**iness" and "about-us". Peru's
+"Passports for Australians" and Sri Lanka's job vacancies scored 65, as if written for Americans.
+`_contains_word` exists for exactly this and the link scorer already used it. Now
+(`_names_nationality`):
+- longer tokens match whole words in the title, or a run of a path segment's hyphenated words;
+- a two-letter token, which is also an English word, counts only in capitals in a title ("US",
+  never "Contact us") and only as a whole path segment (`/us/`, never `/about-us/`).
+
+**2. An eligibility list did not read as a decision.** The page states the answer as "You must hold a
+valid passport from one of these countries… to be eligible", then lists the United States. It
+matched only "must hold a visa" (+22). `eligible passport` and `passport from one of these countries`
+are now `visa_decision` terms (+25).
+
+**Measured.**
+- **Australia `US/US`:** the ETA page goes from 13.9 to 15.8 points and from 65th to 55th. The false
+  US credits are gone, but it is **still outside the pool.**
+- **The oracle (27 corridors, 437 answer pages, stored-text rank per role; old scorer and lexicon
+  against new; `var/nzeta-2026-10-06/oracle_text_rank.py`):** 15 answers moved up one place, none
+  moved down, and the top-10, top-20 and top-40 counts are unchanged. Its passports are Indian and
+  Philippine, whose tokens are all whole words, so it cannot see the US effect. It shows that the new
+  terms cost nothing elsewhere.
+- **`selection-recall` printed the same output before and after.** It replays logged rankings and
+  does not re-score, so it cannot measure a scoring change; this measurement replaces it.
+
+**Not fixed: the breadth penalty (known problem 46).** A page scoring on five roles is multiplied by
+0.63 as a hub. One visa's own page covers how to apply, fees, processing time and entry as a matter
+of course, so 25 becomes 15.8. Single-role pages that merely say "visa requirement" (Bangladesh's
+job vacancies, Greece's consular page) stay at 25 above it. Changing it re-ranks every country: the
+owner's decision, measured first.
 
 ---
 
