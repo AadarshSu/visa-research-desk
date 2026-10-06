@@ -26,6 +26,7 @@ from visa_research_agent.research.model_usage import FileModelUsageLog, ModelCal
 from visa_research_agent.research.openai_extraction import (
     OpenAIVisaPlanExtractor,
     load_extraction_prompt,
+    without_inline_source_ids,
 )
 
 
@@ -1046,3 +1047,38 @@ def test_the_extraction_prompt_separates_a_block_from_a_questionnaire() -> None:
     assert "a question is not evidence" in prompt
     # A checklist tool must never read as permission to list a checklist.
     assert "does NOT permit a checklist" in prompt
+
+
+def test_a_source_id_written_into_the_prose_is_taken_out_and_kept_as_a_citation() -> None:
+    draft = load_golden_draft()
+    cited = draft.decision_source_ids[0]
+    step = draft.application_steps[0]
+    written = draft.model_copy(
+        update={
+            "explanation": f"Apply for a Visitor visa instead. [{cited}]",
+            "unresolved_questions": [f"Confirm your stay [{cited}, {step.source_ids[0]}] length."],
+            "application_steps": [
+                step.model_copy(update={"action": f"{step.action} [{step.source_ids[0]}]"}),
+                *draft.application_steps[1:],
+            ],
+        }
+    )
+
+    shown = without_inline_source_ids(written, set())
+
+    assert shown.explanation == "Apply for a Visitor visa instead."
+    assert shown.unresolved_questions == ["Confirm your stay length."]
+    assert shown.application_steps[0].action == step.action
+    # The citation is untouched where the validators read it.
+    assert shown.decision_source_ids == draft.decision_source_ids
+    assert shown.application_steps[0].source_ids == step.source_ids
+
+
+def test_a_bracket_of_the_models_own_words_is_left_alone() -> None:
+    draft = load_golden_draft().model_copy(
+        update={"explanation": "Stay up to 30 days [extendable] and see [unknown_page]."}
+    )
+
+    shown = without_inline_source_ids(draft, set())
+
+    assert shown.explanation == "Stay up to 30 days [extendable] and see [unknown_page]."

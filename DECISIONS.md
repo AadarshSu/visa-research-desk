@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [269](#269-a-source-id-written-into-a-plans-prose-is-taken-out) | **A source id written into a plan's prose is taken out** — "[australi_immi_electronic_travel_author]" reached a traveller; only a bracket of ids the plan cites is removed, the citation stays in `source_ids` |
 | [268](#268-rule-8k-names-a-condition-only-where-it-changes-whether-a-visa-is-needed) | **8k names a condition only where it changes whether a visa is needed** — where every side needs a visa it decides which visa, not whether; a disqualification (a conviction, a refusal) is never the condition; Australia `GB/GB` 2 of 9 pointless conditions → 0 of 9; two wordings rejected for costing Japan study and New Zealand transit |
 | [267](#267-a-country-may-name-pages-its-corridors-read-on-every-run) | **A country may name pages its corridors read on every run** — `config/always_read.yaml`, the EU's `always_read` path opened to one country's own pages, trust-checked at load, read never believed; Australia `US/US` 2 of 3 → 3 of 3 "visa required, ETA (601)" decided from Home Affairs; `IN/IN` unchanged |
 | [266](#266-a-two-letter-nationality-token-matches-only-a-whole-word-and-an-eligibility-list-states-the-visa-decision) | **"us" no longer matches "Australia"; eligibility phrasing is a visa-decision term** — the stored-text nationality check ran on substrings; Home Affairs' ETA page rises 65th → 55th for Australia `US/US`, still outside the pool (the breadth penalty); oracle: 15 answers up one place, none down |
@@ -307,6 +308,24 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 269. A source id written into a plan's prose is taken out
+
+**2026-10-06. The owner** saw "…you should apply for a Visitor visa (subclass 600) instead.
+[australi_immi_electronic_travel_author]" in an Australia plan. The model had cited by writing a
+source id into its sentence. Nothing forbade it and nothing removed it.
+
+**`without_inline_source_ids`** runs where the draft becomes a plan (`openai_extraction.py`). It
+removes a bracket from every prose field — explanation, condition, visa type, steps, where to apply,
+unresolved questions — only where every token in it is a source id the plan cites. A bracket of the
+model's own words, or one naming an unknown id, is left as written. Id and address fields are not
+touched. No claim changes: the same source is already in that field's `source_ids`, which the
+validators read. The stored draft is kept as the model wrote it.
+
+Tested: ids in the explanation, a step and an unresolved question are removed while their
+`source_ids` stay; "[extendable]" and an unknown id are left alone.
 
 ---
 

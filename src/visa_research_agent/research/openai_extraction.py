@@ -1,6 +1,7 @@
 """One-call LangChain extraction over bounded, locally loaded source evidence."""
 
 import json
+import re
 import time
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager, suppress
@@ -376,6 +377,11 @@ class OpenAIVisaPlanExtractor:
             raise LLMExtractionError("Model output does not match the configured destination")
 
         references = plan_references(destination, fetched_sources)
+        # What the traveller reads: the draft with any source id the model wrote into its prose
+        # taken out. The citation itself is kept where it belongs, in the `source_ids` fields.
+        written = without_inline_source_ids(
+            draft, {reference.source_id for reference in references}
+        )
         # Named in the plan so the traveller gets the URL and can open it themselves. Synthetic
         # because there is no retrieval to report: the block was observed while the corridor was
         # being resolved, and `unavailable_sources` is where a plan already says what it could not
@@ -401,7 +407,7 @@ class OpenAIVisaPlanExtractor:
         visa_required = None if destination.decision_is_unverified else draft.visa_required
         # A condition qualifies a stated decision only (entry 250): where the decision was
         # overridden to open, or the model left it open, there is nothing for it to qualify.
-        condition = (draft.decision_condition or "").strip()
+        condition = (written.decision_condition or "").strip()
         decision_condition = condition if visa_required is not None and condition else None
         entry_only = visa_required is False
 
@@ -459,16 +465,16 @@ class OpenAIVisaPlanExtractor:
         requirements: list[VisaRequirement] = []
         try:
             where_to_apply = (
-                ApplicationLocation.model_validate(draft.where_to_apply.model_dump())
-                if draft.where_to_apply is not None
+                ApplicationLocation.model_validate(written.where_to_apply.model_dump())
+                if written.where_to_apply is not None
                 else None
             )
             plan = VisaPlan(
                 destination=draft.destination,
                 visa_required=visa_required,
                 decision_condition=decision_condition,
-                visa_type=draft.visa_type,
-                explanation=draft.explanation,
+                visa_type=written.visa_type,
+                explanation=written.explanation,
                 decision_source_ids=draft.decision_source_ids,
                 where_to_apply=where_to_apply,
                 requirements=requirements,
@@ -478,9 +484,9 @@ class OpenAIVisaPlanExtractor:
                 application_document_source_ids=(
                     [] if entry_only else destination.application_document_source_ids
                 ),
-                application_steps=draft.application_steps,
+                application_steps=written.application_steps,
                 sources=references,
-                unresolved_questions=draft.unresolved_questions,
+                unresolved_questions=written.unresolved_questions,
                 last_checked=max(reference.retrieved_at for reference in references),
                 status=resolve_plan_status(
                     report,
@@ -511,3 +517,51 @@ class OpenAIVisaPlanExtractor:
         if key is not None and reused is None:
             self._keep_draft(key, draft)
         return plan
+
+
+# A bracket holding only source ids, as a model writes an inline citation: "[gov_page]" or
+# "[gov_page, other_page]". Anything else in brackets is the model's prose and is left alone.
+_INLINE_IDS = re.compile(r"\s*\[\s*([a-z0-9][a-z0-9_-]*(?:\s*[,;]\s*[a-z0-9][a-z0-9_-]*)*)\s*\]")
+# Fields that hold ids or addresses, never prose a traveller reads.
+_NOT_PROSE = {
+    "source_ids",
+    "decision_source_ids",
+    "link_source_id",
+    "link_target",
+    "application_url",
+}
+
+
+def without_inline_source_ids(draft: VisaPlanDraft, known: set[str]) -> VisaPlanDraft:
+    """The draft with every inline citation of a known source id removed from its prose.
+
+    The model sometimes cites by writing an id into a sentence — "…apply for a Visitor visa
+    (subclass 600) instead. [australi_immi_electronic_travel_author]" — and the traveller saw the
+    id. Removing it changes no claim: the same source is already in that field's `source_ids`, which
+    is what the plan's validators read. Only a bracket whose every token is an id this plan cites is
+    removed, so a bracket of the model's own words survives.
+    """
+
+    known = known | set(draft.decision_source_ids)
+    for step in draft.application_steps:
+        known |= set(step.source_ids)
+
+    def clean(text: str) -> str:
+        def drop(match: re.Match[str]) -> str:
+            tokens = re.split(r"\s*[,;]\s*", match.group(1))
+            return "" if all(token in known for token in tokens) else match.group(0)
+
+        return _INLINE_IDS.sub(drop, text).strip()
+
+    def walk(value: Any, key: str = "") -> Any:
+        if key in _NOT_PROSE:
+            return value
+        if isinstance(value, str):
+            return clean(value)
+        if isinstance(value, list):
+            return [walk(item, key) for item in value]
+        if isinstance(value, dict):
+            return {name: walk(item, name) for name, item in value.items()}
+        return value
+
+    return VisaPlanDraft.model_validate(walk(draft.model_dump()))
