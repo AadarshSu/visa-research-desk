@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [268](#268-rule-8k-names-a-condition-only-where-it-changes-whether-a-visa-is-needed) | **8k names a condition only where it changes whether a visa is needed** — where every side needs a visa it decides which visa, not whether; a disqualification (a conviction, a refusal) is never the condition; Australia `GB/GB` 2 of 9 pointless conditions → 0 of 9; two wordings rejected for costing Japan study and New Zealand transit |
 | [267](#267-a-country-may-name-pages-its-corridors-read-on-every-run) | **A country may name pages its corridors read on every run** — `config/always_read.yaml`, the EU's `always_read` path opened to one country's own pages, trust-checked at load, read never believed; Australia `US/US` 2 of 3 → 3 of 3 "visa required, ETA (601)" decided from Home Affairs; `IN/IN` unchanged |
 | [266](#266-a-two-letter-nationality-token-matches-only-a-whole-word-and-an-eligibility-list-states-the-visa-decision) | **"us" no longer matches "Australia"; eligibility phrasing is a visa-decision term** — the stored-text nationality check ran on substrings; Home Affairs' ETA page rises 65th → 55th for Australia `US/US`, still outside the pool (the breadth penalty); oracle: 15 answers up one place, none down |
 | [265](#265-australiacom-is-a-reviewed-australian-domain-and-a-person-can-add-named-pages-to-a-corpus) | **australia.com tried as a reviewed Australian domain and withdrawn the same day; `corpus-add` stores named pages with no crawl** — foreignminister.gov.au gives way under the cap; the FAQ reached the pool and was never picked (it says it is not the visa authority); Home Affairs' ETA (601) page, added, never reached the pool — a ranking miss |
@@ -306,6 +307,53 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 268. Rule 8k names a condition only where it changes whether a visa is needed
+
+**2026-10-06. The owner, on an Australia `GB/GB` plan:** "visa required — Only if you hold a United
+Kingdom – British Citizen passport and do not need the Visitor (subclass 600) route because of a
+criminal conviction". It reads as "a visa is required only if you hold the passport you said you
+hold, and don't need a visa". The owner: criminal exceptions belong elsewhere, not beside the
+decision.
+
+**Why it happened.** The model's own explanation said "both described routes are visas": the eVisitor
+(651) for British citizens, the Visitor (600) for those a conviction excludes. The fact decided which
+visa, not whether one was needed, and 8k had nothing to say about that. Beside the decision a
+condition reads as the answer's hinge, so a rare disqualification became the headline.
+
+**Two bullets added to 8k.**
+- **Where the sources show every side of a fact needs a visa** — one visa for most travellers,
+  another for those it excludes — the fact decides which visa, not whether. `visa_required` is
+  true, `decision_condition` is null, and the explanation and steps say which visa applies to whom.
+- **A disqualification an ordinary traveller does not have** — a criminal conviction, an earlier
+  refusal or overstay, a health condition — is never `decision_condition`. The explanation or a
+  step says what such a traveller must do instead.
+
+**Measured** on the plan call alone, on captured packets (`var/nzeta-2026-10-06/f.jsonl` to
+`i.jsonl`):
+
+| Corridor | Before | After |
+| --- | --- | --- |
+| Australia `GB/GB`, three packets | visa required 9 of 9, the pointless condition in 2 | visa required 9 of 9, **no condition** |
+| New Zealand `IN/IN` transit | visa required 7 of 8 | 9 of 10 |
+| Japan `IN/GB` study | visa required 6 of 8, 2 null | 5 of 6, 1 null |
+| Spain `US/US` study, Germany `IN/GB` transit, United States `GB/GB`, New Zealand `US/US` | steady | unchanged |
+
+Then live, Australia `GB/GB` ×2: both "visa required" with no condition. One names the eVisitor
+(651) and, in its explanation, the Visitor (600) for anyone with a criminal conviction. The other
+names no visa type: it notes that a GB passport is not necessarily the "British Citizen" kind the
+eVisitor needs.
+
+**Two wordings were rejected on the way.**
+- **"Name a fact only where its two sides give different answers"** made Japan study null in 6 of 8.
+  Its page states only one side (Certificate of Eligibility holders need a visa), so the model could
+  not show the sides differed and gave up. The kept wording applies only where the sources *show*
+  every side needs a visa.
+- **"Never name a fact the profile records, such as which passport"** took New Zealand transit to 5
+  of 10. The model began doubting whether an Indian passport was on a list the packet did not hold.
+  The two kept bullets already rule out the Australia condition, so it was dropped.
 
 ---
 

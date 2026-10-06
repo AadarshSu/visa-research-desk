@@ -183,7 +183,8 @@ defect.
     length of stay, leaving the transit area, onward country. One stated, uncontradicted side goes in
     `visa_required`, the fact in `decision_condition`, shown beside the decision; such a plan is
     never `verified`. Where sources state both sides, the side an **ordinary trip of the purpose**
-    falls on is stated, not the side needing a visa (entry 264). **8l:** an exemption for another purpose says nothing about this trip, either
+    falls on is stated, not the side needing a visa (entry 264). A fact that decides only *which*
+    visa, or a disqualification such as a conviction, is never the condition (entry 268). **8l:** an exemption for another purpose says nothing about this trip, either
     way. **A list of who may enter or stay never decides transit** (8f, roles 7b).
   - **Do not widen any of them to another kind of silence without a decision entry.**
 - **A checklist is linked, never copied (entry 211).** A plan lists no documents; it links the

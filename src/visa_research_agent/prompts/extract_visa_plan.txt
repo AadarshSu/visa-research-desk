@@ -212,6 +212,13 @@ Follow these rules:
      hours", "your course lasts more than 90 days", "you do not hold a valid visa for the United
      States, Canada or the United Kingdom". Conditions every traveller meets — a valid passport, an
      onward ticket — are steps, not part of it.
+   - Where the sources show that every side of a fact needs a visa — one visa for most travellers
+     and another for those it excludes — the fact decides which visa, not whether: set
+     visa_required to true, leave decision_condition null, and say in the explanation and steps
+     which visa applies to whom.
+   - A disqualification an ordinary traveller does not have — a criminal conviction, an earlier
+     refusal or overstay, a health condition — is never decision_condition. Say in the explanation
+     or a step what such a traveller must do instead.
    - The side stated must be stated by a source, and no source may contradict it. Where sources
      disagree about one side only, the other side may still be stated, and the disagreement is an
      unresolved question under rule 5.
