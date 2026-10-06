@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [263](#263-a-permission-the-border-grants-by-itself-is-not-a-visa-new-zealands-waiver-is-no-visa-and-the-nzeta-a-travel-authorisation) | **A permission the border grants by itself is not a visa** — 8g narrowed to a visa applied or paid for on arrival; New Zealand `US/US` reads "no visa", its NZeTA shown as a travel authorisation, never as a visa; 0 of 13 runs counted the border "visa" after, against 6 of 14 before |
 | [262](#262-plans-without-sign-in-ten-free-plans-per-address-and-ofself-sign-in-offered-for-importing-details) | **Plans without sign-in** — ten free plans per address, counted under a keyed hash and spent only once a request is answerable; Ofself sign-in offered for importing details and for no limit; `REQUIRE_SIGN_IN` now defaults off (part-reverses 191) |
 | [261](#261-weather-for-the-trips-dates-met-norways-forecast-noaas-averages-and-a-city-picker-in-the-panel) | **Weather for the trip's dates** — MET Norway's forecast about nine days out, NOAA station averages beyond; a city picker in the panel, the capital first; Open-Meteo and NASA POWER refused by their own robots.txt |
 | [260](#260-travel-advice-is-a-third-trust-tier-the-travellers-own-government-read-for-one-panel-and-never-for-the-visa-answer) | **Travel advice is a third trust tier** — the passport's government, found offline for all 198 passports and reviewed; **linked, never read or quoted**, each link checked offline; never visa evidence |
@@ -301,6 +302,75 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 263. A permission the border grants by itself is not a visa: New Zealand's waiver is "no visa", and the NZeTA a travel authorisation
+
+**2026-10-06. The owner, on known problem 44:** the plan must not call a travel permit a visa when it
+is not one. A traveller who checks will read "no visa required" elsewhere, and ours must not say
+otherwise.
+
+**The defect.** New Zealand on a US passport, for tourism, flipped between "visa required" and "no
+visa required". Two live runs read the same three pages and gave opposite answers, so the cause was
+the model, not retrieval. New Zealand's page says three things:
+- the US is a visa-waiver country;
+- the traveller must obtain an NZeTA before travel;
+- a "Visa Waiver Visitor Visa" is granted at the border.
+
+Rule 8e sent it one way and 8g ("a visa issued on arrival is still a visa") the other.
+
+**The owner's line, asked as two questions.**
+- **New Zealand-style waivers:** a permission the border grants by itself, with nothing to apply or
+  pay for there, is **not a visa**, even where a page calls it one. With only a pre-travel
+  authorisation to obtain, rule 8e governs: "no visa", and the authorisation's page is where to
+  apply.
+- **Real visas stay visas:** a document the authority itself calls a visa stays one, whether applied
+  for in advance or at the border. That covers Australia's ETA, legally a visa, and a paid visa on
+  arrival (the UAE's, entry 199).
+
+**What changed.**
+- **8g now opens** "A visa the traveller applies or pays for on arrival is still a visa", followed by
+  the carve-out above, named against the words that misled it ("granted" or "issued" at the border).
+- **8e has the matching line.**
+- **On the page**, a no-visa plan with somewhere to apply shows **"Travel authorisation required — not
+  a visa"** under "No visa required", in the plan's own words ("Request an NZeTA before travel").
+  The entry steps follow below it.
+
+**Measured** by replaying the plan call alone on packets captured from live runs
+(`var/nzeta-2026-10-06/`, `var/purposes-2026-10-03/nzeta-2026-10-06*/`):
+
+| Corridor | Before | After |
+| --- | --- | --- |
+| New Zealand `US/US`, two packets, 5 calls each | 5 no visa, 5 visa required | **9 no visa**, 1 visa required (on 8k's stay condition, not the waiver) |
+| UAE `IN/GB` (paid visa on arrival), two packets | visa required 6 of 6 | visa required 6 of 6 |
+| Canada `GB/GB` (eTA) | no visa 3 of 3 | no visa 3 of 3 |
+| Japan `IN/GB`, Singapore `PH/PH` (entry 174) | 3 of 3 each | unchanged |
+| Australia `US/US` | visa required 5 of 8, null 3 | visa required 3 of 5, null 2 |
+| United States `GB/GB` | visa required 3 of 3 (8k) | unchanged |
+
+**Then live, end to end:** three New Zealand `US/US` runs.
+- **Two said "no visa"**, `verified`. One had the NZeTA under where to apply; the other had it as the
+  first entry step.
+- **One said "visa required", `partial`**, holding on "you have already spent 6 months in New
+  Zealand in a 12-month period". That is the rarer side of 8k's stay condition, stated with the
+  waiver as the way in otherwise.
+
+The border "visa" was counted as a visa in none of the 13 runs after the change, against 6 of 14
+before.
+
+**Two wordings were rejected on the way.**
+- **"Visa required" (an earlier commit the same day, never pushed)** held New Zealand at 10 of 10
+  "visa required". The owner then chose the other reading.
+- **The carve-out as a bullet under 8g** left 8g's opening sentence contradicting it, and New Zealand
+  still flipped 7 to 3.
+
+An earlier draft also named "an ETA" as a non-visa. It moved Australia toward null, because
+Australia's ETA is a visa.
+
+**Not fixed here (known problem 45).** 8k may state either side of a stay condition. New Zealand
+`US/US` stated the rarer side in 1 of 10 replays and 1 of 3 live runs, and United States `GB/GB` does
+the same with right of abode. Australia `US/US` answers null where its packet names no ETA.
 
 ---
 

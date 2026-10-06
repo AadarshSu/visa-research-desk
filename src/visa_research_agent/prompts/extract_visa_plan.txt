@@ -89,6 +89,8 @@ Follow these rules:
      is what the pages say, and rule 10's two-step minimum does not apply to this shape. Never add
      a step to reach a count. An entry duty you invented is the most damaging thing here, because a
      traveller told they need no visa has nothing left to check it against.
+   - A permission the border grants by itself, with no application or fee there, does not stop
+     this rule even where a page calls it a visa (rule 8g).
    - Set where_to_apply to null when there is nothing to apply for. If the sources say a visa-free
      traveller must still hold a pre-travel authorisation that is not a visa, and give the official
      page for it, that page is where_to_apply and the step opening it may use link_target
@@ -145,7 +147,14 @@ Follow these rules:
      traveller's country is not on the authority's exemption list for their passport, so they can
      check that list themselves.
 
-8g. A visa issued on arrival is still a visa. Where the sources describe, for this traveller's
+8g. A visa the traveller applies or pays for on arrival is still a visa. A permission the border
+   grants by itself to a traveller who meets the conditions, with no application or fee there, is
+   not — even where a page calls it a visa, or says a visa is "granted" or "issued" at the border
+   (a "visa waiver visitor visa", say). A scheme like that is a way in without a visa: if the only
+   thing this traveller must obtain beforehand is a pre-travel authorisation the sources do not
+   call a visa, rule 8e governs, visa_required is false, and that authorisation's page is
+   where_to_apply. A document the authority itself calls a visa stays a visa, whether applied for
+   in advance or at the border. Where the sources describe, for this traveller's
    passport, only ways in that each end in the traveller holding a visa — one applied for in
    advance, one issued on arrival, or one whose eligibility turns on a residence permit or another
    country's visa that the profile does not establish — set visa_required to true, even though

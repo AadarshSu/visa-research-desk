@@ -172,8 +172,10 @@ defect.
     required — the whole list read, not a list of examples; an entry for a passport type the traveller
     does not hold does not count; it must be this trip's list; any exemption the traveller might meet
     keeps it null. **An exemption list never decides "no visa".**
-  - **8g (entry 199):** a visa on arrival is a visa, where every route the sources describe issues one;
-    any visa-free way in keeps it null.
+  - **8g (entries 199, 263):** a visa applied or paid for on arrival is a visa, where every route the
+    sources describe issues one; any visa-free way in keeps it null. A permission the border grants
+    by itself is **not** a visa even where a page calls it one: New Zealand's waiver is "no visa",
+    and the NZeTA is a travel authorisation, never shown as a visa.
   - **8h, 8i (entries 208, 209):** a "no visa" stated before and after an announced change is not held
     back by its start date; an announcement naming the country may be read with a later notice from
     the same government that it took effect. Both cite every page they rest on.

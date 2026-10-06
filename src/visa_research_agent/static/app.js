@@ -812,17 +812,25 @@ const VERDICT_STAMPS = { visa: "Visa required", "no-visa": "Visa free", uncertai
 
 // A traveller who needs no visa may still have to act before they fly: an ETA, ESTA or NZeTA, or an
 // arrival declaration. Those are as much a condition of entry as a visa, so they sit on the band
-// under "No visa required", in the plan's own words: its entry steps, by title. A plan that names
-// an application route and no steps (an electronic authorisation is applied for, entry 96) shows
-// the route instead. Nothing is shown where the plan states neither — no step is ever made up.
+// under "No visa required", in the plan's own words, and never called a visa (entry 264).
+// - A no-visa plan with somewhere to apply holds a pre-travel authorisation that is not a visa
+//   (rule 8e): it is named as one, beside the decision.
+// - The plan's entry steps follow, by title. Nothing is shown where the plan states neither.
 const BEFORE_YOU_GO_SHOWN = 4;
+
+function travelAuthorisation(plan) {
+  if (!needsNoVisa(plan) || !plan.where_to_apply) return null;
+  const box = element("span", "verdict-authorisation");
+  box.append(
+    element("span", "verdict-authorisation-label", "Travel authorisation required — not a visa"),
+    element("strong", "", plan.where_to_apply.application_method || plan.where_to_apply.authority),
+  );
+  return box;
+}
 
 function beforeYouGo(plan) {
   if (!needsNoVisa(plan)) return null;
-  let titles = plan.application_steps.map((step) => step.title);
-  if (!titles.length && plan.where_to_apply) {
-    titles = [plan.where_to_apply.application_method || plan.where_to_apply.authority];
-  }
+  const titles = plan.application_steps.map((step) => step.title);
   if (!titles.length) return null;
   const box = element("span", "verdict-before");
   box.append(element("span", "verdict-before-label", "Before you go"));
@@ -849,6 +857,8 @@ function renderGlance(plan, documentsShown, applyShown) {
   ].join(" · ");
   const text = element("span", "verdict-text");
   text.append(element("span", "verdict-kicker", kicker), element("strong", "verdict-headline", decision.value));
+  const authorisation = travelAuthorisation(plan);
+  if (authorisation) text.append(authorisation);
   const before = beforeYouGo(plan);
   if (before) text.append(before);
   if (decision.note) text.append(element("span", conditional ? "verdict-condition" : "verdict-note", decision.note));
