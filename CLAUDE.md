@@ -209,6 +209,9 @@ defect.
   argue for itself. A page it ranks is fetched live before a word reaches a plan.
 - **A corpus miss must never be answered by quietly falling back.** The candidate set is `corpus ∪
   live search`, with search on every corridor, so nothing is conditional (entries 47, 173).
+- **A page a country names in `config/always_read.yaml` is read on every corridor of its purposes,
+  never believed (entry 267).** It must be https on the country's trusted domains, which loading
+  checks. Each entry names the ranking miss it covers and comes out once the ranking is fixed.
 - **A corpus may order work on what it lacks, never on a traveller (entries 44, 139).** Do not add
   `{residence}` to `corpus_queries` — a traveller dimension enters the offline job only where it can be
   covered exhaustively.
@@ -251,6 +254,7 @@ after a push costs a second commit for one concern; before it, the change folds 
 .venv/bin/uvicorn visa_research_agent.api.app:create_app --factory   # the app
 .venv/bin/visa-discover corridor --destination japan --nationality IN --from GB
 .venv/bin/visa-discover corpus --country CA     # build a country's offline page corpus
+.venv/bin/visa-discover corpus-add --country AU <url>  # store named pages, no crawl (entry 265)
 .venv/bin/visa-discover eu-store               # before a rebuild, and after the EU regulation changes
 .venv/bin/visa-discover pagetext --backfill    # index the text the retrieval cache already holds
 .venv/bin/visa-discover pagetext --purge-interstitials  # drop stored bodies that are a bot-check page

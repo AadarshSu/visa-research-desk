@@ -1,0 +1,21 @@
+# Pages a country's corridors read on every run, whatever the ranking does (DECISIONS entry 267).
+#
+# Read, never believed: each page is fetched live after selection and the role adjudicator decides
+# what it answers. An exceptions list for a ranking miss, not a way of working — every entry says
+# which miss it covers, and comes out once the ranking finds the page by itself.
+#
+# Every URL must be https on the country's trusted domains in authority_domains.yaml; loading
+# refuses anything else.
+schema_version: 1
+countries:
+- code: AU
+  pages:
+  - url: https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/electronic-travel-authority-601
+    title: Electronic Travel Authority (subclass 601)
+    purposes: [tourism, business]
+    why: >-
+      Home Affairs' list of the passports eligible for the ETA, a visa (subclass 601) applied for
+      before travel. It states the visa decision for every traveller it lists. Stored with
+      corpus-add on 2026-10-06, it ranks 55th by stored text for visa_decision on australia/US/US
+      against about twenty places a role, held down by the breadth penalty (entries 265, 266;
+      known problem 46).

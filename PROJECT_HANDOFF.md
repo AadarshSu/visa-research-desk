@@ -312,11 +312,11 @@ numbers. Each says what is true now; how it was learned is in the DECISIONS entr
     `GB/GB` now answers "no visa" every time, but holds on "you hold a qualifying e-passport", which
     is arguably an entry step.
 
-46. **Australia's ETA page is in the store and ranked out of the pool** (entries 265, 266). Added
-    with `corpus-add`, Home Affairs' `electronic-travel-authority-601` page ranks 55th by stored text
-    for `visa_decision` on Australia `US/US`, against about 20 places per role. Entry 266 fixed two
-    causes. The third is the breadth penalty: ×0.63 for scoring on five roles, which one visa's own
-    page always does. Changing it re-ranks every country, so measure first.
+46. **Home Affairs' ETA page is held out of the pool by the breadth penalty** (entries 265–267).
+    It ranks 55th by stored text for `visa_decision` on Australia `US/US`, against about 20 places
+    a role, because scoring on five roles multiplies it by 0.63. Australia's corridors now read it
+    on every run through `config/always_read.yaml`, which settled `US/US` at 3 of 3. That entry
+    covers this miss, and should come out once the ranking finds the page unaided.
 
 **Retired numbers**, kept so the numbering keeps its meaning: **44** (entry 263), **1** (entry 58), **3** (entries 34,
 38), **4** (entries 56, 57), **7** (entry 152), **18** (entry 42), **21** and **22** (entry 157),

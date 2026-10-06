@@ -36,6 +36,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Literal
 
+from visa_research_agent.discovery.always_read import AlwaysReadRegistry, get_always_read
 from visa_research_agent.discovery.bootstrap import BootstrapReport, DomainProposal
 from visa_research_agent.discovery.corpus import (
     CorpusEntry,
@@ -425,6 +426,7 @@ class AutomaticDestinationService:
         countries: CountryRegistry | None = None,
         denylist: Denylist | None = None,
         authorities: AuthorityRegistry | None = None,
+        always_read: AlwaysReadRegistry | None = None,
         maximum_age_hours: float = 24.0 * 7,
         now: Callable[[], datetime] = _utc_now,
     ) -> None:
@@ -440,6 +442,9 @@ class AutomaticDestinationService:
         # Read once at construction. Which domains belong to a government is not a per-request
         # question, and making it one is exactly what entry 34 moved out of this path.
         self.authorities = authorities or get_authority_registry()
+        # Pages a country's corridors read on every run, checked against the domains above when
+        # the file loaded (entry 267).
+        self.always_read = always_read or get_always_read()
         self.maximum_age_hours = maximum_age_hours
         self.now = now
 
@@ -489,11 +494,12 @@ class AutomaticDestinationService:
         # longer has to rediscover, and the pins are what the ranking no longer has to re-win.
         corpus = self.corpus.load(country.code) if self.corpus else None
         # A Schengen member also reads the EU's regulation and ETIAS page on every run, from the
-        # shared EU store (entry 201).
+        # shared EU store (entry 201), and a country may name pages of its own (entry 267).
         resolver = self.build_resolver(
             corpus=corpus,
             pinned=self._pinned(corridor),
-            always_read=union_pages(union_of(base), self.corpus),
+            always_read=union_pages(union_of(base), self.corpus)
+            + self.always_read.pages_for(country.code, corridor.purpose),
         )
         resolved = await resolver.resolve(base, corridor, on_phase=on_phase)
         if not resolved.is_usable:

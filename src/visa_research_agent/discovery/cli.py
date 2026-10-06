@@ -59,6 +59,7 @@ from visa_research_agent.discovery.advisory_links import (
     write_links,
     write_names,
 )
+from visa_research_agent.discovery.always_read import get_always_read
 from visa_research_agent.discovery.audit import (
     CAUSE_LABELS,
     CAUSE_ORDER,
@@ -1269,6 +1270,17 @@ def corpus_for(destination: DestinationConfig) -> CountryCorpus | None:
     return FileCorpusStore(settings.corpus_directory).load(country.code)
 
 
+def always_read_for(
+    destination: DestinationConfig, corridor: Corridor
+) -> list[tuple[PageLink, str]]:
+    """The pages a country names for every corridor of this purpose (entry 267)."""
+
+    country = next(
+        (c for c in get_country_registry().countries if c.slug == destination.slug), None
+    )
+    return get_always_read().pages_for(country.code, corridor.purpose) if country else []
+
+
 async def resolve_once(
     destination: DestinationConfig, corridor: Corridor, policy: RuntimePolicy
 ) -> ResolvedCorridor:
@@ -1289,7 +1301,8 @@ async def resolve_once(
             corpus=corpus_for(destination),
             always_read=union_pages(
                 union_of(destination), FileCorpusStore(settings.corpus_directory)
-            ),
+            )
+            + always_read_for(destination, corridor),
         )
         return await resolver.resolve(destination, corridor)
     finally:

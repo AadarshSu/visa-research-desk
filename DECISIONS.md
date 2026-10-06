@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [267](#267-a-country-may-name-pages-its-corridors-read-on-every-run) | **A country may name pages its corridors read on every run** — `config/always_read.yaml`, the EU's `always_read` path opened to one country's own pages, trust-checked at load, read never believed; Australia `US/US` 2 of 3 → 3 of 3 "visa required, ETA (601)" decided from Home Affairs; `IN/IN` unchanged |
 | [266](#266-a-two-letter-nationality-token-matches-only-a-whole-word-and-an-eligibility-list-states-the-visa-decision) | **"us" no longer matches "Australia"; eligibility phrasing is a visa-decision term** — the stored-text nationality check ran on substrings; Home Affairs' ETA page rises 65th → 55th for Australia `US/US`, still outside the pool (the breadth penalty); oracle: 15 answers up one place, none down |
 | [265](#265-australiacom-is-a-reviewed-australian-domain-and-a-person-can-add-named-pages-to-a-corpus) | **australia.com tried as a reviewed Australian domain and withdrawn the same day; `corpus-add` stores named pages with no crawl** — foreignminister.gov.au gives way under the cap; the FAQ reached the pool and was never picked (it says it is not the visa authority); Home Affairs' ETA (601) page, added, never reached the pool — a ranking miss |
 | [264](#264-rule-8k-states-the-side-an-ordinary-trip-of-the-purpose-falls-on) | **8k states the side an ordinary trip falls on** — not the side needing a visa (part-reverses 250); United States `GB/GB` 2 of 5 "no visa" → 5 of 5, New Zealand `US/US` 9 → 10 of 10, France `US/US` study steadied; the rarer case stays as the condition |
@@ -305,6 +306,50 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 267. A country may name pages its corridors read on every run
+
+**2026-10-06. The owner** asked for a way to apply a specific page to a country without a build-wide
+change, knowing the page holds the answer. The case was Home Affairs' ETA (601) page, which ranks
+55th for Australia `US/US` (entry 266).
+
+**The mechanism already existed for the EU.** `always_read` adds pages to what a corridor fetches
+after selection, so no ranking can drop them. Schengen corridors read the EU regulation and the
+ETIAS page this way (entry 201). Now a country may name its own pages:
+- **`config/always_read.yaml`** lists, per country, each page's URL, title and purposes, and a
+  required `why` naming the ranking miss it covers.
+- **`discovery/always_read.py`** loads it. **Every URL must be https on its country's trusted
+  domains, or loading fails**: officialness is checked when configuration loads, as for
+  `authority_domains.yaml`.
+- **Both the API (`AutomaticDestinationService`) and the corridor CLI** pass the pages for the
+  corridor's country and purpose beside the EU's.
+
+**Why this and not a score boost.** A boost is a weight in a scorer every country shares, which is
+the build-wide change the owner ruled out, and it can still lose. This is scoped to one country, one
+purpose and one page.
+
+**It is read, never believed.** The page is fetched live like any other, and the role adjudicator
+decides what it answers. A traveller it does not list gets nothing from it. It costs one fetch per
+corridor for that country.
+
+**It is an exceptions list, not a way of working.** Hand curation is the bottleneck the project
+means to remove. Each entry should come out once the ranking finds its page unaided, and the
+breadth penalty (known problem 46) is the miss behind this one.
+
+**Measured live** (`var/purposes-2026-10-03/always-read-2026-10-06/`):
+- **Australia `US/US`:** 3 of 3 "visa required", visa type "Electronic Travel Authority (subclass
+  601)", decided from and citing the ETA page. Before, the same day: 2 "visa required" and 1 null,
+  from the embassy's "a visa or travel authority". All three are `partial`, because form 1415's PDF
+  could not be read. One also named the condition "you are not an Australian citizen", which every
+  traveller asking meets.
+- **Australia `IN/IN`:** 2 of 2 "visa required", "Visitor visa (subclass 600)", `verified`. The ETA
+  page was read and rightly not cited: India is not on its list.
+
+Tested offline: the committed file loads and passes the trust check; a page off the trusted domains,
+over plain http, or for a country with no domains is refused; pages are given only for the purposes
+they name; and the API hands them to the resolver for tourism and not for study.
 
 ---
 
