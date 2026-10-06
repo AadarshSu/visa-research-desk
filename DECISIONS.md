@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [264](#264-rule-8k-states-the-side-an-ordinary-trip-of-the-purpose-falls-on) | **8k states the side an ordinary trip falls on** — not the side needing a visa (part-reverses 250); United States `GB/GB` 2 of 5 "no visa" → 5 of 5, New Zealand `US/US` 9 → 10 of 10, France `US/US` study steadied; the rarer case stays as the condition |
 | [263](#263-a-permission-the-border-grants-by-itself-is-not-a-visa-new-zealands-waiver-is-no-visa-and-the-nzeta-a-travel-authorisation) | **A permission the border grants by itself is not a visa** — 8g narrowed to a visa applied or paid for on arrival; New Zealand `US/US` reads "no visa", its NZeTA shown as a travel authorisation, never as a visa; 0 of 13 runs counted the border "visa" after, against 6 of 14 before |
 | [262](#262-plans-without-sign-in-ten-free-plans-per-address-and-ofself-sign-in-offered-for-importing-details) | **Plans without sign-in** — ten free plans per address, counted under a keyed hash and spent only once a request is answerable; Ofself sign-in offered for importing details and for no limit; `REQUIRE_SIGN_IN` now defaults off (part-reverses 191) |
 | [261](#261-weather-for-the-trips-dates-met-norways-forecast-noaas-averages-and-a-city-picker-in-the-panel) | **Weather for the trip's dates** — MET Norway's forecast about nine days out, NOAA station averages beyond; a city picker in the panel, the capital first; Open-Meteo and NASA POWER refused by their own robots.txt |
@@ -302,6 +303,53 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 264. Rule 8k states the side an ordinary trip of the purpose falls on
+
+**2026-10-06. The owner:** "state the side that applies to an ordinary trip of this purpose, and put
+the other in the condition". The traveller profile does not yet hold passport-specific facts such as
+right of abode or earlier stays.
+
+**What it replaces.** Where sources stated both sides of a fact the profile lacks, 8k chose the side
+on which the traveller needs a visa (entry 250): one told to get a visa who did not need it loses
+less. In practice the model sometimes stated the rare side and sometimes the ordinary one:
+- **United States `GB/GB`:** "visa required" on right of abode in 3 of 5 replays.
+- **New Zealand `US/US`:** "visa required" in 1 of 10 replays and 1 of 3 live runs, on "you have
+  already spent 6 months in New Zealand".
+
+The answer turned on chance, and the common traveller was told the rare answer.
+
+**The rule now.**
+- **Where sources state both sides,** the plan states the side an ordinary trip of the purpose
+  falls on and names the fact that would change it in `decision_condition`:
+  - **transit:** staying in the transit area within the stated time;
+  - **a visit:** one stay within the length the route allows, with no earlier stays, no other
+    country's visa or residence permit, and no status the profile does not record;
+  - **study:** a full course rather than a short one.
+- **The ordinary limits of a visit** (the visa-free length, a cap on earlier stays) are entry steps
+  under 8e, not a condition, so a plain visa-free visit does not become `partial`.
+- **The rare case is never lost.** It is the condition shown beside the answer, and the explanation
+  says what the sources state for it.
+
+**Measured** on the plan call alone, the current prompt against this one, on captured packets
+(`var/nzeta-2026-10-06/e.jsonl`). N is no visa, V visa required, – null, c with a condition.
+
+| Corridor | Before | After |
+| --- | --- | --- |
+| United States `GB/GB` (ESTA) | V V V N N | **N N N N N** |
+| New Zealand `US/US`, two packets | 9 N, 1 V | **10 N** |
+| France `US/US` study | – – V | **V V V** |
+| Spain `US/US` study; Spain, Germany, New Zealand transit `IN`; UAE `IN/GB`; Canada `GB/GB`; Japan `IN/GB`; Singapore `PH/PH` | steady | unchanged |
+| Japan `IN/GB` study | V V V | V – V |
+| South Korea `IN/IN` transit | N – N | – N N |
+
+**Then live:** United States `GB/GB` ×2 said "no visa" (`partial`), with the ESTA as the route.
+New Zealand `US/US` ×2 said "no visa" (`verified`).
+
+One residue: the United States plans held on "you hold a qualifying e-passport", which nearly
+every British passport is, so it arguably belongs among the entry steps.
 
 ---
 

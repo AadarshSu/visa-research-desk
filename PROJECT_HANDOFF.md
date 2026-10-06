@@ -306,11 +306,11 @@ numbers. Each says what is true now; how it was learned is in the DECISIONS entr
     side a source states and shows the fact beside it ("Only if …"), graded `partial`; no field was
     added, and the search queries do not need one. A corridor still refuses where no page about the
     purpose was read — Japan, Vietnam, Switzerland and Thailand transit.
-45. **Rule 8k may state either side of a stay condition** (entry 263). New Zealand `US/US` stated
-    the rarer side ("already spent 6 months in New Zealand") in 1 of 10 replays and 1 of 3 live
-    runs. United States `GB/GB` flips on right of abode and a stay under 90 days. Australia `US/US`
-    answers "visa required" or null where its packet names no ETA. A tie-break for 8k would change
-    what a plan concludes: the owner's decision.
+45. **A few corridors still vary on the plan call alone** (entries 263, 264). Australia `US/US`
+    answers "visa required" or null where its packet names no ETA, only "a visa or travel authority".
+    Japan `IN/GB` study and South Korea `IN/IN` transit each gave one null in three. United States
+    `GB/GB` now answers "no visa" every time, but holds on "you hold a qualifying e-passport", which
+    is arguably an entry step.
 
 **Retired numbers**, kept so the numbering keeps its meaning: **44** (entry 263), **1** (entry 58), **3** (entries 34,
 38), **4** (entries 56, 57), **7** (entry 152), **18** (entry 42), **21** and **22** (entry 157),

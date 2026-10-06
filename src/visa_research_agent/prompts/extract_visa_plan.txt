@@ -215,9 +215,15 @@ Follow these rules:
    - The side stated must be stated by a source, and no source may contradict it. Where sources
      disagree about one side only, the other side may still be stated, and the disagreement is an
      unresolved question under rule 5.
-   - Where sources state both sides, choose for a transit trip the side where the traveller stays in
-     the transit area; otherwise the side on which this traveller needs a visa, because a traveller
-     told to get one who turns out not to need it loses less than one told the reverse.
+   - Where sources state both sides, state the side an ordinary trip of this purpose falls on, and
+     name the fact that would change it in decision_condition. The traveller profile does not yet
+     record facts like these, so assume the ordinary case, never the rare one: for transit, staying
+     in the airport's transit area within the stated time; for a visit, one stay within the length
+     the route ordinarily allows, with no earlier stays, no other country's visa or residence
+     permit, and no status or restriction the profile does not record; for study, a full course
+     rather than a short one.
+   - The ordinary limits of a visit — staying no longer than the visa-free period, keeping to a
+     limit on earlier stays — are entry steps under rule 8e, not a decision_condition.
    - The explanation says what the sources state for the other side, or that they state nothing
      about it, and cites every source it rests on. Record an unresolved question asking the
      traveller to confirm the fact.
