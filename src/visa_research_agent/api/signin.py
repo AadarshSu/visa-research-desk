@@ -41,6 +41,11 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse, RedirectResponse
 
+from visa_research_agent.api.allowance import (
+    AllowanceSpent,
+    AllowanceStoreError,
+    AnonymousAllowance,
+)
 from visa_research_agent.api.ofself import (
     OfselfAuthorizationLost,
     OfselfError,
@@ -55,6 +60,8 @@ PENDING_COOKIE = "visa_desk_signin"
 PENDING_MAX_AGE_SECONDS = 600
 """Ten minutes from starting sign-in to coming back, for the approval page to be read."""
 
+
+logger = logging.getLogger(__name__)
 
 _SESSION_CODE = re.compile(r"(sid_code=)[^&\s\"]+")
 
@@ -227,6 +234,81 @@ def require_signed_in_for_plans(
             detail={"message": "Sign in with Ofself to generate a plan.", "sign_in": True},
         )
     return user_id
+
+
+def get_anonymous_allowance() -> AnonymousAllowance:
+    return AnonymousAllowance(settings.allowance_file, settings.anonymous_plan_allowance)
+
+
+def allowance_spent(limit: int, sign_in_available: bool) -> HTTPException:
+    if sign_in_available:
+        message = (
+            f"You have used your {limit} free plans. Sign in with Ofself to keep generating plans."
+        )
+    else:
+        message = f"The {limit} free plans for your connection are used up on this server."
+    return HTTPException(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        detail={"message": message, "sign_in": sign_in_available, "allowance_spent": True},
+    )
+
+
+@dataclass
+class PlanGate:
+    """Who a plan is spent for: a signed-in Ofself user, or an address with free plans left."""
+
+    user_id: str | None
+    allowance: AnonymousAllowance | None = None
+    address: str = ""
+    sign_in_available: bool = False
+
+    def spend(self) -> int | None:
+        """Count this plan against the address and return how many are left; None if uncounted."""
+
+        if self.allowance is None:
+            return None
+        try:
+            return self.allowance.spend(self.address)
+        except AllowanceSpent as spent:
+            raise allowance_spent(spent.limit, self.sign_in_available) from spent
+        except AllowanceStoreError as exc:
+            # Uncounted would be unlimited: a plan that cannot be counted is not given.
+            logger.error("anonymous plan allowance unavailable: %s", exc)
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail={
+                    "message": (
+                        "Free plans are unavailable just now. Sign in with Ofself, or try later."
+                    ),
+                    "sign_in": self.sign_in_available,
+                },
+            ) from exc
+
+
+def plan_gate(
+    request: Request,
+    sign_in: Annotated[SignIn | None, Depends(get_sign_in)],
+    allowance: Annotated[AnonymousAllowance, Depends(get_anonymous_allowance)],
+) -> PlanGate:
+    """Let a plan through for a signed-in user, or for an address with free plans left.
+
+    Only checks: the route spends the plan once the request is valid (DECISIONS entry 262). With
+    `REQUIRE_SIGN_IN` on there are no free plans, as entry 191 had it.
+    """
+
+    user_id = sign_in.signed_in_user(request) if sign_in is not None else None
+    if user_id is not None:
+        return PlanGate(user_id)
+    if settings.require_sign_in:
+        return PlanGate(require_signed_in_for_plans(request, sign_in))
+    address = request.client.host if request.client else "unknown"
+    try:
+        left = allowance.remaining(address)
+    except AllowanceStoreError:
+        left = 1  # spend() refuses it, with its own message
+    if left <= 0:
+        raise allowance_spent(allowance.limit, sign_in is not None)
+    return PlanGate(None, allowance, address, sign_in is not None)
 
 
 router = APIRouter(prefix="/oauth", tags=["sign-in"])

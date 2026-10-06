@@ -73,13 +73,24 @@
 
             <div id="ticket-body" class="ticket-body">
               {% if signed_in %}<p id="ofself-note" class="form-note" role="status" hidden></p>{% endif %}
-              {% set plans_locked = sign_in_required and not signed_in %}
+              {% set plans_locked = (sign_in_required and not signed_in) or free_plans_left == 0 %}
               {% if plans_locked %}
                 <p id="sign-in-note" class="form-note form-note--warn" role="status">
                   {% if sign_in_configured %}
                     <a href="/oauth/login">Sign in with Ofself</a> to generate a plan.
                   {% else %}
                     Plans need sign-in with Ofself, which is not configured on this server.
+                  {% endif %}
+                </p>
+              {% endif %}
+              {% if free_plans_left is not none %}
+                <p id="free-plans-note" class="form-note{% if free_plans_left == 0 %} form-note--warn{% endif %}" role="status" data-left="{{ free_plans_left }}" data-allowance="{{ free_plan_allowance }}">
+                  {% if free_plans_left == 0 %}
+                    You have used your {{ free_plan_allowance }} free plans.
+                    {% if sign_in_configured %}<a href="/oauth/login">Sign in with Ofself</a> to keep generating plans.{% endif %}
+                  {% else %}
+                    No account needed: <strong id="free-plans-left">{{ free_plans_left }}</strong> of {{ free_plan_allowance }} free plans left.
+                    {% if sign_in_configured %}<a href="/oauth/login">Sign in with Ofself</a> to fill this in from your passports, residence permits and trip plans, with no limit.{% endif %}
                   {% endif %}
                 </p>
               {% endif %}

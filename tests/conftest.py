@@ -17,6 +17,7 @@ a test that genuinely needs a transport must inject a fake one.
 
 import socket
 from collections.abc import Iterator
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -30,6 +31,15 @@ class NetworkAccessDuringTest(RuntimeError):
     cares about, and exactly what would swallow this guard and let the offending test pass while
     quietly describing the network block as an authority being down.
     """
+
+
+@pytest.fixture(autouse=True)
+def allowance_in_tmp(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Free-plan counts go to a fresh file per test, never to the real `var/allowance/`."""
+
+    from visa_research_agent.config.settings import settings
+
+    monkeypatch.setattr(settings, "allowance_file", tmp_path / "allowance" / "anonymous.json")
 
 
 @pytest.fixture(autouse=True)

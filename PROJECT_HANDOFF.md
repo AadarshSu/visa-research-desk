@@ -164,7 +164,7 @@ goal ended, is at the top of [TODO.md](TODO.md).
 | **Runtime** | `source_mode: live`, `extraction_mode: openai`, `render_mode: on_demand`, `discovery_decider: model`, `discovery_selector: model`, `destination_mode: automatic`, `model_route: personas` — see `config/runtime.yaml` |
 | **Model calls** | Through Ofself Personas since 2026-09-24, on Ofself's account (entry 188). Graded against the direct route: selection 41 of 48 roles against 39 of 48 |
 | **Selection** | The model selector sees the fusion top 120 plus 40 best-linked pages with no stored text (entry 195). On `oracle/selection_oracle.yaml`: 100% role recall against the heuristic's 70% at matched budget (entry 87) |
-| **Sign-in** | `POST /visa-plans` needs an Ofself session since 2026-09-24 (entry 191); `REQUIRE_SIGN_IN=false` in `.env` turns it off locally |
+| **Sign-in** | Optional since 2026-10-06 (entry 262): ten free plans per address without an Ofself session, counted in `var/allowance/`; sign-in imports the traveller's details and lifts the limit. `REQUIRE_SIGN_IN=true` locks every plan behind sign-in (entry 191). The deployed server still runs 191's rule until updated |
 | **Ofself app** | "Visa Research Desk", app id `ed21d312-1c8a-487e-9de3-38ed61abb013`, client id `tp_hErNm3BbU_ISDz_Q703QpVIbTTZ87Ixt6H306ihMtAU`, incubator mode, redirect `http://localhost:8000/oauth/callback`. Design in [CRUX.md](CRUX.md); the DLR is live; details in TODO item 55 |
 
 **Speed (entry 171).** A fresh request is ~55s: ~25s of research and ~29s writing the plan. The

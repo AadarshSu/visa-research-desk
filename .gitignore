@@ -38,6 +38,8 @@ var/plans/*
 !var/plans/.gitkeep
 # Travellers' problem reports (TODO item 74): they hold what a traveller was shown.
 var/reports/
+# Free-plan counts per hashed address (entry 262): a store on each machine, not shared.
+var/allowance/
 
 # Machine-local tool settings. The shared launch configuration is tracked.
 .claude/settings.local.json

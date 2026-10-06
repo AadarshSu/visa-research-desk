@@ -1285,12 +1285,23 @@ async function* streamedEvents(response) {
 
 function showRefusal(detail) {
   if (detail.sign_in) {
-    // Not a refusal about evidence: nothing was researched, because nobody is signed in — or the
-    // session expired since the page loaded.
+    // Not a refusal about evidence: nothing was researched, because nobody is signed in, the
+    // session expired since the page loaded, or the free plans are used up.
     const link = element("a", "", "Sign in with Ofself");
     link.href = "/oauth/login";
-    errorMessage.replaceChildren(link, " to generate a plan.");
+    if (detail.allowance_spent) {
+      errorMessage.replaceChildren("You have used your free plans. ", link, " to keep generating plans.");
+      showFreePlansLeft(0);
+    } else {
+      errorMessage.replaceChildren(link, " to generate a plan.");
+    }
     errorMessage.hidden = false;
+    return;
+  }
+  if (detail.allowance_spent) {
+    errorMessage.textContent = detail.message;
+    errorMessage.hidden = false;
+    showFreePlansLeft(0);
     return;
   }
   // A refusal names the evidence it could not verify, rather than failing opaquely.
@@ -1317,6 +1328,25 @@ function showOutcome() {
 }
 
 editTrip.addEventListener("click", () => setEditing(!document.body.classList.contains("editing")));
+
+// A visitor who has not signed in sees their free plans count down as they use them (entry 262).
+// The server counts; this only keeps the line above the form in step with it.
+const freePlansNote = document.querySelector("#free-plans-note");
+
+function showFreePlansLeft(left) {
+  if (!freePlansNote) return;
+  freePlansNote.dataset.left = String(left);
+  const count = freePlansNote.querySelector("#free-plans-left");
+  if (left > 0 && count) {
+    count.textContent = String(left);
+    return;
+  }
+  const link = element("a", "", "Sign in with Ofself");
+  link.href = "/oauth/login";
+  freePlansNote.classList.add("form-note--warn");
+  freePlansNote.replaceChildren(`You have used your ${freePlansNote.dataset.allowance} free plans. `, link, " to keep generating plans.");
+  generateButton.disabled = true;
+}
 
 function optionLabel(select, value) {
   const option = [...select.options].find((candidate) => candidate.value === value);
@@ -1485,6 +1515,7 @@ async function generatePlan(event) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(request),
     });
+    if (response.ok && freePlansNote) showFreePlansLeft(Number(freePlansNote.dataset.left) - 1);
     if (!response.ok) {
       // Turned away before anything was researched: signed out, or a corridor with no answer.
       const payload = await response.json();
@@ -1517,7 +1548,7 @@ async function generatePlan(event) {
   } finally {
     stopProgress();
     results.setAttribute("aria-busy", "false");
-    generateButton.disabled = false;
+    generateButton.disabled = freePlansNote?.dataset.left === "0";
   }
 }
 

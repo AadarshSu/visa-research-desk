@@ -565,3 +565,90 @@ async def test_an_unrequired_plan_needs_no_session(monkeypatch: pytest.MonkeyPat
     assert SpendingNothing.reached is True
     assert response.status_code == 503
     assert 'id="generate-button" type="submit" disabled' not in page
+
+
+# --- free plans for a visitor who has not signed in (DECISIONS entry 262) --------------------
+
+
+@pytest.fixture
+def two_free_plans(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "require_sign_in", False)
+    monkeypatch.setattr(settings, "anonymous_plan_allowance", 2)
+    SpendingNothing.reached = False
+
+
+@pytest.mark.usefixtures("two_free_plans")
+async def test_a_visitor_gets_the_free_plans_and_then_is_asked_to_sign_in() -> None:
+    async with plan_client(sign_in(paradigm())) as client:
+        assert 'id="free-plans-left">2<' in (await client.get("/")).text
+        for _ in range(2):
+            SpendingNothing.reached = False
+            assert (await client.post("/visa-plans", json=PLAN_REQUEST)).status_code == 503
+            assert SpendingNothing.reached is True
+
+        SpendingNothing.reached = False
+        refused = await client.post("/visa-plans", json=PLAN_REQUEST)
+        streamed = await client.post("/visa-plans/stream", json=PLAN_REQUEST)
+        page = (await client.get("/")).text
+
+    assert refused.status_code == 429
+    assert refused.json()["detail"]["allowance_spent"] is True
+    assert refused.json()["detail"]["sign_in"] is True
+    assert streamed.status_code == 429
+    assert SpendingNothing.reached is False
+    assert "You have used your 2 free plans" in page
+    assert 'id="generate-button" type="submit" disabled' in page
+
+
+@pytest.mark.usefixtures("two_free_plans")
+async def test_a_request_that_cannot_be_answered_costs_no_free_plan() -> None:
+    async with plan_client(sign_in(paradigm())) as client:
+        for _ in range(3):
+            assert (await client.post("/visa-plans", json={"traveller": {}})).status_code == 422
+        page = (await client.get("/")).text
+
+    assert 'id="free-plans-left">2<' in page
+
+
+@pytest.mark.usefixtures("two_free_plans")
+async def test_a_signed_in_traveller_is_never_counted() -> None:
+    async with plan_client(sign_in(paradigm())) as client:
+        assert (await client.get("/oauth/login")).status_code == 303
+        assert (await client.get("/oauth/callback", params=callback_query())).status_code == 303
+        for _ in range(3):
+            assert (await client.post("/visa-plans", json=PLAN_REQUEST)).status_code == 503
+        page = (await client.get("/")).text
+
+    assert 'id="free-plans-note"' not in page
+    assert not settings.allowance_file.exists()
+
+
+@pytest.mark.usefixtures("two_free_plans")
+async def test_the_count_keeps_no_address() -> None:
+    async with plan_client(sign_in(paradigm())) as client:
+        await client.post("/visa-plans", json=PLAN_REQUEST)
+
+    stored = settings.allowance_file.read_text(encoding="utf-8")
+    assert "127.0.0.1" not in stored
+    assert "testclient" not in stored
+
+
+@pytest.mark.usefixtures("two_free_plans")
+async def test_an_unreadable_count_refuses_rather_than_giving_plans_away() -> None:
+    settings.allowance_file.parent.mkdir(parents=True)
+    settings.allowance_file.write_text("not json", encoding="utf-8")
+    async with plan_client(sign_in(paradigm())) as client:
+        response = await client.post("/visa-plans", json=PLAN_REQUEST)
+
+    assert response.status_code == 503
+    assert "Free plans are unavailable" in response.json()["detail"]["message"]
+
+
+async def test_with_sign_in_required_there_are_no_free_plans(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(settings, "require_sign_in", True)
+    async with client_for(sign_in(paradigm())) as client:
+        page = (await client.get("/")).text
+
+    assert 'id="free-plans-note"' not in page

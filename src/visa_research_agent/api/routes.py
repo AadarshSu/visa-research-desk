@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import ValidationError
 
+from visa_research_agent.api.allowance import AllowanceStoreError, AnonymousAllowance
 from visa_research_agent.api.countries import normalise_country
 from visa_research_agent.api.dependencies import (
     get_automatic_destinations,
@@ -35,7 +36,14 @@ from visa_research_agent.api.schemas import (
     VisaPlanRequest,
     WeatherResponse,
 )
-from visa_research_agent.api.signin import SignIn, get_sign_in, require_signed_in_for_plans
+from visa_research_agent.api.signin import (
+    PlanGate,
+    SignIn,
+    get_anonymous_allowance,
+    get_sign_in,
+    plan_gate,
+    require_signed_in_for_plans,
+)
 from visa_research_agent.api.templates import static_asset_version, templates
 from visa_research_agent.api.traveller import TravellerSource
 from visa_research_agent.config.loader import get_destination_registry, get_runtime_policy
@@ -82,10 +90,21 @@ router = APIRouter()
 
 @router.get("/", response_class=HTMLResponse, include_in_schema=False)
 async def index(
-    request: Request, sign_in: Annotated[SignIn | None, Depends(get_sign_in)]
+    request: Request,
+    sign_in: Annotated[SignIn | None, Depends(get_sign_in)],
+    allowance: Annotated[AnonymousAllowance, Depends(get_anonymous_allowance)],
 ) -> HTMLResponse:
     policy = get_runtime_policy()
     signed_in = sign_in is not None and sign_in.signed_in_user(request) is not None
+    # How many free plans this visitor has left, or None where plans are not counted for them.
+    free_plans_left: int | None = None
+    if not signed_in and not settings.require_sign_in:
+        try:
+            free_plans_left = allowance.remaining(
+                request.client.host if request.client else "unknown"
+            )
+        except AllowanceStoreError:
+            free_plans_left = None
     return templates.TemplateResponse(
         request,
         "index.html",
@@ -99,6 +118,8 @@ async def index(
             "sign_in_configured": sign_in is not None,
             "sign_in_required": settings.require_sign_in,
             "signed_in": signed_in,
+            "free_plans_left": free_plans_left,
+            "free_plan_allowance": settings.anonymous_plan_allowance,
             "source_mode": policy.source_mode,
             "extraction_mode": policy.extraction_mode,
             "static_asset_version": static_asset_version(),
@@ -454,17 +475,18 @@ def research_fault(exc: VisaResearchError) -> HTTPException:
         status.HTTP_503_SERVICE_UNAVAILABLE: {"description": "Could not be verified"},
     },
     tags=["visa research"],
-    # Checked before anything is spent: nothing past this line runs for a browser not signed in.
-    dependencies=[Depends(require_signed_in_for_plans)],
 )
 async def create_visa_plan(
     request: VisaPlanRequest,
+    # Checked before anything is spent; the plan is counted once it is known to be possible.
+    gate: Annotated[PlanGate, Depends(plan_gate)],
     service: Annotated[VisaPlanService, Depends(get_visa_plan_service)],
     automatic: Annotated[AutomaticDestinationService | None, Depends(get_automatic_destinations)],
     travellers: Annotated[TravellerSource, Depends(get_traveller_source)],
 ) -> VisaPlan:
     traveller = await travellers.traveller_for(request)
     refuse_impossible_corridors(request.destination, traveller)
+    gate.spend()
     return await research_plan(request.destination, traveller, service, automatic)
 
 
@@ -483,10 +505,10 @@ async def create_visa_plan(
         status.HTTP_422_UNPROCESSABLE_CONTENT: {"description": "Unsupported destination"},
     },
     tags=["visa research"],
-    dependencies=[Depends(require_signed_in_for_plans)],
 )
 async def stream_visa_plan(
     request: VisaPlanRequest,
+    gate: Annotated[PlanGate, Depends(plan_gate)],
     service: Annotated[VisaPlanService, Depends(get_visa_plan_service)],
     automatic: Annotated[AutomaticDestinationService | None, Depends(get_automatic_destinations)],
     travellers: Annotated[TravellerSource, Depends(get_traveller_source)],
@@ -506,6 +528,7 @@ async def stream_visa_plan(
 
     traveller = await travellers.traveller_for(request)
     refuse_impossible_corridors(request.destination, traveller)
+    gate.spend()
 
     async def work(report: Callable[[str], None]) -> VisaPlan:
         return await research_plan(

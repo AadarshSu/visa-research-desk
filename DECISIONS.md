@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [262](#262-plans-without-sign-in-ten-free-plans-per-address-and-ofself-sign-in-offered-for-importing-details) | **Plans without sign-in** — ten free plans per address, counted under a keyed hash and spent only once a request is answerable; Ofself sign-in offered for importing details and for no limit; `REQUIRE_SIGN_IN` now defaults off (part-reverses 191) |
 | [261](#261-weather-for-the-trips-dates-met-norways-forecast-noaas-averages-and-a-city-picker-in-the-panel) | **Weather for the trip's dates** — MET Norway's forecast about nine days out, NOAA station averages beyond; a city picker in the panel, the capital first; Open-Meteo and NASA POWER refused by their own robots.txt |
 | [260](#260-travel-advice-is-a-third-trust-tier-the-travellers-own-government-read-for-one-panel-and-never-for-the-visa-answer) | **Travel advice is a third trust tier** — the passport's government, found offline for all 198 passports and reviewed; **linked, never read or quoted**, each link checked offline; never visa evidence |
 | [259](#259-travel-advice-shows-only-where-the-travellers-government-publishes-it-and-weather-waits-for-a-place-within-the-country) | **Travel advice only where the traveller's government publishes it; weather waits** — six governments publish a feed, a dozen more a page; a capital's weather misleads for a large country |
@@ -300,6 +301,44 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 262. Plans without sign-in: ten free plans per address, and Ofself sign-in offered for importing details
+
+**2026-10-06. The owner: let people generate plans without logging in to Ofself, and present sign-in
+as a way to import their data. The aim is a middle ground that still brings people to Ofself
+accounts. Ten plans before sign-in is needed, for now.**
+
+**What changed.**
+- **`REQUIRE_SIGN_IN` defaults to off.** Without a session, a visitor gets
+  `ANONYMOUS_PLAN_ALLOWANCE` plans (10). The eleventh answers `429` with `allowance_spent` and, where
+  sign-in is configured, `sign_in: true`. A signed-in traveller is never counted. Setting
+  `REQUIRE_SIGN_IN=true` restores entry 191 exactly: no free plans at all.
+- **The count is per client address.** Behind Caddy, uvicorn trusts the forwarded address only from
+  127.0.0.1, so it is the visitor's own. A cookie was the gentler key and was rejected, because
+  clearing it resets the count.
+- **No address is stored.** `var/allowance/anonymous.json` holds counts against an HMAC of the
+  address, under a random key made on first use and kept in the same file. The file is a store, not
+  a cache: deleting it hands every address its plans back.
+- **A plan is counted when it is accepted.** That is after the request validates and
+  `refuse_impossible_corridors` passes, and before anything is spent. A `422` costs nothing; a
+  refusal after research started still counts, because the money was spent.
+- **An unreadable count refuses with `503`** rather than serving uncounted. That is entry 191's
+  fail-closed rule, applied to the allowance.
+- **Problem reports are not counted.** They keep the old check, since a report costs nothing.
+- **The page leads with the plan, not the account.** Above the form it reads "No account needed: N of
+  10 free plans left", and offers Ofself sign-in to fill the form from passports, residence permits
+  and trip plans, with no limit. The count steps down as plans are accepted. At zero the button is
+  disabled and sign-in is the way on. Anonymous visitors keep the sample traveller as before.
+
+**What it does not do.**
+- **It is a brake, not an identity.** Visitors behind one address (an office, a mobile carrier)
+  share ten plans, and someone with many addresses gets more.
+- **It never resets.** No daily window was asked for; one is a setting away if wanted.
+
+**Deploying it opens plans to the public, within the allowance.** The deployed server (entry 231)
+still runs 191's rule until it is updated.
 
 ---
 
@@ -3945,6 +3984,9 @@ the rule would lose, and what it buys is build time.
 ---
 
 ## 191. A plan is spent only for a browser signed in with Ofself, and the requirement fails closed
+
+**Part-reversed 2026-10-06 (entry 262):** sign-in is now optional by default, with ten free plans
+per address; `REQUIRE_SIGN_IN=true` still applies everything below.
 
 **2026-09-24. The owner: "require the ofself sign-in", after a hosting survey found that the host
 costs less than an open `POST /visa-plans` could.**
