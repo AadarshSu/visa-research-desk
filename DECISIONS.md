@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [265](#265-australiacom-is-a-reviewed-australian-domain-and-a-person-can-add-named-pages-to-a-corpus) | **australia.com reviewed for Australia; `corpus-add` stores named pages with no crawl** — foreignminister.gov.au gives way under the cap; the FAQ reached the pool and was never picked (it says it is not the visa authority); Home Affairs' ETA (601) page, added, never reached the pool — a ranking miss |
 | [264](#264-rule-8k-states-the-side-an-ordinary-trip-of-the-purpose-falls-on) | **8k states the side an ordinary trip falls on** — not the side needing a visa (part-reverses 250); United States `GB/GB` 2 of 5 "no visa" → 5 of 5, New Zealand `US/US` 9 → 10 of 10, France `US/US` study steadied; the rarer case stays as the condition |
 | [263](#263-a-permission-the-border-grants-by-itself-is-not-a-visa-new-zealands-waiver-is-no-visa-and-the-nzeta-a-travel-authorisation) | **A permission the border grants by itself is not a visa** — 8g narrowed to a visa applied or paid for on arrival; New Zealand `US/US` reads "no visa", its NZeTA shown as a travel authorisation, never as a visa; 0 of 13 runs counted the border "visa" after, against 6 of 14 before |
 | [262](#262-plans-without-sign-in-ten-free-plans-per-address-and-ofself-sign-in-offered-for-importing-details) | **Plans without sign-in** — ten free plans per address, counted under a keyed hash and spent only once a request is answerable; Ofself sign-in offered for importing details and for no limit; `REQUIRE_SIGN_IN` now defaults off (part-reverses 191) |
@@ -303,6 +304,52 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 265. australia.com is a reviewed Australian domain, and a person can add named pages to a corpus
+
+**2026-10-06. The owner** asked for Tourism Australia's visa FAQ to count for Australia: "just this
+exact link is fine".
+
+**Trust.** australia.com fails the automatic rule: it is not under `.au`. It is now a `reviewed`
+domain, with its tier stated as **the owner's judgement**:
+- Tourism Australia is an Australian Government agency (Wikidata Q7829083, P17 Australia).
+- Wikidata records no official website for it, so nothing independent ties it to australia.com.
+- The TLS certificate names only `*.australia.com`.
+
+Australia was already at the cap of five domains, and a reviewed domain goes first. The owner chose
+**foreignminister.gov.au** to give way, so that abf.gov.au (Border Force: arrival and customs) stays.
+That was a hand edit to `trusted`: **a registry regeneration would put foreignminister.gov.au back
+and drop abf.gov.au**, so the edit has to be repeated after one.
+
+**`visa-discover corpus-add --country AU <url>…`** adds pages a person names to a country's corpus
+and text index, with no search and no crawl (`add_named_pages` in `corpus_build.py`). It changes
+nothing about trust:
+- Each URL is read through `CrawlFetcher`, so it must sit on a trusted domain after every redirect,
+  and robots.txt and the challenge rules apply.
+- A page under 500 characters is refused as a shell.
+- The entry is merged additively, recorded as `named by a person`.
+- Like every stored page, it ranks and never speaks.
+
+Tested offline: a page added with nothing else fetched; a page off the trusted domains never
+requested; a page robots.txt disallows never stored.
+
+**Measured on Australia `US/US` tourism**, three live runs after each step. Before, it had answered
+null live, and "visa required" against null 5 to 3 in replays:
+- **The FAQ added:** "visa required", null, "visa required". The FAQ reached the selector's pool all
+  three times and was **never picked**. Its own text says "Tourism Australia is not the Australian
+  government visa granting authority" and sends readers to Home Affairs, so passing it over is the
+  trust model working. Live search did surface another australia.com page (customs), which was
+  picked.
+- **Home Affairs' ETA (601) and eVisitor (651) pages also added** (18,476 and 13,952 characters,
+  rendered; the Visitor (600) page rendered to 296 characters and was refused). Same answers. **The
+  601 page never reached the 160-page pool.** The authority's own statement of who is eligible is
+  in the store, readable, and ranked out: a discovery-ranking miss (entries 78–87), not yet
+  diagnosed.
+
+Not on the deployed server: `var/corpus/` and `var/pagetext/` are per-machine stores. The added
+pages exist only on this machine until the stores are copied or the command is run there.
 
 ---
 

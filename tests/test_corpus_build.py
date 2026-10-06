@@ -29,6 +29,7 @@ from visa_research_agent.discovery.corpus_build import (
     CORPUS_EXPANSION_THRESHOLD,
     CORPUS_FAMILY_PATTERN,
     DEFAULT_CORPUS_MISSION_SEEDS,
+    add_named_pages,
     all_corpus_queries,
     build_country_corpus,
     is_transient_failure,
@@ -887,3 +888,83 @@ async def test_the_build_report_says_what_its_rules_threw_away() -> None:
     printed = io.StringIO()
     print_corpus_build(report, printed)
     assert archived in printed.getvalue() and ARCHIVED in printed.getvalue()
+
+
+# --- adding a page a person named, with no crawl (DECISIONS entry 265) -----------------------
+
+
+@pytest.mark.anyio
+async def test_a_named_page_is_added_to_the_corpus_and_the_text_index(tmp_path: Path) -> None:
+    requests: list[httpx.Request] = []
+    index = PageTextStore(tmp_path)
+    existing, _ = await build([INDEX])
+    before = {entry.url for entry in existing.entries}
+
+    corpus, report = await add_named_pages(
+        country(),
+        TRUSTED,
+        [FULL_CHECKLIST],
+        fetcher(requests),
+        existing=existing,
+        page_text=index,
+        now=NOW,
+    )
+
+    assert report.stored == [FULL_CHECKLIST] and not report.failed
+    assert corpus is not None
+    added = corpus.find(FULL_CHECKLIST)
+    assert [entry.status for entry in added] == ["readable"]
+    assert added[0].discovered_from.startswith("named by a person")
+    # Additive, like any build: nothing the corpus held is lost.
+    assert before <= {entry.url for entry in corpus.entries}
+    assert index.count("XX") == 1
+    # One page, no crawl: only the named page was requested.
+    assert [str(request.url).rstrip("/") for request in requests] == [FULL_CHECKLIST]
+
+
+@pytest.mark.anyio
+async def test_a_named_page_off_the_trusted_domains_is_never_requested(tmp_path: Path) -> None:
+    requests: list[httpx.Request] = []
+    index = PageTextStore(tmp_path)
+
+    corpus, report = await add_named_pages(
+        country(),
+        TRUSTED,
+        [OFF_DOMAIN],
+        fetcher(requests),
+        existing=None,
+        page_text=index,
+        now=NOW,
+    )
+
+    assert corpus is None
+    assert "trusted domains" in next(iter(report.failed.values()))
+    assert requests == []
+    assert not index.has("XX")
+
+
+@pytest.mark.anyio
+async def test_a_named_page_robots_txt_disallows_is_not_stored(tmp_path: Path) -> None:
+    requests: list[httpx.Request] = []
+    host = httpx.URL(FULL_CHECKLIST).host
+    disallowing = CrawlFetcher(
+        transport=httpx.MockTransport(
+            handler(requests, robots={host: "User-agent: *\nDisallow: /"})  # type: ignore[arg-type]
+        ),
+        host_delay_seconds=0.0,
+        sleep=sleep_none,
+    )
+
+    corpus, report = await add_named_pages(
+        country(),
+        TRUSTED,
+        [FULL_CHECKLIST],
+        disallowing,
+        existing=None,
+        page_text=PageTextStore(tmp_path),
+        now=NOW,
+    )
+
+    assert corpus is None
+    assert list(report.failed) == [FULL_CHECKLIST]
+    assert requests == []

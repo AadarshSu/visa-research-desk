@@ -94,6 +94,7 @@ from visa_research_agent.discovery.corpus_build import (
     DEFAULT_CORPUS_PAGES,
     DEFAULT_CORPUS_RENDERS,
     CorpusBuild,
+    add_named_pages,
     build_country_corpus,
 )
 from visa_research_agent.discovery.coverage import (
@@ -2050,6 +2051,53 @@ async def run_corpus(args: argparse.Namespace, stream: TextIO) -> int:
     return 0 if build.total else 2
 
 
+async def run_corpus_add(args: argparse.Namespace, stream: TextIO) -> int:
+    """Add pages a person named to one country's corpus and text index (DECISIONS entry 265)."""
+
+    countries = get_country_registry()
+    wanted = args.country.strip()
+    country = countries.get(wanted.upper()) if len(wanted) == 2 else None
+    country = country or find_country(wanted, countries)
+    if country is None:
+        print(f"{args.country} is not a country in countries.yaml.", file=stream)
+        return 3
+    try:
+        trusted, _ = trusted_domains_for(country, get_authority_registry())
+    except AutomaticDiscoveryError as exc:
+        print(str(exc), file=stream)
+        return 3
+
+    store = FileCorpusStore(settings.corpus_directory)
+    renderer = build_page_renderer(get_runtime_policy())
+    fetcher = CrawlFetcher(
+        timeout_seconds=settings.source_fetch_timeout_seconds,
+        user_agent=settings.source_user_agent,
+        host_delay_seconds=settings.discovery_host_delay_seconds,
+        renderer=renderer,
+        maximum_renders=args.renders,
+    )
+    try:
+        corpus, report = await add_named_pages(
+            country,
+            trusted,
+            args.urls,
+            fetcher,
+            existing=store.load(country.code),
+            page_text=PageTextStore(settings.page_text_directory),
+            now=datetime.now(UTC),
+        )
+    finally:
+        if isinstance(renderer, PlaywrightPageRenderer):
+            await renderer.aclose()
+    if corpus is not None:
+        store.store(corpus)
+    for url in report.stored:
+        print(f"  stored  {url}", file=stream)
+    for url, reason in report.failed.items():
+        print(f"  failed  {url}: {reason}", file=stream)
+    return 0 if report.stored and not report.failed else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="visa-discover",
@@ -2121,6 +2169,14 @@ def build_parser() -> argparse.ArgumentParser:
     eu_store.add_argument(
         "--renders", type=int, default=10, help="renders for the pages' challenges"
     )
+
+    corpus_add = commands.add_parser(
+        "corpus-add",
+        help="add named pages to one country's corpus and text index, with no crawl, entry 265",
+    )
+    corpus_add.add_argument("--country", required=True, help="ISO code or name, e.g. AU")
+    corpus_add.add_argument("urls", nargs="+", help="pages on the country's trusted domains")
+    corpus_add.add_argument("--renders", type=int, default=2, help="renders for a challenge")
 
     corpus = commands.add_parser(
         "corpus",
@@ -2303,6 +2359,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return asyncio.run(run_advisories(args, sys.stderr))
         if args.command == "corpus":
             return asyncio.run(run_corpus(args, sys.stderr))
+        if args.command == "corpus-add":
+            return asyncio.run(run_corpus_add(args, sys.stderr))
         if args.command == "eu-store":
             return asyncio.run(run_eu_store(args, sys.stderr))
         if args.command == "pagetext":

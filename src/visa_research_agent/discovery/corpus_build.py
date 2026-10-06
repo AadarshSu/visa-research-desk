@@ -40,6 +40,7 @@ from visa_research_agent.discovery.crawl import (
     DEFAULT_KEPT_TEXT_CHARACTERS,
     CrawlFetcher,
     LinkCrawler,
+    page_title_of,
 )
 from visa_research_agent.discovery.lexicon import (
     Country,
@@ -76,6 +77,7 @@ from visa_research_agent.domain.models import (
     TravelPurpose,
 )
 from visa_research_agent.domain.trust import host_of
+from visa_research_agent.research.live_sources import clean_source_html
 from visa_research_agent.research.tls import build_ssl_context
 
 # Far above the request path's forty, and **it has to exceed the seed count or the crawl never
@@ -1118,3 +1120,100 @@ def _rejections(rejected: dict[str, str]) -> dict[str, Any]:
 
 
 BuildReporter = Callable[[CorpusBuild], None]
+
+
+# Below this a "page" is an error page or a shell, not what a person asked to add.
+MINIMUM_ADDED_PAGE_CHARACTERS = 500
+
+
+class AddedPages(StrictModel):
+    """What `add_named_pages` stored, and why each page it did not store was left out."""
+
+    country_code: str
+    stored: list[str] = Field(default_factory=list)
+    failed: dict[str, str] = Field(default_factory=dict)
+
+
+async def add_named_pages(
+    country: Country,
+    trusted: list[str],
+    urls: list[str],
+    fetcher: CrawlFetcher,
+    *,
+    existing: CountryCorpus | None,
+    page_text: PageTextStore,
+    now: datetime,
+) -> tuple[CountryCorpus | None, AddedPages]:
+    """Add pages a person named to a country's corpus and text index, with no search and no crawl.
+
+    For a page the owner has read and wants a corridor able to find (entry 265), without a rebuild
+    that would crawl its whole site. Nothing about trust is different: each URL is read through
+    `CrawlFetcher`, so it must sit on one of the country's trusted domains after every redirect,
+    and robots.txt and the challenge rules apply as in any build. Like every corpus page, it ranks
+    and never speaks — a corridor that picks it reads it live before a word reaches a plan.
+    """
+
+    destination = DestinationConfig(
+        slug=country.slug,
+        display_name=country.name,
+        route_type="national",
+        implementation_status="available",
+        trusted_domains=trusted,
+    )
+    report = AddedPages(country_code=country.code)
+    entries: list[CorpusEntry] = []
+    pages: list[StoredPage] = []
+    async with httpx.AsyncClient(
+        transport=fetcher.transport,
+        timeout=fetcher.timeout_seconds,
+        follow_redirects=True,
+        verify=build_ssl_context(),
+        headers={"User-Agent": fetcher.user_agent, "Accept": "text/html,application/xhtml+xml"},
+    ) as client:
+        for raw in urls:
+            url = canonicalise_url(raw)
+            if not is_crawlable(url, destination):
+                report.failed[url] = (
+                    f"it is not on one of {country.name}'s trusted domains "
+                    f"({', '.join(trusted)}), so it may not be read"
+                )
+                continue
+            html = await fetcher.fetch_html(client, url, destination)
+            text = (
+                storable_text(
+                    clean_source_html(html, maximum_characters=DEFAULT_KEPT_TEXT_CHARACTERS)
+                )
+                if html
+                else ""
+            )
+            if len(text.strip()) < MINIMUM_ADDED_PAGE_CHARACTERS:
+                report.failed[url] = fetcher.failures.get(
+                    url, f"it returned {len(text.strip())} characters, too little to be the page"
+                )
+                continue
+            title = storable_text(page_title_of(html or ""))
+            entries.append(
+                CorpusEntry(
+                    url=url,
+                    title=title,
+                    link_text=title[:300],
+                    discovered_from="named by a person (visa-discover corpus-add)",
+                    first_seen=now,
+                    last_seen=now,
+                    status="readable",
+                )
+            )
+            pages.append(StoredPage(url=url, fetched_at=now, body=text, title=title))
+            report.stored.append(url)
+
+    if not entries:
+        return None, report
+    before = existing or CountryCorpus(
+        country_code=country.code,
+        country_name=country.name,
+        trusted_domains=trusted,
+        built_at=now,
+        entries=[],
+    )
+    page_text.write(country.code, pages)
+    return merge(before, entries, now=now), report

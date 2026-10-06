@@ -51,11 +51,15 @@ countries:
   name: Australia
   trusted:
   - embassy.gov.au
-  - foreignminister.gov.au
   - homeaffairs.gov.au
   - dfat.gov.au
   - abf.gov.au
-  reviewed: {}
+  reviewed:
+    australia.com: Tourism Australia's consumer site — the owner's judgement, 2026-10-06 (entry 265).
+      Tourism Australia is an Australian Government agency (Wikidata Q7829083, P17 Australia), which
+      records no official website, so the link to australia.com rests on the owner, not on Wikidata.
+      Its visa FAQ links Home Affairs and Tourism Australia's corporate site. foreignminister.gov.au
+      was removed from trusted to keep abf.gov.au under the cap of five
   unconfirmable: []
 - code: BE
   name: Belgium
