@@ -8,7 +8,7 @@ stands, what to do next, and what is known to be broken. The history of how it g
 | --- | --- |
 | **Repository** | `github.com/AadarshSu/visa-research-agent` |
 | **Last updated** | 2026-10-07 — update this line when you touch the handoff |
-| **Tests** | 1,123 on the owner's machine, with `var/` present: 1,122 passing and 1 skipped (the opt-in browser test), run 2026-10-07; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
+| **Tests** | 1,124 on the owner's machine, with `var/` present: 1,123 passing and 1 skipped (the opt-in browser test), run 2026-10-07; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
 
 | Question | File |
 | --- | --- |

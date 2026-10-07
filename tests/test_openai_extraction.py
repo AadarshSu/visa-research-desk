@@ -31,6 +31,7 @@ from visa_research_agent.research.model_usage import FileModelUsageLog, ModelCal
 from visa_research_agent.research.openai_extraction import (
     OpenAIVisaPlanExtractor,
     load_extraction_prompt,
+    whole_months_between,
     without_inline_source_ids,
 )
 
@@ -1336,9 +1337,9 @@ async def test_only_a_traveller_who_shared_something_changes_the_packet() -> Non
     async def packet_for(profile: TravellerProfile) -> dict[str, Any]:
         generator = FakeStructuredPlanGenerator(load_golden_draft())
         fetched_sources = await FixtureSourceFetcher().fetch(singapore_config())
-        await OpenAIVisaPlanExtractor(generator, maximum_input_characters=80_000).extract(
-            singapore_config(), profile, fetched_sources
-        )
+        await OpenAIVisaPlanExtractor(
+            generator, maximum_input_characters=80_000, now=lambda: RECORDED_AT
+        ).extract(singapore_config(), profile, fetched_sources)
         assert generator.research_packet is not None
         return cast(dict[str, Any], json.loads(generator.research_packet)["traveller_profile"])
 
@@ -1361,6 +1362,10 @@ async def test_only_a_traveller_who_shared_something_changes_the_packet() -> Non
     assert "shared_details" not in anonymous
     assert {key: value for key, value in shared.items() if key != "shared_details"} == anonymous
     assert shared["shared_details"]["documents"][0]["nationality"] == "India (IN)"
+    # Counted by the app from today, so the plan never does calendar arithmetic (entry 276).
+    assert shared["shared_details"]["as_of"] == "2026-09-15"
+    assert shared["shared_details"]["documents"][0]["months_until_expiry"] == 5
+    assert shared["shared_details"]["documents"][0]["days_until_expiry"] == 169
     assert shared["shared_details"]["stays"][0]["country"] == "Spain (ES)"
 
 
@@ -1371,4 +1376,14 @@ def test_shared_details_tailor_the_plan_and_never_decide_it() -> None:
     assert "never settles a condition and never changes visa_required" in prompt
     assert "may never confirm that a requirement is met" in prompt
     assert "give its shared date in the same sentence" in prompt
+    assert "say plainly that it does not meet the rule, whatever the travel dates" in prompt
+    assert "never claim it meets the rule" in prompt
+    assert "between double asterisks" in prompt
     assert "is an entry duty under rule 8 even where it sits in the checklist" in prompt
+
+
+def test_whole_months_count_only_completed_months() -> None:
+    assert whole_months_between(date(2026, 10, 7), date(2027, 2, 7)) == 4
+    assert whole_months_between(date(2026, 10, 7), date(2027, 2, 6)) == 3
+    assert whole_months_between(date(2026, 10, 7), date(2026, 10, 30)) == 0
+    assert whole_months_between(date(2026, 10, 7), date(2026, 8, 7)) == -2

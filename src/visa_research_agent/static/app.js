@@ -21,6 +21,23 @@ function element(tag, className, text) {
   return node;
 }
 
+// A plan marks each sentence that applies what the traveller shared through Ofself with **…** (rule
+// 15, entry 276), and it is shown in bold. Built from text nodes, never parsed as HTML.
+function richText(tag, className, text) {
+  const node = element(tag, className);
+  String(text ?? "")
+    .split(/\*\*(.+?)\*\*/s)
+    .forEach((part, index) => {
+      if (!part) return;
+      node.append(index % 2 ? element("strong", "shared-detail", part) : document.createTextNode(part.replace(/\*\*/g, "")));
+    });
+  return node;
+}
+
+function plainText(text) {
+  return String(text ?? "").replace(/\*\*/g, "");
+}
+
 function externalLink(label, url, className = "") {
   const link = element("a", className, label);
   link.href = url;
@@ -313,7 +330,7 @@ function renderDecision(plan, ctx) {
   // it: "No visa required" read alone would be wrong for the other side of it (entry 250).
   if (plan.decision_condition) {
     container.append(
-      element("p", "decision-condition", `Only if ${plan.decision_condition.replace(/\.$/, "")}.`),
+      richText("p", "decision-condition", `Only if ${plan.decision_condition.replace(/\.$/, "")}.`),
     );
   }
   // The visa type leads where the plan names one. "Visa type unresolved" in front of an explanation
@@ -322,7 +339,7 @@ function renderDecision(plan, ctx) {
     needsNoVisa(plan) || !plan.visa_type
       ? plan.explanation
       : `${sentenceCase(plan.visa_type)}. ${plan.explanation}`;
-  container.append(element("p", "lead", lead));
+  container.append(richText("p", "lead", lead));
   appendTools(container, plan, "visa_decision");
   appendDelegates(container, plan, "visa_decision");
   appendIfFilled(container, renderEvidence(plan.decision_source_ids, ctx, "decision"));
@@ -582,9 +599,9 @@ function renderSteps(plan, ctx) {
     const item = element("li");
     const content = element("div", "step-content");
     content.append(
-      element("p", "step-timing", `Timing: ${step.timing}`),
-      element("h3", "", step.title),
-      element("p", "", step.action),
+      richText("p", "step-timing", `Timing: ${step.timing}`),
+      element("h3", "", plainText(step.title)),
+      richText("p", "", step.action),
     );
     // Each step names the pages it rests on, timing included, where the reader meets the claim — a
     // grouped list at the end left a timing with nothing beside it to check it against (entry 257).
@@ -763,7 +780,7 @@ function glanceDecision(plan) {
     return { tone: "uncertain", value: "Could not be confirmed", note: "See why in the visa decision" };
   }
   const condition = plan.decision_condition
-    ? `Only if ${plan.decision_condition.replace(/\.$/, "")}`
+    ? `Only if ${plainText(plan.decision_condition).replace(/\.$/, "")}`
     : "";
   if (plan.visa_required) {
     return { tone: "visa", value: "Visa required", note: condition || sentenceCase(plan.visa_type) || "" };

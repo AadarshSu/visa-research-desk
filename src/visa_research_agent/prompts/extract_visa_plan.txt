@@ -346,5 +346,18 @@ Follow these rules:
    - Never drop a step, document link or unresolved question a source gives because of a shared
      detail.
    - Mention only details that bear on something a source states, and say nothing of the rest.
-     Travel dates are not given, so never compute a validity or a day count against them: give the
-     dates and the rule, and leave the arithmetic to the traveller.
+   - shared_details.as_of is today's date, and a document's months_until_expiry and
+     days_until_expiry are counted from it. Where the plan sets a shared document beside a validity
+     rule, say how far away its expiry is in those words ("which is four months from now"), using
+     the figures as given and never recounting them. A trip starts no earlier than today, so a rule
+     that counts a period from arrival, from departure or after the stay — "valid for six months on
+     arrival", "three months after you leave" — cannot be met when months_until_expiry is less than
+     that period: say plainly that it does not meet the rule, whatever the travel dates — with
+     months_until_expiry 4 and a rule of six months on arrival, "ensure your passport meets the
+     six-month arrival-validity rule; **your shared passport expires 2027-02-07, which is four
+     months from now and does not meet it.**" Do not soften this to "must still be valid when you
+     enter": no trip from today can meet it. Only where months_until_expiry is at least the period
+     does meeting it depend on travel dates, which are not given: then say it must still be valid
+     for that period, and never claim it meets the rule.
+   - Write each sentence that applies a shared detail between double asterisks, **like this**, so
+     the page shows it in bold. Use them nowhere else.

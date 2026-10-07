@@ -2374,3 +2374,8 @@ footer p {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* A sentence the plan wrote from what the traveller shared through Ofself (entry 276). */
+.shared-detail {
+  font-weight: 700;
+}

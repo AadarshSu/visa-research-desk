@@ -5,7 +5,7 @@ import re
 import time
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager, suppress
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from importlib.resources import files
 from typing import Any
 from urllib.parse import urlsplit
@@ -85,11 +85,24 @@ def describe_country(code: str) -> str:
     return f"{country.name} ({code})" if country is not None else code
 
 
-def traveller_in_packet(traveller_profile: TravellerProfile) -> dict[str, Any]:
+def whole_months_between(start: date, end: date) -> int:
+    """Calendar months from `start` to `end`, counting only completed ones; negative if past."""
+
+    months = (end.year - start.year) * 12 + end.month - start.month
+    if months > 0 and end.day < start.day:
+        months -= 1
+    elif months < 0 and end.day > start.day:
+        months += 1
+    return months
+
+
+def traveller_in_packet(traveller_profile: TravellerProfile, *, today: date) -> dict[str, Any]:
     """The traveller as the plan call reads them, countries written out.
 
     What a signed-in traveller shared (entry 276) is present only when there is some, so the packet
-    for everyone else is byte for byte what it was, and so are its reuse keys (entry 178).
+    for everyone else is byte for byte what it was, and so are its reuse keys (entry 178). With it
+    comes today's date and how far away each document's expiry is, counted here rather than by
+    the model, so the plan can say "four months from now" without doing calendar arithmetic.
     """
 
     shared = traveller_profile.shared_details
@@ -100,11 +113,14 @@ def traveller_in_packet(traveller_profile: TravellerProfile) -> dict[str, Any]:
     }
     if shared is None or shared.is_empty():
         return traveller
-    details = shared.model_dump(mode="json")
-    for document in details["documents"]:
+    details: dict[str, Any] = {"as_of": today.isoformat(), **shared.model_dump(mode="json")}
+    for document, held in zip(details["documents"], shared.documents, strict=True):
         for field in ("nationality", "issuing_state"):
             if document[field]:
                 document[field] = describe_country(document[field])
+        if held.expires_at is not None:
+            document["days_until_expiry"] = (held.expires_at - today).days
+            document["months_until_expiry"] = whole_months_between(today, held.expires_at)
     for stay in details["stays"]:
         stay["country"] = describe_country(stay["country"])
     traveller["shared_details"] = details
@@ -125,6 +141,8 @@ def build_research_packet(
     destination: DestinationConfig,
     traveller_profile: TravellerProfile,
     fetched_sources: list[FetchedSource],
+    *,
+    today: date | None = None,
 ) -> str:
     """Serialize trusted metadata and untrusted evidence with unambiguous boundaries."""
 
@@ -172,7 +190,9 @@ def build_research_packet(
                 for service in destination.delegated_services
             ],
         },
-        "traveller_profile": traveller_in_packet(traveller_profile),
+        "traveller_profile": traveller_in_packet(
+            traveller_profile, today=today or datetime.now(UTC).date()
+        ),
         "sources": [
             {
                 "source_id": fetched_source.source.source_id,
@@ -383,6 +403,7 @@ class OpenAIVisaPlanExtractor:
             destination,
             traveller_profile,
             fetched_sources,
+            today=self.now().date(),
         )
         if len(research_packet) > self.maximum_input_characters:
             raise LLMExtractionError("The bounded model input exceeds the configured size limit")

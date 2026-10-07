@@ -425,6 +425,28 @@ Kingdom 4 of 4 each) against 3 of 12 before, always as "ensure" or "confirm", ne
 unchanged. Thailand's packet gave 1 "no visa" and 5 open without the passport and 6 open with it —
 its usual variance, not the passport.
 
+**Then the owner: say how far away the expiry is, and whether it fails** (2026-10-07). "Your shared
+passport expiry is 2027-02-07" beside "must be valid for six months" left the comparison to the
+traveller; the owner asked for "which is four months from now and does not meet it", in bold.
+- **The app counts, the model compares.** With shared details the packet carries `as_of` (today)
+  and, per document, `days_until_expiry` and `months_until_expiry` (completed months), so the model
+  never does calendar arithmetic. Anonymous packets are unchanged.
+- **Rule 15:** say how far away the expiry is; where a rule counts a period from arrival, departure
+  or after the stay and `months_until_expiry` is shorter, say plainly it does not meet the rule —
+  no trip from today can — with the owner's sentence as the example; where it is not shorter,
+  meeting it depends on travel dates, which the plan is not given, so it says only that the
+  passport must still be valid then and never that it meets the rule.
+- **Bold:** the plan wraps each sentence applying a shared detail in `**…**`, and the page shows it
+  in bold (`richText`, built from text nodes, never parsed as HTML).
+
+Replayed on ten passport packets rebuilt with today's date (`var/ofself-test-2026-10-07/`,
+`replay-c` then `replay-d`): with a first wording the six-month verdict appeared 5 of 8 times, the
+rest softened to "must still be valid when you enter"; with the owner's sentence as the worked
+example, **12 of 12** (United Arab Emirates, Indonesia, Türkiye, Singapore), **0 of 8 false
+verdicts** where it depends on dates (New Zealand, Germany, South Africa, the United Kingdom),
+Malaysia silent with no rule, every decision unchanged, no stray asterisks. South Africa, missed
+live, named its 30-day rule 4 of 4.
+
 **Plan drafts no longer outlive their window.** Keeping a draft now deletes every draft past the
 reuse window and any that cannot be read: a stale one can never be reused, and its prose may name
 what the traveller shared. (TODO item 55 said a draft held the whole profile; it holds none —
