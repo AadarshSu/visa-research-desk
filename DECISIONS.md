@@ -402,6 +402,29 @@ built on the page, and no real traveller's records were used — the owner's acc
 
 No tailored sentence presented a typed-in value as meeting a rule.
 
+**Then live, on Ofself's sandbox test user** (the owner's choice, 2026-10-07). A developer token can
+no longer write the owner's own identity data (`DEV_PAT_NOT_ALLOWED`; OFSELF_FEEDBACK 9.9), so an
+Indian passport expiring 2027-02-07, typed in, was written to the app's test user with the app key
+(`var/ofself-test-2026-10-07/sandbox.py`) and read back through the real adapter. Four corridors
+ran twice each with it attached (`var/purposes-2026-10-03/ofself-passport-2026-10-07/`, the runner's
+`OFSELF_USER`):
+- **Singapore `IN/IN`, 2 of 2:** "Confirm that your passport will be valid for at least six months
+  on the date you enter Singapore. The shared expiry date, 7 February 2027, was not read from the
+  document."
+- **United Kingdom `IN/IN`, 0 of 2:** it said "valid for your whole UK stay" and left the date out.
+- **Germany `IN/GB`, 0 of 2:** the three-month and ten-year rule is only in the linked checklist,
+  which a plan never copies (entry 211), so there was no rule to set the date beside.
+- **Thailand `IN/IN`:** an open decision and a refusal — research, not the passport.
+
+**So rule 15 gained a bullet:** wherever the plan states how long a shared document must be valid or
+when it must have been issued, the shared date goes in the same sentence; and a passport-validity
+rule a source states is an entry duty under rule 8 even inside the checklist, stated in one step with
+the date beside it and nothing else from the checklist. Replayed on the seven packets, two runs each
+(`var/ofself-test-2026-10-07/`): **the date named 12 of 12** (Germany, Singapore and the United
+Kingdom 4 of 4 each) against 3 of 12 before, always as "ensure" or "confirm", never as met; decisions
+unchanged. Thailand's packet gave 1 "no visa" and 5 open without the passport and 6 open with it —
+its usual variance, not the passport.
+
 **Plan drafts no longer outlive their window.** Keeping a draft now deletes every draft past the
 reuse window and any that cannot be read: a stale one can never be reused, and its prose may name
 what the traveller shared. (TODO item 55 said a draft held the whole profile; it holds none —

@@ -62,8 +62,9 @@ the deployed server yet**:
 - **The plan is written for the specific traveller** (entry 276, the owner's direction). A
   signed-in traveller's documents, stays and applications from Ofself reach the plan call, which
   names a detail beside a rule it bears on and never decides from it; the anonymous form is
-  unchanged. Measured on replays with synthetic details only — the owner's account holds no travel
-  records, so it has not been seen on a real traveller.
+  unchanged. Seen live on Ofself's sandbox test user with a typed-in Indian passport expiring
+  2027-02-07: the expiry is named beside the validity rule. A developer token cannot write the
+  owner's own account (OFSELF_FEEDBACK 9.9), so no real traveller's records have been used.
 - **An open decision leads with where to settle it** (entry 271). The band offers the authority's
   checker, an unread official page or its contractor as a button, and says "Could not be confirmed"
   only with none of them. Where to apply and documents read "if you need a visa" or fold into one

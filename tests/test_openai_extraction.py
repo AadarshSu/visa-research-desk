@@ -1370,3 +1370,5 @@ def test_shared_details_tailor_the_plan_and_never_decide_it() -> None:
     assert "15. traveller_profile.shared_details" in prompt
     assert "never settles a condition and never changes visa_required" in prompt
     assert "may never confirm that a requirement is met" in prompt
+    assert "give its shared date in the same sentence" in prompt
+    assert "is an entry duty under rule 8 even where it sits in the checklist" in prompt
