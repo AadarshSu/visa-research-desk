@@ -189,7 +189,9 @@ its question — the decision panel, the documents panel, or the caveats (entrie
 The model never originates a trusted field. Page text enters the prompt under `untrusted_content`;
 afterwards the application rebuilds `sources`, `last_checked`, `status` and
 `application_document_source_ids` from its own records, and `VisaPlan`'s validators reject any
-citation of a source that was not fetched. The prompts are `prompts/*.txt`.
+citation of a source that was not fetched. A source id the model writes into its prose is removed
+before the plan is built (`without_inline_source_ids`, entry 269); the citation stays in
+`source_ids`. The prompts are `prompts/*.txt`.
 
 ---
 
@@ -269,7 +271,10 @@ Corridor ─▶ search ─▶ corpus ─▶ crawl ─▶ select ─▶ fetch ─
    (a `www.` host and its bare host count as one, entry 163), walked in waves of one page per host,
    results handled in frontier order so the answer never depends on which site answered first.
    3b. **Stored text is scored** for every candidate the index holds (`text_scores`), crediting the
-   traveller's own post and penalising another's on post-specific roles (entry 245).
+   traveller's own post and penalising another's on post-specific roles (entry 245). A page counts
+   as written for the traveller's nationality only where its title or path names it on whole words;
+   a two-letter token ("us") counts only in capitals in a title or as a whole path segment
+   (entry 266).
 4. **Select** (`discovery/selection.py`, `discovery_selector: model`). The pool is every candidate
    whose link scores above zero for some role, plus the five best per role the link scored zero and
    stored text puts back (`admitted_on_text`, entry 158). It is then cut: `fusion_order` — per role,
@@ -279,7 +284,10 @@ Corridor ─▶ search ─▶ corpus ─▶ crawl ─▶ select ─▶ fetch ─
    recall log record what was withheld. The model reads stored excerpts and picks up to 20 pages; its `Selection` type
    holds ids and no prose. With no stored text the heuristic shortlist is used instead, and the notes
    say so. Selection rule 11 keeps an announcement together with the later page saying it took
-   effect (entry 222).
+   effect (entry 222). **After selection, `always_read` adds pages no ranking may drop:** the EU's
+   for a Schengen member (entry 201), and the pages a country names in `config/always_read.yaml`
+   for the corridor's purpose (entry 267). They are fetched and adjudicated like any other, read and
+   never believed. The file is refused at load if a page is off its country's trusted domains.
 5. **Fetch** — through a throwaway `DestinationConfig` and the ordinary `LiveSourceFetcher`, so
    redirect trust, PDFs, forwarding, rendering and caching come for free and an off-domain candidate
    cannot even be constructed. Refusals met here are reported like the crawl's (entry 49). A
@@ -336,6 +344,9 @@ records far more than it opens (entry 88).
 - A host that stops answering is slowed, then dropped after six consecutive transport failures (entry
   139); a later build asks again for up to 100 transiently-failed entries (entry 207).
 - Each build prints the links it rejected by rule (entry 200) — read it.
+- `visa-discover corpus-add --country CC <url>…` adds pages a person names, with no search and no
+  crawl, through the same trust, robots and challenge rules (entry 265). A stored page still has to
+  win the ranking; one that must be read whatever the ranking does goes in `always_read.yaml`.
 
 The **page-text index** (`var/pagetext/`, one SQLite/FTS5 file per country, `discovery/page_text.py`) keeps the
 body of pages read, filled by builds and by `pagetext --backfill`. It is separate from the corpus JSON,
@@ -371,11 +382,12 @@ stays off — no country passes `DEFAULT_TEXT_COVERAGE_BAR` (entries 80, 81).
 | Page corpus | country | additive, never pruned | **Yes** — the candidate source | `var/corpus/`, `discovery/corpus.py` |
 | Page text | country | additive, replaced per URL | **Yes** — the selector reads it | `var/pagetext/`, `discovery/page_text.py` |
 | EU store | union | refreshed by `eu-store` | **Yes** — Schengen visa decisions | `var/corpus/EU.json` |
-| Source snapshot | URL | TTL 24h, refused past 168h | **Yes** — it is the evidence | `var/cache/`, `research/source_cache.py` |
-| Corridor resolution | full corridor | 3 weeks; refusals never stored | **Yes** — what a warm request serves | `var/corridors/`, `discovery/corridor_store.py` |
+| Source snapshot | URL | TTL 24h, refused past 2,160h (90 days, entry 249) | **Yes** — it is the evidence | `var/cache/`, `research/source_cache.py` |
+| Corridor resolution | full corridor | 1 week (`corridor_maximum_age_hours`); refusals never stored | **Yes** — what a warm request serves | `var/corridors/`, `discovery/corridor_store.py` |
 | Plan draft | everything the model is shown | `plan_reuse_hours` (24), never past the page TTL | No — a reused draft is still validated and graded (entry 178) | `var/plans/`, `research/plan_store.py` |
 | Recall log | corridor | overwritten each run | No | `var/recall/` |
 | Model usage log | UTC day | appended | No | `var/usage/`, `research/model_usage.py` |
+| Free-plan counts | keyed hash of the client address | never reset; deleting it hands every address its plans back | **Yes** — an unreadable count refuses a plan (entry 262) | `var/allowance/`, `api/allowance.py` |
 | Selection oracle | corridor | committed, hand-edited | No — it grades, never serves | `oracle/selection_oracle.yaml` |
 
 **The lifetimes differ because the things do.** A government page can change any day, so evidence is
@@ -402,6 +414,7 @@ a local directory, so a disposable host makes every request cold (item 20).
 | --- | --- | --- |
 | `config/runtime.yaml` | source, extraction, render and destination modes; decider, selector, model route; cache TTL, stale ceiling, plan reuse | **Yes** — reviewable policy |
 | `config/authority_domains.yaml`, `supranational_authorities.yaml`, `service_providers.yaml` | who may be believed, and which contractors may be named | **Yes** — the trust anchor |
+| `config/always_read.yaml` | pages a country's corridors read on every run, by purpose, each with the ranking miss it covers (entry 267) | **Yes** — checked against the trust anchor at load |
 | `config/destinations.yaml` | seven hand-configured destinations, used only under `destination_mode: configured` | **Yes** |
 | `config/discovery_*.yaml`, `countries.yaml` | scoring vocabulary, denylist, country reference data and mission labels | **Yes** |
 | `.env` | `OPENAI_API_KEY`, `OPENAI_MODEL`, `SEARCH_API_KEY`, `PERSONAS_*`, `PARADIGM_*`, `SESSION_SECRET`, timeouts, limits | **Never** |

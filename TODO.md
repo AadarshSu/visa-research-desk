@@ -44,7 +44,7 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 
 | | | |
 | --- | --- | --- |
-| **Now** | 80. A travel-readiness app for one traveller — next, a travel-advice panel | `explore`, with the owner |
+| **Now** | 80. A travel-readiness app for one traveller — next, the news panel | `explore`, with the owner |
 |  | 63. Make most corridors return accurate and useful information | `ongoing` |
 |  | 55. Take the traveller from Ofself's shared identity, through one adapter | `soon` |
 |  | 79. Score pages fetched live with the post-aware stored-text fixes | `soon` |
@@ -57,7 +57,7 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 
 ## Now — this phase's work
 
-### 80. A travel-readiness app for one traveller, built around their dates — `explore`, **with the owner; dates built, the panels next**
+### 80. A travel-readiness app for one traveller, built around their dates — `explore`, **with the owner; dates, advice, weather and the redesign built, news next**
 
 **The direction — the owner, 2026-10-05 (entry 251).** Someone planning a trip enters where and
 when, and sees the visa answer with what else bears on going. **One traveller**; friends come much
@@ -80,6 +80,12 @@ destination links for 16 governments, `GET /travel-advice`, and the link panel u
 at-a-glance box. **Left:** Finland answered `429` after five links; Czechia's pages need a region in
 the address; Russia waits on evidence for `mid.ru`; the eight unclear governments; re-run
 `visa-discover advisory-links` when a government moves its pages. **Not deployed.**
+
+**The result page redesign — built 2026-10-06 (entry 270):** a verdict band, the pass as the result's
+header, advice and weather in a sidebar, and a no-visa plan's travel authorisation and entry steps
+beside the decision (entry 263). A bolder makeover is parked on the local branch `design-bold`.
+**Plans without sign-in** (entry 262): ten free plans per address, with Ofself offered for importing
+details. **None of it is deployed.**
 
 **Weather — built 2026-10-06 (entry 261):** a panel under the travel advice with MET Norway's
 forecast for the days inside its window and NOAA station averages for the months beyond, for a city
@@ -356,6 +362,10 @@ The reasoning is in the DECISIONS entry; this is the index. Code comments cite s
 
 | Was | Done | Entry | What building it found |
 | --- | --- | --- | --- |
+| — Pages a country's corridors read on every run | 10-06 | 265–267 | Australia's ETA page ranked 55th after two scoring fixes; named in `config/always_read.yaml`, `US/US` went to 3 of 3 "visa required, ETA (601)" and `IN/IN` stayed on the subclass 600 |
+| — A travel authorisation is never called a visa; 8k states the ordinary side, and never a which-visa fact | 10-06 | 263, 264, 268 | Each a prompt change measured by replaying captured packets. Two wordings of 268 were rejected for costing Japan study and New Zealand transit |
+| — Plans without sign-in | 10-06 | 262 | Ten free plans per address, under a keyed hash; counted only once a request is answerable; an unreadable count refuses |
+| — The result page redesign | 10-06 | 270 | Verdict band, pass header, sidebar; a bolder version parked on `design-bold` |
 | 71. Take where the traveller lives, and name the one post that serves them | 10-05 | 225, 252 | A state or region from a committed GeoNames list, not a city; the plan names the page's post for it in 12 of 12 replays and asks where the split is finer (Japan England named London once in 2). `in_person` shown only where a page says. Discovery does not use the region; Ofself supplies none yet |
 | 78. Decide whether to show the selector 60 + 40 pages with the search boost | 09-30 | 246 | Closed, not adopted: live over ten corridors the boosted 60 + 40 gave the same decisions and checklists on 44% less selector input and lost France `PH/PH`'s processing time in every run; a vocabulary fix and embeddings were both checked and neither keeps the page. The owner kept 120 + 40; the boost stays in the code, off |
 | 77. Make the stored-text score credit the traveller's own post | 09-30 | 244, 245 | Shipped: nationality from title and path only, a residence credit and the own/other-post signals on post roles, no purpose bonus on the decision. At today's cut every decision and checklist in every run (127.0 against 126.6); with the search boost 60 + 40 becomes level (item 78) |
@@ -441,7 +451,15 @@ question — measure with `replay_roles.py` before changing anything.
 parse, in its own change.
 
 **A plan can leak an internal field name** (`application_document_source_ids`) into traveller-facing
-text. A prompt matter.
+text. A prompt matter. Source ids written into prose are now removed (entry 269); field names are
+not.
+
+**The breadth penalty holds an authority's own visa page out of the pool (known problem 46, entry
+266).** A page scoring on five roles is multiplied by 0.63, and one visa's own page always covers
+how to apply, fees, processing time and entry. Home Affairs' ETA page ranks 55th for Australia
+`US/US` and reaches the corridor only through `config/always_read.yaml` (entry 267). Changing the
+penalty re-ranks every country: measure it with `oracle_text_rank.py` and the owner's go-ahead
+first, then take the always-read entry out if the page wins unaided.
 
 **The Japan eVisa "Go here" link downloads a PDF shell** rather than opening the portal. The plan
 flags it.

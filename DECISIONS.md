@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [270](#270-the-result-page-redesign-a-verdict-band-a-pass-header-a-sidebar-and-a-bolder-version-parked-on-a-branch) | **The result page redesigned** — verdict band coloured by the decision, the boarding pass as the result's header, advice and weather in a sidebar, empty sections dropped on a no-visa plan, the travel-advice "could not check" note removed; a bolder makeover parked on `design-bold` |
 | [269](#269-a-source-id-written-into-a-plans-prose-is-taken-out) | **A source id written into a plan's prose is taken out** — "[australi_immi_electronic_travel_author]" reached a traveller; only a bracket of ids the plan cites is removed, the citation stays in `source_ids` |
 | [268](#268-rule-8k-names-a-condition-only-where-it-changes-whether-a-visa-is-needed) | **8k names a condition only where it changes whether a visa is needed** — where every side needs a visa it decides which visa, not whether; a disqualification (a conviction, a refusal) is never the condition; Australia `GB/GB` 2 of 9 pointless conditions → 0 of 9; two wordings rejected for costing Japan study and New Zealand transit |
 | [267](#267-a-country-may-name-pages-its-corridors-read-on-every-run) | **A country may name pages its corridors read on every run** — `config/always_read.yaml`, the EU's `always_read` path opened to one country's own pages, trust-checked at load, read never believed; Australia `US/US` 2 of 3 → 3 of 3 "visa required, ETA (601)" decided from Home Affairs; `IN/IN` unchanged |
@@ -308,6 +309,45 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 270. The result page redesign: a verdict band, a pass header, a sidebar, and a bolder version parked on a branch
+
+**2026-10-06. The owner:** the page had grown since the last design (entry 229), the boarding pass
+ran off screen as the form grew, and the at-a-glance answer (entry 253) did not stand out. The work
+was experimental and shipped without a decision entry; this records it.
+
+**What shipped on `main`** (`d55041f`, with `308771b` and the later display parts of 263):
+- **The pass stays pinned while the form is filled**, and once there is a result it becomes the
+  result's header, with "Edit trip" reopening the form.
+- **The decision is a full-width band** coloured by its answer, never borrowing another's colour:
+  green for no visa, amber for a visa, slate for "could not be confirmed". It has a stamp and keeps
+  the condition beside it (entry 250).
+- **Where to apply and documents** sit as two cells under the band. On a no-visa plan the documents
+  cell gives way to the entry steps on the band, and a "Travel authorisation required — not a visa"
+  box shows the route where there is one (entry 263).
+- **The plan reads in a column, with the trip, travel advice and weather in a sidebar.** The owner
+  chose the sidebar over a single column.
+- **On a no-visa plan, "Where to apply" and "Documents" are dropped where they would only say there
+  is nothing to do.** One that names a page, a questionnaire or a contractor stays. The numbering
+  follows what is shown, because it is a CSS counter.
+- **The travel-advice panel no longer says a refusing government's link "could not be checked".**
+  The owner opened those links (the United States' among them) and they work, so the note was
+  removed for every government. Entry 260's offline check still runs, and still records which
+  links it could not open.
+
+**Seen in the browser** at 1280px and 375px on real plans (Japan `IN/GB`, New Zealand `US/US`).
+Motion was checked through computed values where the pane could not animate.
+
+**A bolder makeover is parked, not merged,** on the branch `design-bold` (`b53d421`, local only, not
+pushed):
+- a one-question-at-a-time check-in whose sky warms toward dawn;
+- a departure screen where a plane flies an arc while the plan is researched;
+- the full plan as an itinerary of folded stops.
+
+The owner asked to park it. A fold-out stop has a safety net: if the scroll watcher never fires,
+everything is shown, because a plan hidden by a failed animation is worse than no animation.
 
 ---
 
@@ -797,7 +837,8 @@ the quoting rule decided earlier the same day are superseded.
   `robots.txt`, through the same domain checks after every redirect. A link that opens ships; one
   that does not falls back to the index. A government that refuses or challenges us (Singapore,
   Ireland, Norway, Finland, the Philippines on 2026-10-05) is still linked — the owner's call: their
-  advice is good and necessary — and the panel says we could not open it to check. Entry 27 allows
+  advice is good and necessary — and the panel said we could not open it to check (removed
+  2026-10-06, entry 270: the owner opened those links and they work). Entry 27 allows
   a blocked page to be **named, never read**, and this only names it.
 - **The check reads nothing into the panel.** It asks whether the page opens, and keeps no text.
 

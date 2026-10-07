@@ -101,6 +101,7 @@ pytest
 visa-discover registry --only FR,DE          # regenerate registry rows for these countries
 visa-discover bootstrap --destination-name Brazil   # propose one country's domains, to read
 visa-discover corpus --country CA            # build a country's offline page corpus
+visa-discover corpus-add --country AU <url>  # store named pages in a country's corpus, no crawl
 visa-discover corridor --destination japan --nationality IN --from GB --purpose tourism
 visa-discover audit var/recall/              # why travellers go unanswered, counted
 ```
@@ -113,6 +114,7 @@ More commands, and when to use each, are in [CLAUDE.md](CLAUDE.md) and [AGENTS.m
 | --- | --- | --- |
 | `src/visa_research_agent/config/runtime.yaml` | source mode, extraction mode, render mode, model route, cache TTL, stale ceiling | **Yes** — they decide whether government sites are contacted, whether a paid model is called, and when stale guidance is refused |
 | `config/authority_domains.yaml`, `supranational_authorities.yaml`, `service_providers.yaml` | who may be believed, and which contractors may be named | **Yes** — the trust anchor |
+| `config/always_read.yaml` | pages a country's corridors read on every run, whatever the ranking does | **Yes** — each page must be on its country's trusted domains |
 | `config/destinations.yaml` | seven hand-configured destinations, used only under `destination_mode: configured` | **Yes** |
 | `config/discovery_*.yaml`, `countries.yaml` | scoring vocabulary, denylist, country reference data | **Yes** |
 | `.env` | API keys (OpenAI, Brave search, Personas, Paradigm), session secret, timeouts, cache directory | **Never** |

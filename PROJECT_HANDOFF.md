@@ -7,8 +7,8 @@ stands, what to do next, and what is known to be broken. The history of how it g
 | | |
 | --- | --- |
 | **Repository** | `github.com/AadarshSu/visa-research-agent` |
-| **Last updated** | 2026-10-05 — update this line when you touch the handoff |
-| **Tests** | 1,040 on the owner's machine, with `var/` present: 1,039 passing and 1 skipped (the opt-in browser test), run 2026-10-05; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
+| **Last updated** | 2026-10-07 — update this line when you touch the handoff |
+| **Tests** | 1,100 on the owner's machine, with `var/` present: 1,099 passing and 1 skipped (the opt-in browser test), run 2026-10-07; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
 
 | Question | File |
 | --- | --- |
@@ -41,6 +41,29 @@ followed on 2026-10-06: MET Norway's forecast within about nine days, NOAA stati
 for a city picked in the panel — also not deployed. Neither panel is ever an input to the visa
 answer.
 
+**What 2026-10-06 changed** (entries 262–270), all on `main` and pushed to GitHub, **none of it on
+the deployed server yet**:
+- **Plans no longer need sign-in** (entry 262). A visitor gets ten free plans per address, counted
+  under a keyed hash in `var/allowance/`, and signing in with Ofself imports their details and lifts
+  the limit.
+- **The result page was redesigned** (entry 270): a verdict band, the pass as the result's header,
+  and advice and weather in a sidebar. A bolder makeover is parked on the local branch `design-bold`.
+- **A travel authorisation is never called a visa** (entry 263). New Zealand on a US passport reads
+  "No visa required" with "Travel authorisation required — not a visa: NZeTA" beside it. A document
+  the authority itself calls a visa (Australia's ETA, subclass 601) stays "visa required".
+- **Rule 8k was tightened twice.** It states the side an ordinary trip of the purpose falls on
+  (entry 264). It names a condition only where it changes *whether* a visa is needed, never which
+  visa or a disqualification such as a conviction (entry 268).
+- **Australia's ETA page could not win the ranking** (entries 265, 266). The nationality check ran
+  on substrings ("us" matched "Australia"), and an eligibility list did not read as a decision;
+  both are fixed. The page still ranks 55th, held down by the breadth penalty (known problem 46). So
+  a country may now name pages its corridors read on every run, in `config/always_read.yaml` (entry
+  267). Australia `US/US` then answered "visa required, ETA (601)" 3 of 3.
+- **`visa-discover corpus-add`** stores named pages with no crawl (entry 265), and a source id the
+  model writes into a plan's prose is now removed (entry 269).
+- **Every prompt change was measured** by replaying the plan call on captured packets, the current
+  prompt against the candidate, with controls. The tooling is under *Where things are*.
+
 **This phase's queue** is TODO's *Now*: 80, then **63** (accurate answers, ongoing), **55** (what is
 left of the Ofself adapter), **79** (a small scoring consistency fix), **4** (the client-side
 retrieval decision) and **20** (durable stores).
@@ -71,7 +94,8 @@ decides transit, an exemption for another purpose says nothing, and a plan may s
 holds on a trip fact (`decision_condition`, shown as "Only if …", never `verified`). Transit went from
 3 to 8 decisions, 8 of them conditional; Japan transit's wrong "visa required" now refuses. **Open
 for the owner:** three conditions are worded worse than the rule asks (New Zealand, Spain, South
-Africa transit). **The stale ceiling is now 90 days** (entry 249, the owner's decision): stale pages are
+Africa transit), worded before entries 264 and 268 changed 8k — re-read them on a fresh run before
+acting. **The stale ceiling is now 90 days** (entry 249, the owner's decision): stale pages are
 served, flagged, rather than refused.
 
 **A fix that changes what a plan may conclude is the owner's decision** (entries 206–209 are the
@@ -107,7 +131,11 @@ several times first.** Rule 8e's bounds live only in the prompt, and a packet ch
 
 - **The deployed app (entry 231):** one AWS EC2 instance at `https://<dashed-ip>.sslip.io`, a systemd
   service `visa` behind Caddy. Update: `cd ~/visa-research-agent && git pull && sudo systemctl restart
-  visa`. Its `.env`, `var/corpus` and `var/pagetext` were copied by hand, so they drift from this
+  visa`. **It has not pulled since before 2026-10-05**, so it lacks the advice and weather panels,
+  the redesign, free plans without sign-in and entries 263–269. Pulling brings all of them in at
+  once, including ten free plans per address for anyone who finds it. The pages added with
+  `corpus-add` (Australia's ETA and eVisitor) are in this machine's stores only; the always-read
+  list fetches the ETA page live, so that fix needs no store. Its `.env`, `var/corpus` and `var/pagetext` were copied by hand, so they drift from this
   machine's. Its stores are on the instance's disk, lost only on terminate. Not yet run there: a plan,
   a corridor's timing, and the block/challenge rate from an AWS address. Travellers' problem reports land
   in its `var/reports/`; read them there with `visa-discover reports` (entry 233).
@@ -122,6 +150,15 @@ several times first.** Rule 8e's bounds live only in the prompt, and a packet ch
   - `replay_plan.py` replays the plan call; `replay_roles.py` takes `ROLE=`; `replay_select.py`
     takes `SELECT_PROMPT=`.
   - `probe_render.py` renders pages with the project's renderer and prints what came back.
+- **Measuring a plan-prompt change (2026-10-06), in `var/nzeta-2026-10-06/`:**
+  - `var/purposes-2026-10-03/run.py N slug/NAT/RES/purpose` runs corridors live and captures each
+    plan packet; `PURPOSE_OUT=<folder>` names the output.
+  - `replay_plan.py OUT.jsonl RUNS baseline|PROMPT PACKET…` replays the plan call alone. Unlike
+    item 63's copy, it records `where_to_apply`, the steps and `decision_condition`. The
+    `replay_*.sh` scripts and `*.jsonl` files are entries 263, 264 and 268's measurements.
+  - `oracle_text_rank.py before|after` ranks every oracle answer by stored text under the committed
+    scorer and the working one. **`selection-recall` cannot measure a scoring change**: it replays
+    logged rankings and printed the same output before and after entry 266.
   - `var/selection-replay-2026-09-24/` replays only the selection call over fixed pools.
 - **Keep the Mac awake and the lid open for a long batch.** A run in progress freezes in clamshell
   sleep and resumes only on wake; on 2026-10-03 one sat 83 minutes that way (`pmset -g log` shows
