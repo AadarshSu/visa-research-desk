@@ -386,6 +386,12 @@ numbers. Each says what is true now; how it was learned is in the DECISIONS entr
     `where_to_apply` is `None` where there is no visa to apply for; an authorisation appears only in
     its own field.
 
+48. **A plan's open questions are not shown to the traveller — the owner, 2026-10-07, kept on
+    purpose.** `unresolved_questions` is validated and stored but nothing in `app.js` renders it; the
+    owner wants it for us, not surfaced. So a condition rule 10a files there "where it bears on the
+    whole plan" reaches no traveller; one that must be seen belongs in a step, the explanation or
+    `decision_condition`. Read a plan's questions in `var/plans/` drafts or a run's `plan.json`.
+
 **Retired numbers**, kept so the numbering keeps its meaning: **44** (entry 263), **1** (entry 58), **3** (entries 34,
 38), **4** (entries 56, 57), **7** (entry 152), **18** (entry 42), **21** and **22** (entry 157),
 **25** (entries 56, 57), **28** (entry 87), **34** (recall logs predating `RecallRecord.selector` are
