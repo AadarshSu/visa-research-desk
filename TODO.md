@@ -107,9 +107,9 @@ the address; Russia waits on evidence for `mid.ru`; the eight unclear government
 `visa-discover advisory-links` when a government moves its pages. **Not deployed.**
 
 **An open decision leads with where to settle it — built 2026-10-07 (entry 271).** **Next, with
-the owner:** run United Kingdom `US/US` tourism several times. GOV.UK's checker is named as a
-`visa_decision` tool on some runs and as "where to apply" or nothing on others, and the band can only
-lead with what the plan names. Also check whether the UK's own pages state the answer outright,
+the owner:** run United Kingdom `US/US` tourism several times. GOV.UK's checker was filed as
+"where to apply" on some runs; entry 272 takes it out in code, and the run should show the band
+leading with it every time. Also check whether the UK's own pages state the answer outright,
 since a reachable answer missed is a selection defect.
 
 **The result page redesign — built 2026-10-06 (entry 270):** a verdict band, the pass as the result's

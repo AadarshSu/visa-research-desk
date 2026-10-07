@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [272](#272-a-questionnaire-for-another-question-is-never-where-to-apply) | **A questionnaire for another question is never where to apply** — United Kingdom `US/US` filed GOV.UK's visa checker as the route on some runs; the location is dropped in code and the prompt no longer invites it |
 | [271](#271-an-open-decision-leads-with-where-to-settle-it-and-the-strip-under-it-shows-only-what-the-plan-shows) | **An open decision leads with where to settle it** — the authority's checker, an unread official page or its contractor, as a button on the band; "Could not be confirmed" only with none; where to apply and documents marked "if you need a visa" or folded into one line; a documents cell only over a documents section |
 | [270](#270-the-result-page-redesign-a-verdict-band-a-pass-header-a-sidebar-and-a-bolder-version-parked-on-a-branch) | **The result page redesigned** — verdict band coloured by the decision, the boarding pass as the result's header, advice and weather in a sidebar, empty sections dropped on a no-visa plan, the travel-advice "could not check" note removed; a bolder makeover parked on `design-bold` |
 | [269](#269-a-source-id-written-into-a-plans-prose-is-taken-out) | **A source id written into a plan's prose is taken out** — "[australi_immi_electronic_travel_author]" reached a traveller; only a bracket of ids the plan cites is removed, the citation stays in `source_ids` |
@@ -312,6 +313,33 @@ s more pressing |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
 
 ---
+
+## 272. A questionnaire for another question is never where to apply
+
+**2026-10-07. The owner, testing United Kingdom `US/US` tourism after entry 271:** GOV.UK's checker
+was linked three times — on the band, in the decision panel, and as "where to apply". The glance
+labelled the last one "Where to apply, if you need a visa", but it led to the page deciding *whether*
+a visa is needed, not to any application.
+
+**Cause:** the draft had `where_to_apply.application_url: https://www.gov.uk/check-uk-visa`, with
+the method "Official visa eligibility checker". Rule 8c told the model to make the first step
+"opening that page". A step can open a page only through `link_target: "application_route"`,
+which needs a `where_to_apply`, so on some runs the model filed the checker there. On others it did
+not, which is why the owner saw it as where to apply on one run and "not confirmed" on another.
+
+**Fix:**
+- **In code, on every plan:** `without_a_questionnaire_as_route` drops a `where_to_apply` whose
+  address is a named questionnaire for any topic other than `application_route`, and sets
+  `link_target` to `"none"` on any step that opened it.
+- **In the prompt:** 8c now says the step answering the checker has `link_target "none"`, and that a
+  checker's address never goes in `where_to_apply`.
+
+The checker is still offered: by the band (entry 271) and in the decision panel. A tool for
+`application_route` itself is left alone, because that one is the route. Nothing a plan concludes
+changes; one misfiled link is removed.
+
+**Tested:** two fake-generator tests, one where the checker is taken out (including a trailing-slash
+variant) and one where a real route is kept. **Not yet seen on a real run.**
 
 ## 271. An open decision leads with where to settle it, and the strip under it shows only what the plan shows
 

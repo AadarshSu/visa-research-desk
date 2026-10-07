@@ -50,6 +50,9 @@ the deployed server yet**:
 - **Plans no longer need sign-in** (entry 262). A visitor gets ten free plans per address, counted
   under a keyed hash in `var/allowance/`, and signing in with Ofself imports their details and lifts
   the limit.
+- **A checker is never where to apply** (entry 272). United Kingdom `US/US` sometimes filed GOV.UK's
+  visa checker as the route. The plan now drops a route whose address is a named questionnaire for
+  another question. Tested with fakes, not yet on a real run.
 - **An open decision leads with where to settle it** (entry 271). The band offers the authority's
   checker, an unread official page or its contractor as a button, and says "Could not be confirmed"
   only with none of them. Where to apply and documents read "if you need a visa" or fold into one

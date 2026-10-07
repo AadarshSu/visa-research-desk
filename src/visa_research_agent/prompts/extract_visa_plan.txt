@@ -55,7 +55,8 @@ Follow these rules:
      visa_required to null, explain in one plain sentence that this authority decides the question
      through its own official checker which the traveller can answer themselves in a few questions,
      record an unresolved question telling them to do that, and make the first application step
-     opening that page and answering it.
+     answering it, with link_target "none": the plan already links the checker. A checker is not
+     where anyone applies, so never put its address in where_to_apply.
    - A tool for any other topic changes nothing about the rest of the plan, which stands on the
      pages that were read. Record an unresolved question naming what that tool settles and where it
      is, so the traveller knows the guidance exists and where to get it.

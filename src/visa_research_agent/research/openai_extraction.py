@@ -26,8 +26,10 @@ from visa_research_agent.discovery.lexicon import get_country_registry
 from visa_research_agent.discovery.recall_log import ModelCall
 from visa_research_agent.domain.models import (
     ApplicationLocation,
+    ApplicationStep,
     DestinationConfig,
     FetchedSource,
+    InteractiveTool,
     RetrievalReport,
     SourceFailure,
     TravellerProfile,
@@ -469,6 +471,9 @@ class OpenAIVisaPlanExtractor:
                 if written.where_to_apply is not None
                 else None
             )
+            where_to_apply, application_steps = without_a_questionnaire_as_route(
+                where_to_apply, written.application_steps, destination.official_tools
+            )
             plan = VisaPlan(
                 destination=draft.destination,
                 visa_required=visa_required,
@@ -484,7 +489,7 @@ class OpenAIVisaPlanExtractor:
                 application_document_source_ids=(
                     [] if entry_only else destination.application_document_source_ids
                 ),
-                application_steps=written.application_steps,
+                application_steps=application_steps,
                 sources=references,
                 unresolved_questions=written.unresolved_questions,
                 last_checked=max(reference.retrieved_at for reference in references),
@@ -517,6 +522,47 @@ class OpenAIVisaPlanExtractor:
         if key is not None and reused is None:
             self._keep_draft(key, draft)
         return plan
+
+
+def _same_page(left: str, right: str) -> bool:
+    """Whether two addresses name one page, ignoring case in the host and a trailing slash."""
+
+    a, b = urlsplit(left), urlsplit(right)
+    return (a.netloc.lower(), a.path.rstrip("/"), a.query) == (
+        b.netloc.lower(),
+        b.path.rstrip("/"),
+        b.query,
+    )
+
+
+def without_a_questionnaire_as_route(
+    where_to_apply: ApplicationLocation | None,
+    steps: list[ApplicationStep],
+    tools: list[InteractiveTool],
+) -> tuple[ApplicationLocation | None, list[ApplicationStep]]:
+    """Where to apply, unless it is a questionnaire the plan already names for another question.
+
+    United Kingdom `US/US` filed GOV.UK's visa checker as where to apply on some runs (entry 272):
+    a traveller was told where to apply "if you need a visa" and sent to the page deciding whether
+    they do. A questionnaire settling a different question is not where an application is made,
+    and the plan already offers it beside the question it settles, so the location is dropped and
+    a step that opened it opens nothing. A tool for `application_route` itself is left alone: that
+    one is the route.
+    """
+
+    if where_to_apply is None:
+        return where_to_apply, steps
+    route = str(where_to_apply.application_url)
+    if not any(
+        tool.topic != "application_route" and _same_page(route, str(tool.url)) for tool in tools
+    ):
+        return where_to_apply, steps
+    return None, [
+        step.model_copy(update={"link_target": "none"})
+        if step.link_target == "application_route"
+        else step
+        for step in steps
+    ]
 
 
 # A bracket holding only source ids, as a model writes an inline citation: "[gov_page]" or

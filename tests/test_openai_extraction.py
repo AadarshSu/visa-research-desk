@@ -927,6 +927,58 @@ async def test_a_questionnaire_reaches_the_plan_as_a_next_step_not_as_a_failed_s
 
 
 @pytest.mark.anyio
+async def test_a_checker_filed_as_where_to_apply_is_taken_out_of_it() -> None:
+    """United Kingdom `US/US` sent a traveller to apply "if you need a visa" at the page deciding
+    whether they do (entry 272). The checker is still offered, as the decision's next step."""
+
+    golden = load_golden_draft()
+    assert golden.where_to_apply is not None
+    steps = [
+        step.model_copy(update={"link_target": "application_route", "link_source_id": None})
+        for step in golden.application_steps
+    ]
+    generator = FakeStructuredPlanGenerator(
+        golden.model_copy(
+            update={
+                "requirements": [],
+                "unresolved_questions": ["Answer the official checker to get the decision."],
+                "where_to_apply": golden.where_to_apply.model_copy(
+                    update={"application_url": "https://www.gov.uk/check-uk-visa/"}
+                ),
+                "application_steps": steps,
+            }
+        )
+    )
+    destination = decision_behind_a_tool(singapore_config())
+    fetched_sources = await FixtureSourceFetcher().fetch(destination)
+
+    plan = await OpenAIVisaPlanExtractor(generator, maximum_input_characters=80_000).extract(
+        destination, DEFAULT_TRAVELLER_PROFILE, fetched_sources
+    )
+
+    assert plan.where_to_apply is None
+    assert all(step.link_target == "none" for step in plan.application_steps)
+    assert [str(tool.url) for tool in plan.official_tools] == ["https://www.gov.uk/check-uk-visa"]
+
+
+@pytest.mark.anyio
+async def test_a_route_that_is_not_a_checker_is_kept() -> None:
+    generator = FakeStructuredPlanGenerator(
+        load_golden_draft().model_copy(
+            update={"requirements": [], "unresolved_questions": ["Answer the checker."]}
+        )
+    )
+    destination = decision_behind_a_tool(singapore_config())
+    fetched_sources = await FixtureSourceFetcher().fetch(destination)
+
+    plan = await OpenAIVisaPlanExtractor(generator, maximum_input_characters=80_000).extract(
+        destination, DEFAULT_TRAVELLER_PROFILE, fetched_sources
+    )
+
+    assert plan.where_to_apply is not None
+
+
+@pytest.mark.anyio
 async def test_the_model_is_told_where_the_question_is_settled_never_what_it_settles_to() -> None:
     generator = FakeStructuredPlanGenerator(
         load_golden_draft().model_copy(
