@@ -13,24 +13,53 @@ their own, much shorter, TTL every time a plan is produced.
 
 Deliberately a file store rather than an `lru_cache`. A process-lifetime memo would serve a corridor
 resolved weeks ago for as long as the server stayed up, with no way to notice.
+
+**A corridor resolved under other discovery rules is a miss.** Each one records a fingerprint of
+what discovery was asked — the roles, the selection and roles prompts, the scoring vocabulary and
+the always-read pages. New Zealand `US/US` was served for a day after entry 275 from a corridor
+resolved before the `travel_authorisation` role existed, so no page was ever looked for it.
 """
 
 import json
 from datetime import datetime
+from functools import lru_cache
 from hashlib import sha256
+from importlib.resources import files
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Literal
 
 from pydantic import Field, ValidationError, field_validator
 
-from visa_research_agent.discovery.models import Corridor, ResolvedCorridor
+from visa_research_agent.config.loader import config_path
+from visa_research_agent.discovery.models import ROLE_ORDER, Corridor, ResolvedCorridor
 from visa_research_agent.domain.models import StrictModel
 from visa_research_agent.research.errors import VisaResearchError
 
 
 class CorridorStoreError(VisaResearchError):
     """Raised when the corridor store cannot be read or written safely."""
+
+
+@lru_cache(maxsize=1)
+def discovery_fingerprint() -> str:
+    """A digest of what discovery is asked, so a corridor resolved under other rules is re-resolved.
+
+    Read once per process: the files are package data and change only with a deploy.
+    """
+
+    prompts = files("visa_research_agent.prompts")
+    material = json.dumps(
+        {
+            "roles": list(ROLE_ORDER),
+            "select": prompts.joinpath("select_candidates.txt").read_text(encoding="utf-8"),
+            "roles_prompt": prompts.joinpath("adjudicate_roles.txt").read_text(encoding="utf-8"),
+            "lexicon": config_path("discovery_lexicon.yaml").read_text(encoding="utf-8"),
+            "always_read": config_path("always_read.yaml").read_text(encoding="utf-8"),
+        },
+        sort_keys=True,
+    )
+    return sha256(material.encode("utf-8")).hexdigest()
 
 
 class StoredCorridor(StrictModel):
@@ -41,6 +70,9 @@ class StoredCorridor(StrictModel):
     trusted_domains: list[str] = Field(default_factory=list)
     withheld_domains: dict[str, str] = Field(default_factory=dict)
     stored_at: datetime
+    discovery_fingerprint: str = ""
+    """`discovery_fingerprint()` when it was resolved. Empty on a corridor stored before it was
+    recorded, which therefore never matches and is resolved again."""
 
     @field_validator("stored_at")
     @classmethod
@@ -75,11 +107,14 @@ class FileCorridorStore:
             raise CorridorStoreError("The corridor store could not be read") from exc
 
         try:
-            return StoredCorridor.model_validate_json(raw)
+            stored = StoredCorridor.model_validate_json(raw)
         except ValidationError:
             # A store written by an older schema is a miss, not a crash: re-resolving is always
             # safe, and serving something whose shape is no longer understood is not.
             return None
+        if stored.discovery_fingerprint != discovery_fingerprint():
+            return None
+        return stored
 
     def store(
         self,
@@ -94,6 +129,7 @@ class FileCorridorStore:
             trusted_domains=trusted_domains,
             withheld_domains=withheld_domains,
             stored_at=now,
+            discovery_fingerprint=discovery_fingerprint(),
         )
         path = self._path(corridor)
         try:

@@ -9,6 +9,7 @@ used only when it is the destination country's **own** government. France's real
 surfaced a commercial travel insurer, and Vietnam's ranked the US embassy first.
 """
 
+import json
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -29,7 +30,7 @@ from visa_research_agent.discovery.bootstrap import (
     DomainProposal,
     suggest_kind,
 )
-from visa_research_agent.discovery.corridor_store import FileCorridorStore
+from visa_research_agent.discovery.corridor_store import FileCorridorStore, discovery_fingerprint
 from visa_research_agent.discovery.models import (
     Corridor,
     ResolvedCorridor,
@@ -520,6 +521,27 @@ async def test_a_corridor_is_kept_for_a_week_and_no_longer(tmp_path: Path) -> No
     assert (await six_days.destination_for("France", corridor())).from_cache
     eight_days = build_service(tmp_path, provider, resolver, now=NOW + timedelta(days=8))
     assert not (await eight_days.destination_for("France", corridor())).from_cache
+
+
+async def test_a_corridor_resolved_under_other_discovery_rules_is_resolved_again(
+    tmp_path: Path,
+) -> None:
+    """New Zealand `US/US` was served for a day from a corridor resolved before the
+    `travel_authorisation` role existed (entry 275), so its authorisation was never looked for."""
+
+    provider = StubProvider(["https://france-visas.gouv.fr/en/applying"])
+    resolver = StubResolver(resolved())
+    await build_service(tmp_path, provider, resolver).destination_for("France", corridor())
+    (stored,) = (tmp_path / "corridors").glob("*.json")
+    entry = json.loads(stored.read_text(encoding="utf-8"))
+    assert entry["discovery_fingerprint"] == discovery_fingerprint()
+    entry["discovery_fingerprint"] = "resolved-under-older-rules"
+    stored.write_text(json.dumps(entry), encoding="utf-8")
+
+    again = await build_service(tmp_path, provider, resolver).destination_for("France", corridor())
+
+    assert not again.from_cache
+    assert len(resolver.trusted_seen) == 2
 
 
 async def test_a_corridor_resolved_while_a_chosen_page_was_down_is_not_stored(

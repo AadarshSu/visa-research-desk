@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [277](#277-a-corridor-resolved-under-other-discovery-rules-is-resolved-again) | **A corridor resolved under other discovery rules is resolved again** — a stored corridor records a digest of the roles, prompts, vocabulary and always-read pages; New Zealand `US/US` had been served from one resolved before the authorisation role existed |
 | [276](#276-the-plan-is-written-for-the-specific-traveller-what-they-share-through-ofself-reaches-the-plan-call) | **The plan is written for the specific traveller** — what a signed-in traveller shares through Ofself (documents, stays, applications) reaches the plan call, which names a detail beside a rule it bears on and never decides from it; typed-in values never confirm a rule; decisions identical with and without, over five replayed travellers |
 | [275](#275-a-seventh-role-travel_authorisation-looks-for-a-pre-travel-authorisation-on-every-corridor) | **A seventh role, `travel_authorisation`, looks for a pre-travel authorisation on every corridor** — scored from a page's title and address only; not load-bearing; the plan names it on a "no visa" plan only, from the role's pages; found on 8 of 8 corridors that have one and 0 of 8 that do not, shown on the plan 5 of 8; the GB always-read entries, the old rule 7e and 8e's where-to-apply bullet are gone; +3% model cost |
 | [274](#274-a-pre-travel-authorisation-fills-where-to-apply-not-the-visa-decision) | **A pre-travel authorisation fills where to apply, not the visa decision** — roles rule 7e; GB reads `gov.uk/eta` in place of the ETA eligibility list; United Kingdom `US/US` 5 of 5 "no visa" from the visa national list, 4 of 5 with the ETA on the band |
@@ -317,6 +318,28 @@ s more pressing |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
 
 ---
+
+## 277. A corridor resolved under other discovery rules is resolved again
+
+**2026-10-07. The owner's smoke test:** New Zealand `US/US` said "no visa" with no NZeTA box,
+though the replays named it every time. The plan was built from a corridor resolved on
+2026-10-06, before entry 275 added the `travel_authorisation` role. A stored corridor is reused for a
+week (entry 258), and nothing checked that it was resolved under today's rules, so no page was
+looked for the role. United Kingdom `US/US` and United States `GB/GB` were resolved fresh and
+showed theirs.
+
+**Fix.** A stored corridor records `discovery_fingerprint()`: a digest of the roles, the selection
+and roles prompts, the scoring vocabulary and the always-read pages. One recorded under another
+fingerprint, or none, is a miss and is resolved again. Every corridor stored before this is
+resolved once more on its next request, here and on the server when it pulls — a search and two
+model calls each, spread over the week the store would have kept them anyway.
+
+**Also from the same smoke test, no change:**
+- **United States `GB/GB` shows two boxes:** the ESTA box, and the decision's own condition — the
+  Visa Waiver Program covers British citizens with the right of abode (rule 8k; known problem 45).
+- **France `US/US` cites France-Visas' United States page** for "no visa". The page serves visa
+  applicants in the US, but its own words state the decision: "American passport holders are not
+  required to obtain a visa prior to visiting France for up to 90 days in any 180-day period".
 
 ## 276. The plan is written for the specific traveller: what they share through Ofself reaches the plan call
 
