@@ -399,6 +399,15 @@ JavaScript and confirmed with one real sign-in.
   fields, and `expires_at` was still 2026-10-17 — the first grant's date. So a user who re-approves a
   larger request on day 29 gets one more day of it.
 
+- **9.9 A developer token can no longer write the developer's own identity data, and the guide
+  still says it can** [observed 2026-10-07, docs]. `POST /api/v1/nodes` with a PAT, creating a
+  `travel-document` in the owner's own account to test entry 276, answered `403
+  DEV_PAT_NOT_ALLOWED`: "Developer tokens do developer things… They cannot read or write identity
+  data". The developer guide's §2.1 shows exactly that call ("Create a node as yourself") and lists
+  "exploring what data your own Paradigm account holds" as a use. **The ask:** update the guide, and
+  say how a developer seeds test identity data for their own account — the app key here is
+  read-only by design, and there is no documented way left.
+
 ## 10. Making it easier to connect an existing app
 
 In order of what would have saved the most time here:
