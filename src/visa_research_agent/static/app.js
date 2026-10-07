@@ -818,7 +818,7 @@ function glanceApply(plan, applyShown) {
   if (!location) {
     // "Nowhere" is about the visa only: an ETA or arrival card may still be due, and is on the band.
     if (needsNoVisa(plan)) {
-      return { value: "No visa application", note: plan.application_steps.length ? "What to do instead is listed above" : "" };
+      return { value: "No visa application", note: plan.application_steps.length ? "What to do instead is listed below" : "" };
     }
     // With no section below, there is nothing further to see, and the note says why instead.
     return { value: "Not confirmed", note: applyShown ? "See what we found" : "Not on the official pages we could read" };
@@ -857,14 +857,10 @@ function glanceDocuments(plan) {
 // holds only on a fact about the trip carries that fact beside the headline and a stamp saying so.
 const VERDICT_STAMPS = { visa: "Visa required", "no-visa": "Visa free", uncertain: "Unconfirmed" };
 
-// A traveller who needs no visa may still have to act before they fly: an ETA, ESTA or NZeTA, or an
-// arrival declaration. Those are as much a condition of entry as a visa, so they sit on the band
-// under "No visa required", in the plan's own words, and never called a visa (entry 264).
-// - A no-visa plan with somewhere to apply holds a pre-travel authorisation that is not a visa
-//   (rule 8e): it is named as one, beside the decision.
-// - The plan's entry steps follow, by title. Nothing is shown where the plan states neither.
-const BEFORE_YOU_GO_SHOWN = 4;
-
+// A traveller who needs no visa may still need an ETA, ESTA or NZeTA before they fly. That is as
+// much a condition of entry as a visa, so a no-visa plan with somewhere to apply names it on the band
+// under "No visa required", and never as a visa (rule 8e, entry 263). The entry steps themselves are
+// left to the section below, which is where the page wants the traveller to read on (entry 273).
 function travelAuthorisation(plan) {
   if (!needsNoVisa(plan) || !plan.where_to_apply) return null;
   const box = element("span", "verdict-authorisation");
@@ -872,21 +868,6 @@ function travelAuthorisation(plan) {
     element("span", "verdict-authorisation-label", "Travel authorisation required — not a visa"),
     element("strong", "", plan.where_to_apply.application_method || plan.where_to_apply.authority),
   );
-  return box;
-}
-
-function beforeYouGo(plan) {
-  if (!needsNoVisa(plan)) return null;
-  const titles = plan.application_steps.map((step) => step.title);
-  if (!titles.length) return null;
-  const box = element("span", "verdict-before");
-  box.append(element("span", "verdict-before-label", "Before you go"));
-  const list = element("span", "verdict-before-list");
-  titles.slice(0, BEFORE_YOU_GO_SHOWN).forEach((title) => list.append(element("span", "verdict-before-step", title)));
-  if (titles.length > BEFORE_YOU_GO_SHOWN) {
-    list.append(element("span", "verdict-before-more", `+${titles.length - BEFORE_YOU_GO_SHOWN} more`));
-  }
-  box.append(list);
   return box;
 }
 
@@ -941,8 +922,6 @@ function renderGlance(plan, documentsShown, applyShown) {
   text.append(element("span", "verdict-kicker", kicker), element("strong", "verdict-headline", decision.value));
   const authorisation = travelAuthorisation(plan);
   if (authorisation) text.append(authorisation);
-  const before = beforeYouGo(plan);
-  if (before) text.append(before);
   if (decision.note) text.append(element("span", conditional ? "verdict-condition" : "verdict-note", decision.note));
   if (route) {
     text.append(externalLink(`${route.action} ↗`, route.url, "verdict-action"));

@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [273](#273-the-band-no-longer-lists-a-no-visa-plans-entry-steps) | **The band no longer lists a no-visa plan's entry steps** — the owner wants travellers to scroll to the section that sets them out; the travel-authorisation box stays (part-reverses 263's display) |
 | [272](#272-a-questionnaire-for-another-question-is-never-where-to-apply) | **A questionnaire for another question is never where to apply** — United Kingdom `US/US` filed GOV.UK's visa checker as the route on some runs; the location is dropped in code and the prompt no longer invites it |
 | [271](#271-an-open-decision-leads-with-where-to-settle-it-and-the-strip-under-it-shows-only-what-the-plan-shows) | **An open decision leads with where to settle it** — the authority's checker, an unread official page or its contractor, as a button on the band; "Could not be confirmed" only with none; where to apply and documents marked "if you need a visa" or folded into one line; a documents cell only over a documents section |
 | [270](#270-the-result-page-redesign-a-verdict-band-a-pass-header-a-sidebar-and-a-bolder-version-parked-on-a-branch) | **The result page redesigned** — verdict band coloured by the decision, the boarding pass as the result's header, advice and weather in a sidebar, empty sections dropped on a no-visa plan, the travel-advice "could not check" note removed; a bolder makeover parked on `design-bold` |
@@ -313,6 +314,19 @@ s more pressing |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
 
 ---
+
+## 273. The band no longer lists a no-visa plan's entry steps
+
+**2026-10-07. The owner:** the band under "No visa required" listed the plan's entry steps by title
+("Before you go", entry 263's display). The owner wants travellers to scroll down to the section that
+sets them out, where each step has its timing and sources, so the band should not surface them.
+They are removed from the band. The "Before you travel" section below is unchanged. The
+"Where to apply" cell on such a plan now says the steps are "listed below".
+
+**Kept:** the "Travel authorisation required — not a visa" box. An ETA, ESTA or NZeTA is a condition
+of entry like a visa, and a traveller who misses it is turned away just the same (entry 263).
+
+Seen in the browser on stub plans, with and without a travel authorisation.
 
 ## 272. A questionnaire for another question is never where to apply
 

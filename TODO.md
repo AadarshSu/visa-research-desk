@@ -113,8 +113,8 @@ leading with it every time. Also check whether the UK's own pages state the answ
 since a reachable answer missed is a selection defect.
 
 **The result page redesign — built 2026-10-06 (entry 270):** a verdict band, the pass as the result's
-header, advice and weather in a sidebar, and a no-visa plan's travel authorisation and entry steps
-beside the decision (entry 263). A bolder makeover is parked on the local branch `design-bold`.
+header, advice and weather in a sidebar, and a no-visa plan's travel authorisation
+beside the decision (entry 263; its entry steps left the band in entry 273). A bolder makeover is parked on the local branch `design-bold`.
 **Plans without sign-in** (entry 262): ten free plans per address, with Ofself offered for importing
 details. **None of it is deployed.**
 
