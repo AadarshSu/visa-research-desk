@@ -8,7 +8,7 @@ stands, what to do next, and what is known to be broken. The history of how it g
 | --- | --- |
 | **Repository** | `github.com/AadarshSu/visa-research-agent` |
 | **Last updated** | 2026-10-07 — update this line when you touch the handoff |
-| **Tests** | 1,110 on the owner's machine, with `var/` present: 1,109 passing and 1 skipped (the opt-in browser test), run 2026-10-07; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
+| **Tests** | 1,112 on the owner's machine, with `var/` present: 1,111 passing and 1 skipped (the opt-in browser test), run 2026-10-07; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
 
 | Question | File |
 | --- | --- |
@@ -58,7 +58,7 @@ the deployed server yet**:
   address only. A "no visa" plan names it in its own field from the role's pages, and the band shows
   "Travel authorisation required — not a visa: <name> ↗"; with none found, nothing is shown. It
   replaced entry 274's GB always-read pages and rules. Found on 8 of 8 corridors that have one, 0 of
-  8 that do not; **named on the plan 5 of 8** — known problem 47.
+  8 that do not; **named on the plan 5 of 8** live; with conditions allowed, 11 of 12 replayed — known problem 47.
 - **An open decision leads with where to settle it** (entry 271). The band offers the authority's
   checker, an unread official page or its contractor as a button, and says "Could not be confirmed"
   only with none of them. Where to apply and documents read "if you need a visa" or fold into one
@@ -372,13 +372,12 @@ numbers. Each says what is true now; how it was learned is in the DECISIONS entr
     on every run through `config/always_read.yaml`, which settled `US/US` at 3 of 3. That entry
     covers this miss, and should come out once the ranking finds the page unaided.
 
-47. **A found travel authorisation reaches the plan 5 of 8 times** (entry 275). Canada `GB/GB` left
-    the eTA as an unresolved question 2 of 2: it is required only to fly in, and Canada names
-    "British citizen" among several British statuses, neither of which the profile records. One
-    United States `GB/GB` run read the ESTA page as eligibility, not a requirement. Reading the
-    ordinary trip, as 8k does (entry 264), would change what a plan concludes — **the owner's
-    decision.** Since 8e's where-to-apply bullet was removed, a "no visa" plan's `where_to_apply` is
-    `None` where there is no visa to apply for; an authorisation appears only in its own field.
+47. **A found travel authorisation reached the plan 5 of 8 times live** (entry 275). Since the
+    owner's follow-up the same day, rule 8m names one needed for any way of travelling with its
+    `condition` ("if you travel to Canada by air"); replayed, Canada went from 2 of 6 to 5 of 6, the
+    United States 6 of 6, controls 0 of 12. Not yet run end to end. A "no visa" plan's
+    `where_to_apply` is `None` where there is no visa to apply for; an authorisation appears only in
+    its own field.
 
 **Retired numbers**, kept so the numbering keeps its meaning: **44** (entry 263), **1** (entry 58), **3** (entries 34,
 38), **4** (entries 56, 57), **7** (entry 152), **18** (entry 42), **21** and **22** (entry 157),

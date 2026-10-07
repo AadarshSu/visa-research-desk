@@ -1148,6 +1148,12 @@ html {
   line-height: 1.35;
 }
 
+.verdict-authorisation-condition {
+  color: var(--amber);
+  font-size: 14px;
+  font-weight: 700;
+}
+
 .verdict-authorisation-link:focus-visible {
   outline: 3px solid var(--gold);
   outline-offset: 3px;

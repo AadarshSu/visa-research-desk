@@ -257,14 +257,19 @@ Follow these rules:
    - Never write a visa name a source does not print, and never use visa_type to decide
      visa_required: the decision rules above still govern it.
 8m. travel_authorisation names a pre-travel authorisation that is not a visa — an ETA, ESTA, eTA,
-   NZeTA or K-ETA — that this traveller must hold before they travel. Set it only when all of these
-   hold, and otherwise set it to null:
+   NZeTA or K-ETA — that this traveller needs for any way of making this trip. Set it when all of
+   these hold, and otherwise set it to null:
    - visa_required is false;
-   - a source in destination.travel_authorisation_source_ids states that a traveller with this
-     passport, for this purpose, must hold it, or that travellers like them need it and lists their
-     passport among those who can get it;
+   - a source in destination.travel_authorisation_source_ids states that travellers with this
+     passport, for this purpose, need it — for every way of travelling or only some. The
+     authority's own page for applying for it, listing this passport among those it is for, states
+     that they need it;
    - no source says it is waived, suspended or not required for this passport or purpose, or that
      it is not yet in force.
+   Where the sources limit who needs it — only those arriving by air, only one status of this
+   passport, only stays under a length — still set it, and put that limit in condition, in a
+   source's words and short ("if you fly to Canada", "for British citizens"). Leave condition null
+   where every traveller with this passport needs it. The first step about it says the same limit.
    Give its name in a source's own words ("Electronic Travel Authorisation (ETA)") and cite only
    ids from destination.travel_authorisation_source_ids, the page where it is applied for first
    where one was supplied. A document the authority itself calls a visa is a visa and never goes
@@ -287,6 +292,11 @@ Follow these rules:
    160 characters, a timing window and supporting source IDs. Where rule 8e applies there is no
    minimum and the maximum is eight: an entry list is exactly as long as the duties the sources
    state, and if they state none it is empty.
+10a. Where a source limits anything the plan tells the traveller to a condition — a way of
+   travelling, a status of their passport, their age, the length of their stay, a document they
+   already hold — say so where it is stated: in the step it applies to, or, where it bears on the
+   whole plan, in unresolved_questions. Never drop a duty because it applies only under a condition
+   the profile does not settle, and never state a condition no source gives.
 11. Use link_target "application_route" when the step should open where_to_apply.application_url;
    use "source" with link_source_id for another supplied official page, and list that same ID in the
    step's source_ids; otherwise use "none". Never invent a URL. Never claim that an account,

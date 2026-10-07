@@ -433,6 +433,35 @@ about 11%, one more page read.
 "visa required", `verified`, 3 of 3, and Singapore `PH/PH` "no visa", `verified`, 3 of 3 — as before, and
 neither names an authorisation.
 
+### Then the owner: name whatever any form of travel needs, and say its condition
+
+**2026-10-07, the owner, on known problem 47:** a plan names whatever is needed for whatever form of
+travel, and a special condition on anything at all is said in the plan — in the first step or the
+caveats.
+
+- **Rule 8m** now sets `travel_authorisation` where travellers with this passport need it for any
+  way of making the trip, and puts any limit the sources state — only by air, only one status of
+  the passport — in a new `condition`, which the band shows under the name ("If you travel to
+  Canada by air"). The authority's own page for applying for it, listing this passport among those
+  it is for, counts as stating the need: the ESTA page says only who is *eligible*.
+- **Rule 10a** asks the same of everything else: a duty a source limits to a condition is said in
+  its step or in the unresolved questions, never dropped because the profile does not settle the
+  condition, and no condition is invented.
+- **The code keeps the role's pages it cites** and leaves off any other page cited beside them; it
+  drops the authorisation only when none of them is a role page. One replay named the eTA citing the
+  role's page and an eligibility page, and the first version dropped it whole.
+
+**Replayed** on today's captured packets, the plan call alone (`var/travel-auth-2026-10-07/`):
+
+| packets | rule 8m with conditions | rule 8m as committed |
+| --- | --- | --- |
+| Canada `GB/GB`, 2 packets × 3 | **eTA named 5 of 6**, "if you travel to Canada by air" | 2 of 6 |
+| United States `GB/GB`, 2 packets × 3 | ESTA 6 of 6, "for travel of 90 days or less…" | 6 of 6 (live, 1 of 2) |
+| United Kingdom, New Zealand `US/US` × 2 | named 4 of 4, no condition | — |
+| South Korea, France, Japan `GB/GB`, Australia `US/US`, Japan `IN/GB`, Singapore `PH/PH` × 2 | none named, 0 of 12; every decision unchanged | — |
+
+Not run end to end; the replays are the measurement.
+
 ## 274. A pre-travel authorisation fills where to apply, not the visa decision
 
 **Superseded by entry 275 the same day:** the authorisation has its own role and plan field, rule 7e

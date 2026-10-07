@@ -110,10 +110,9 @@ the address; Russia waits on evidence for `mid.ru`; the eight unclear government
 
 **A pre-travel authorisation has its own role — built 2026-10-07 (entry 275),** replacing entry
 274's GB-only pages and rules. Found on 8 of 8 corridors that have one; on the plan 5 of 8.
-**Left, the owner's to decide (known problem 47):** whether a plan may name an authorisation needed
-only for the ordinary way in — Canada's eTA, required to fly — as 8k states the ordinary side
-(entry 264). Measure first by replaying the plan call on `travel-auth-2026-10-07`'s Canada and
-United States packets with `var/travel-auth-2026-10-07/replay_plan.py`.
+**Then (the owner):** an authorisation needed for any way of travelling is named with its
+condition, and any stated condition is said in a step or the caveats (rules 8m, 10a). Replayed only;
+**left:** run Canada and United States `GB/GB` end to end.
 
 **The result page redesign — built 2026-10-06 (entry 270):** a verdict band, the pass as the result's
 header, advice and weather in a sidebar, and a no-visa plan's travel authorisation

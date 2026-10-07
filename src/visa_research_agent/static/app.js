@@ -872,6 +872,10 @@ function travelAuthorisation(plan) {
     element("span", "verdict-authorisation-label", "Travel authorisation required — not a visa"),
     externalLink(`${authorisation.name} ↗`, authorisation.url, "verdict-authorisation-link"),
   );
+  // Whom or which way of travelling it is for, where the sources limit it — "If you fly to Canada".
+  if (authorisation.condition) {
+    box.append(element("span", "verdict-authorisation-condition", sentenceCase(authorisation.condition)));
+  }
   return box;
 }
 

@@ -1200,19 +1200,33 @@ async def test_a_no_visa_plan_names_the_authorisation_its_role_pages_state() -> 
 
 
 @pytest.mark.anyio
-async def test_an_authorisation_resting_on_a_page_not_chosen_for_it_is_dropped() -> None:
-    """Only pages discovery chose for the role may carry it; an empty one says none was found."""
+async def test_an_authorisation_rests_only_on_pages_chosen_for_it() -> None:
+    """Only pages discovery chose for the role may carry it: another page cited beside one is left
+    off, and with none of them it is dropped — an empty one says none was found."""
 
-    plan = await plan_from(
+    destination = authorisation_chosen(singapore_config())
+    beside = await plan_from(
         entry_draft(
             travel_authorisation=TravelAuthorisationDraft(
-                name="ETA", source_ids=[AUTHORISATION_PAGE, "sg_ica_india_visa_details"]
+                name="ETA", source_ids=["sg_ica_india_visa_details", AUTHORISATION_PAGE]
             )
         ),
-        authorisation_chosen(singapore_config()),
+        destination,
+    )
+    alone = await plan_from(
+        entry_draft(
+            travel_authorisation=TravelAuthorisationDraft(
+                name="ETA", source_ids=["sg_ica_india_visa_details"]
+            )
+        ),
+        destination,
     )
 
-    assert plan.travel_authorisation is None
+    assert beside.travel_authorisation is not None
+    assert beside.travel_authorisation.source_ids == [AUTHORISATION_PAGE]
+    page = next(s for s in destination.sources if s.source_id == AUTHORISATION_PAGE)
+    assert str(beside.travel_authorisation.url) == str(page.url)
+    assert alone.travel_authorisation is None
 
 
 @pytest.mark.anyio
@@ -1273,3 +1287,39 @@ def test_the_plan_puts_an_authorisation_in_its_own_field_never_where_to_apply() 
     assert "8m. travel_authorisation" in prompt
     assert "never in\n     where_to_apply" in prompt
     assert "where_to_apply is never null" not in prompt
+
+
+@pytest.mark.anyio
+async def test_an_authorisation_needed_only_for_some_travel_is_named_with_its_condition() -> None:
+    """The owner, entry 275: name whatever any form of travel needs, with the limit beside it —
+    Canada's eTA is needed only to fly in. A blank condition is no condition."""
+
+    destination = authorisation_chosen(singapore_config())
+    limited = await plan_from(
+        entry_draft(
+            travel_authorisation=TravelAuthorisationDraft(
+                name="eTA", condition=" if you fly to Canada ", source_ids=[AUTHORISATION_PAGE]
+            )
+        ),
+        destination,
+    )
+    blank = await plan_from(
+        entry_draft(
+            travel_authorisation=TravelAuthorisationDraft(
+                name="eTA", condition="  ", source_ids=[AUTHORISATION_PAGE]
+            )
+        ),
+        destination,
+    )
+
+    assert limited.travel_authorisation is not None
+    assert limited.travel_authorisation.condition == "if you fly to Canada"
+    assert blank.travel_authorisation is not None
+    assert blank.travel_authorisation.condition is None
+
+
+def test_a_condition_a_source_states_is_never_dropped_from_the_plan() -> None:
+    prompt = load_extraction_prompt()
+
+    assert "put that limit in condition" in prompt
+    assert "Never drop a duty because it applies only under a condition" in prompt

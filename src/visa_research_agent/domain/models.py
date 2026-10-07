@@ -813,6 +813,7 @@ class TravelAuthorisationDraft(StrictModel):
     """
 
     name: str = Field(min_length=1, max_length=120)
+    condition: str | None = Field(default=None, max_length=200)
     source_ids: list[str] = Field(min_length=1)
 
 
@@ -827,6 +828,10 @@ class TravelAuthorisation(StrictModel):
     name: str = Field(min_length=1, max_length=120)
     url: AnyHttpUrl
     """The first cited page, set by the application, never by the model."""
+    condition: str | None = Field(default=None, max_length=200)
+    """Who or which way of travelling it applies to, where the sources limit it — "if you fly to
+    Canada", "for British citizens". Named whatever form of travel needs it, with the limit beside
+    it: the owner, entry 275."""
     source_ids: list[str] = Field(min_length=1)
 
 

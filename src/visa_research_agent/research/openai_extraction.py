@@ -556,24 +556,29 @@ def authorisation_from_role_pages(
 ) -> TravelAuthorisation | None:
     """The travel authorisation a plan names, or `None` — the owner's decision, entry 275.
 
-    Kept only on a plan stating that no visa is required, and only where every page it cites was
-    chosen for `travel_authorisation` and read this run. Anything else is dropped rather than
-    refused: an empty authorisation says only that none was found, which is true of a plan whose
-    draft named one the pages chosen for it do not support. The link is the first cited page, so
-    the traveller is never sent anywhere this run did not read.
+    Kept only on a plan stating that no visa is required, and resting only on pages chosen for
+    `travel_authorisation` and read this run: any other page the draft cites beside them is left
+    off, and with none of them left it is dropped rather than refused. An empty authorisation says
+    only that none was found, which is true of a draft the role's pages do not support. The link is
+    the first role page cited, so the traveller is never sent anywhere this run did not read.
     """
 
     if draft is None or not entry_only:
         return None
     urls = {reference.source_id: reference.url for reference in references}
-    if not all(
-        source_id in role_source_ids and source_id in urls for source_id in draft.source_ids
-    ):
+    cited = [
+        source_id
+        for source_id in dict.fromkeys(draft.source_ids)
+        if source_id in role_source_ids and source_id in urls
+    ]
+    if not cited:
         return None
+    condition = (draft.condition or "").strip()
     return TravelAuthorisation(
         name=draft.name.strip(),
-        url=urls[draft.source_ids[0]],
-        source_ids=list(dict.fromkeys(draft.source_ids)),
+        url=urls[cited[0]],
+        condition=condition or None,
+        source_ids=cited,
     )
 
 
