@@ -1097,6 +1097,8 @@ class VisaPlanDraft(StrictModel):
     decision_condition: str | None = None
     """The fact about this trip the decision holds on, where the profile does not record it — see
     `VisaPlan.decision_condition`."""
+    decided_for: str | None = Field(default=None, max_length=160)
+    """See `VisaPlan.decided_for`."""
     visa_type: str | None
     explanation: str = Field(min_length=1)
     decision_source_ids: list[str] = Field(min_length=1)
@@ -1131,6 +1133,12 @@ class VisaPlan(StrictModel):
     state for one side of such a fact used to come out as an open decision. The interface shows the
     condition beside the decision, and a conditional plan is never `verified`, because the
     traveller has not confirmed the fact it rests on."""
+    decided_for: str | None = Field(default=None, max_length=160)
+    """The traveller's own facts the decision was answered for, where the sources' answer turns on
+    one — "your trip, 1 November 2026 – 30 January 2027", "your passport, read from the document"
+    (the owner, entry 280). Only exact dates, a rough span wholly on one side of the rule, or a
+    shared detail read off the document may decide; the app drops it otherwise. Shown beside the
+    decision so the traveller sees what it rests on."""
     visa_type: str | None
     explanation: str = Field(min_length=1)
     decision_source_ids: list[str] = Field(min_length=1)
@@ -1225,6 +1233,8 @@ class VisaPlan(StrictModel):
     def validate_condition_has_a_decision(self) -> "VisaPlan":
         """A condition qualifies a stated decision; beside an open one it would qualify nothing."""
 
+        if self.decided_for is not None and self.visa_required is None:
+            raise ValueError("an open decision was not answered for the traveller's facts")
         if self.decision_condition is not None:
             if self.visa_required is None:
                 raise ValueError("a decision condition needs a stated decision to qualify")

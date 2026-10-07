@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [280](#280-a-fact-the-traveller-gave-may-decide-the-plan-exact-dates-a-rough-span-wholly-on-one-side-a-detail-read-off-a-document) | **A fact the traveller gave may decide the plan** — exact dates; a rough span wholly on one side; a shared detail read off a document, never a typed-in one; `decided_for` shown beside the decision |
 | [279](#279-travel-dates-reach-the-plan-call-and-no-store-shared-between-travellers-holds-anything-about-one) | **Travel dates reach the plan call; no shared store holds anything about one traveller** — counts made by the app, the model compares; dates never change the decision; corridor store and plan reuse checked and frozen in tests |
 | [278](#278-what-a-traveller-must-see-leaves-the-open-questions-exceptions-disagreements-and-gaps) | **What a traveller must see leaves the open questions** — `exceptions`, `disagreements` and `gaps` are shown, `unresolved_questions` kept for us; `disagreements` returns entry 30's field within item 13's bounds |
 | [277](#277-a-corridor-resolved-under-other-discovery-rules-is-resolved-again) | **A corridor resolved under other discovery rules is resolved again** — a stored corridor records a digest of the roles, prompts, vocabulary and always-read pages; New Zealand `US/US` had been served from one resolved before the authorisation role existed |
@@ -321,7 +322,46 @@ s more pressing |
 
 ---
 
+## 280. A fact the traveller gave may decide the plan: exact dates, a rough span wholly on one side, a detail read off a document
+
+**2026-10-08. The owner**, asked whether a rule carrying its own end date may decide the plan for
+exact dates: yes — travellers give their dates and share their identity so the plan can use them.
+Three answers the same day:
+- **Shared details decide only when read off a document.** A typed-in value or a self-declared
+  stay is still only mentioned beside the condition (Ofself's own rule: it may raise a question
+  and never close one).
+- **A plan decided this way may be `verified`**, and says what it rests on.
+- **A rough span decides when every day it could cover is on the same side** of the rule's date or
+  within its limit; otherwise it does not.
+
+**Built.**
+- **Rule 18**: where the sources' answer turns on a fact the traveller gave — `trip`, or a shared
+  detail with `*_read_off_document` true or a stay not self-declared — answer for them:
+  `visa_required` and `visa_type` for their case, no `decision_condition`, and `decided_for` naming
+  the facts. The sources still state the rule; where they state nothing for this traveller's case,
+  the decision is null (rule 4). Rules 8k, 15 and 17 hand over to it.
+- **`decided_for`** on the draft and the plan, kept by the app only when `may_decide(profile)` —
+  dates, or a detail read off a document — and only on a stated decision. Shown on the band ("For
+  your trip, …") and in the decision panel ("Answered for …"). A plan answered this way has no
+  condition, so it can be `verified`.
+
+**Replayed** on eight packets with trips, two runs each (`var/decide-2026-10-08/`):
+- **New Zealand `US/US`, 19 nights:** "no visa", answered for the trip; the stay condition gone.
+- **Malaysia, rough November:** "no visa", answered for "your approximate November 2026 trip" —
+  wholly before "visa-exempt until 31 December 2026".
+- **Malaysia, rough November to January:** not decided — "your arrival may be before or after the
+  stated exemption end date" — and open, since the pages state nothing after it.
+- **Malaysia exact across the date, and the United Kingdom `US/US` for 241 nights:** open, saying
+  the pages do not state what applies past the exemption or beyond six months. A stray
+  `decided_for` on an open decision is dropped by the app.
+- **United States `GB/GB`:** "no visa" for the trip; the e-passport fact, not given, stayed a
+  condition or became an exception.
+- **Japan `IN/GB` and the Singapore `PH/PH` control:** unchanged, no `decided_for`.
+
 ## 279. Travel dates reach the plan call, and no store shared between travellers holds anything about one
+
+**Its "the dates never change the decision" is superseded by entry 280** the next day: the
+traveller's own facts may now decide, within that entry's bounds.
 
 **2026-10-07. The owner:** use the trip dates, when given, wherever the plan needs them; and make sure
 the cache is not so general that one traveller's specific plan is served to another.

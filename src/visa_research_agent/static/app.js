@@ -364,6 +364,10 @@ function renderDecision(plan, ctx) {
     container.append(
       richText("p", "decision-condition", `Only if ${plan.decision_condition.replace(/\.$/, "")}.`),
     );
+  } else if (plan.decided_for) {
+    container.append(
+      element("p", "decision-basis", `Answered for ${plainText(plan.decided_for).replace(/\.$/, "")}.`),
+    );
   }
   // The visa type leads where the plan names one. "Visa type unresolved" in front of an explanation
   // that already says why only stacked a third hedge on a conditional answer (entry 254).
@@ -851,13 +855,20 @@ function glanceDecision(plan) {
     if (route) return { tone: "uncertain", value: route.headline, note: route.note, route };
     return { tone: "uncertain", value: "Could not be confirmed", note: "See why in the visa decision" };
   }
+  // What the answer was given for, where the traveller's own dates or document decided it (entry
+  // 280): "For your trip, 1 November 2026 to 30 January 2027".
+  const decidedFor = plan.decided_for ? `For ${plainText(plan.decided_for).replace(/\.$/, "")}` : "";
   const condition = plan.decision_condition
     ? `Only if ${plainText(plan.decision_condition).replace(/\.$/, "")}`
     : "";
   if (plan.visa_required) {
-    return { tone: "visa", value: "Visa required", note: condition || sentenceCase(plan.visa_type) || "" };
+    return {
+      tone: "visa",
+      value: "Visa required",
+      note: condition || [decidedFor, sentenceCase(plan.visa_type)].filter(Boolean).join(" · "),
+    };
   }
-  return { tone: "no-visa", value: "No visa required", note: condition };
+  return { tone: "no-visa", value: "No visa required", note: condition || decidedFor };
 }
 
 // Where a decision could not be stated, the band leads with where the traveller can get it, if this

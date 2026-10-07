@@ -2418,3 +2418,11 @@ footer p {
   font-size: 13px;
   overflow-wrap: anywhere;
 }
+
+/* What a decision was answered for, where the traveller's own dates or document decided it. */
+.decision-basis {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}

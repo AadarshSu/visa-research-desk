@@ -85,6 +85,26 @@ def describe_country(code: str) -> str:
     return f"{country.name} ({code})" if country is not None else code
 
 
+def may_decide(traveller_profile: TravellerProfile) -> bool:
+    """Whether the traveller gave anything a decision may be answered for (the owner, entry 280):
+    trip dates, or a shared detail read off the document. A typed-in or self-declared one may raise
+    a question and never close one, so on its own it decides nothing."""
+
+    if traveller_profile.trip is not None:
+        return True
+    shared = traveller_profile.shared_details
+    if shared is None:
+        return False
+    return (
+        shared.date_of_birth_read_off_document
+        or any(
+            document.expires_at_read_off_document or document.issued_at_read_off_document
+            for document in shared.documents
+        )
+        or any(not stay.self_declared for stay in shared.stays)
+    )
+
+
 def whole_months_between(start: date, end: date) -> int:
     """Calendar months from `start` to `end`, counting only completed ones; negative if past."""
 
@@ -493,6 +513,11 @@ class OpenAIVisaPlanExtractor:
         condition = (written.decision_condition or "").strip()
         decision_condition = condition if visa_required is not None and condition else None
         entry_only = visa_required is False
+        decided_for = (
+            (written.decided_for or "").strip() or None
+            if visa_required is not None and may_decide(traveller_profile)
+            else None
+        )
 
         # Likely checklist pages discovery could not open, named so the traveller can (item 9). Only
         # where this plan has no checklist and there is an application to have one for, and never a
@@ -565,6 +590,7 @@ class OpenAIVisaPlanExtractor:
                 destination=draft.destination,
                 visa_required=visa_required,
                 decision_condition=decision_condition,
+                decided_for=decided_for,
                 visa_type=written.visa_type,
                 explanation=written.explanation,
                 decision_source_ids=draft.decision_source_ids,

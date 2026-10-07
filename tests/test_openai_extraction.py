@@ -35,6 +35,7 @@ from visa_research_agent.research.model_usage import FileModelUsageLog, ModelCal
 from visa_research_agent.research.openai_extraction import (
     OpenAIVisaPlanExtractor,
     load_extraction_prompt,
+    may_decide,
     traveller_in_packet,
     whole_months_between,
     without_inline_source_ids,
@@ -1492,9 +1493,60 @@ def test_the_trip_and_every_count_from_it_are_given_to_the_plan_call() -> None:
     assert "trip" not in traveller_in_packet(DEFAULT_TRAVELLER_PROFILE, today=today)
 
 
-def test_dates_tailor_the_plan_and_never_decide_it() -> None:
+def test_dates_and_documents_may_decide_and_typed_values_never_do() -> None:
+    """The owner, entry 280: exact dates decide; a rough span only wholly on one side; a shared
+    detail only when read off the document."""
+
     prompt = " ".join(load_extraction_prompt().split())
 
     assert "17. traveller_profile.trip, when present" in prompt
-    assert "The dates never change visa_required, visa_type or decision_condition" in prompt
+    assert "18. Where the sources' answer turns on a fact about this trip" in prompt
+    assert "Exact dates decide. A rough span decides only where every day it could cover" in prompt
+    assert "A typed-in detail or a self-declared stay never decides (rule 15)" in prompt
     assert "a typed-in date may never confirm a rule is met" in prompt
+
+
+def test_only_a_given_fact_may_decide() -> None:
+    typed = SharedDetails(
+        documents=[SharedDocument(kind="passport", nationality="IN", expires_at=date(2027, 2, 7))]
+    )
+    read = SharedDetails(
+        documents=[
+            SharedDocument(
+                kind="passport",
+                nationality="IN",
+                expires_at=date(2027, 2, 7),
+                expires_at_read_off_document=True,
+            )
+        ]
+    )
+    trip = TripDates(mode="rough", start=date(2026, 12, 1), end=date(2026, 12, 31))
+
+    assert not may_decide(DEFAULT_TRAVELLER_PROFILE)
+    assert not may_decide(DEFAULT_TRAVELLER_PROFILE.model_copy(update={"shared_details": typed}))
+    assert may_decide(DEFAULT_TRAVELLER_PROFILE.model_copy(update={"shared_details": read}))
+    assert may_decide(DEFAULT_TRAVELLER_PROFILE.model_copy(update={"trip": trip}))
+
+
+@pytest.mark.anyio
+async def test_a_decision_is_answered_for_the_traveller_only_when_they_gave_the_fact() -> None:
+    draft = load_golden_draft().model_copy(
+        update={"requirements": [], "decided_for": "your trip, 1 to 20 December 2026"}
+    )
+    fetched_sources = await FixtureSourceFetcher().fetch(singapore_config())
+    extractor = OpenAIVisaPlanExtractor(
+        FakeStructuredPlanGenerator(draft), maximum_input_characters=80_000
+    )
+    trip = TripDates(mode="exact", start=date(2026, 12, 1), end=date(2026, 12, 20))
+
+    with_dates = await extractor.extract(
+        singapore_config(),
+        DEFAULT_TRAVELLER_PROFILE.model_copy(update={"trip": trip}),
+        fetched_sources,
+    )
+    without = await extractor.extract(
+        singapore_config(), DEFAULT_TRAVELLER_PROFILE, fetched_sources
+    )
+
+    assert with_dates.decided_for == "your trip, 1 to 20 December 2026"
+    assert without.decided_for is None

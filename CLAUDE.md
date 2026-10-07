@@ -186,6 +186,10 @@ defect.
     falls on is stated, not the side needing a visa (entry 264). A fact that decides only *which*
     visa, or a disqualification such as a conviction, is never the condition (entry 268). **8l:** an
     exemption for another purpose says nothing about this trip, either way. **A list of who may enter or stay never decides transit** (8f, roles 7b).
+  - **Rule 18 (entry 280): a fact the traveller gave may decide.** Exact trip dates decide; a rough
+    span only where every day it could cover is on one side of the rule; a shared detail only when
+    read off the document — a typed-in one never closes a question. The sources still state the
+    rule; the fact only says which case the traveller is in, and `decided_for` names it.
   - **Do not widen any of them to another kind of silence without a decision entry.**
 - **A checklist is linked, never copied (entry 211).** A plan lists no documents; it links the
   authority's checklist, and names an unread one with its link only where the government page's own
