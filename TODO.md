@@ -217,15 +217,16 @@ is in [CRUX.md](CRUX.md), argued in entries 180 and 181; platform surprises are 
 - **Revocation:** our session is our own cookie, so revoking on Ofself logs no one out here. Ofself
   fires `session.revoked` to a webhook, which needs a public address — the EC2 host has one (entry
   231); the webhook is not built. Record what the exchange returns on the next real sign-in.
-- **Stop keeping plan drafts past their reuse window.** `FilePlanStore` never deletes, and a draft
-  holds the whole `TravellerProfile`.
+- **Stop keeping plan drafts past their reuse window.** `FilePlanStore` never deletes. A draft holds
+  no profile field, but since entry 276 its prose may name what the traveller shared.
 - The authorize page echoes no `state`, so a callback cannot be tied to its login; the pending cookie
   refuses a browser that never started. Cannot be closed from this side.
 
 **Six rules an adapter must not lose.**
-1. **Read only fields that select guidance; drop the rest.** `build_research_packet` sends the whole
-   profile to the model, so any field added to `TravellerProfile` goes to a third party on every
-   plan. Keep `StrictModel`'s `extra="forbid"`.
+1. **What the traveller shared reaches the plan call, and only through the adapter** — amended by
+   the owner, entry 276, from "read only fields that select guidance". `shared_details` is filled
+   only for a signed-in traveller, never from a request body; it tailors and never decides. Never a
+   number, a name, a scan, a note or a refusal's reason. Keep `StrictModel`'s `extra="forbid"`.
 2. **A passport type the program cannot research is refused, never coerced** to `ordinary`.
 3. **A traveller with more than one passport chooses; the adapter never picks.** Residence likewise —
    another app's record is a default to confirm, never the corridor.

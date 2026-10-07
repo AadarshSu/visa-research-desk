@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [276](#276-the-plan-is-written-for-the-specific-traveller-what-they-share-through-ofself-reaches-the-plan-call) | **The plan is written for the specific traveller** — what a signed-in traveller shares through Ofself (documents, stays, applications) reaches the plan call, which names a detail beside a rule it bears on and never decides from it; typed-in values never confirm a rule; decisions identical with and without, over five replayed travellers |
 | [275](#275-a-seventh-role-travel_authorisation-looks-for-a-pre-travel-authorisation-on-every-corridor) | **A seventh role, `travel_authorisation`, looks for a pre-travel authorisation on every corridor** — scored from a page's title and address only; not load-bearing; the plan names it on a "no visa" plan only, from the role's pages; found on 8 of 8 corridors that have one and 0 of 8 that do not, shown on the plan 5 of 8; the GB always-read entries, the old rule 7e and 8e's where-to-apply bullet are gone; +3% model cost |
 | [274](#274-a-pre-travel-authorisation-fills-where-to-apply-not-the-visa-decision) | **A pre-travel authorisation fills where to apply, not the visa decision** — roles rule 7e; GB reads `gov.uk/eta` in place of the ETA eligibility list; United Kingdom `US/US` 5 of 5 "no visa" from the visa national list, 4 of 5 with the ETA on the band |
 | [273](#273-the-band-no-longer-lists-a-no-visa-plans-entry-steps) | **The band no longer lists a no-visa plan's entry steps** — the owner wants travellers to scroll to the section that sets them out; the travel-authorisation box stays (part-reverses 263's display) |
@@ -316,6 +317,67 @@ s more pressing |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
 
 ---
+
+## 276. The plan is written for the specific traveller: what they share through Ofself reaches the plan call
+
+**2026-10-07. The owner's direction, then four answers the same day:**
+- **A typed-in value raises a question and never closes one**, as Ofself's travel schemas say: a
+  passport expiry typed in may warn that it could be too soon, never confirm a rule is met; only a
+  date read off the document may.
+- **A shared detail never settles a condition.** Where the plan holds on a fact — "only if you
+  fly", "only if your stays total under 90 days" — the condition stays, and the plan says beside it
+  what the traveller's shared details suggest. The grade is unchanged by them.
+- **Used without a list on the form.** Sharing with Ofself is the consent; the plan names each
+  detail it used, where it used it.
+- **Signed-in Ofself travellers only, for now.** The anonymous form is unchanged, and no request
+  body can supply these details.
+
+**The owner, 2026-10-07:** not a checklist of facts to ask about. The question changes from "a
+traveller with this passport, from this place, going here" to "this traveller" — their passport's
+expiry, their travel history, the documents they hold, whatever they chose to share — and the plan
+call has all of it and tailors what it was going to say.
+
+**Why it fits the design already.** Discovery never sees the traveller, only the corridor (entry
+44), so research is unchanged and shared between travellers; only the plan call, ~10s and ~3 cents,
+reads the traveller. Model calls go through Ofself's own Personas (entry 188), so what a traveller
+shared with Ofself is read by Ofself's model route, not a new third party. CRUX §7's planned
+workflows A, B, D and E — passport validity, residence status, past stays against a rolling
+allowance, a prior refusal — become one mechanism instead of four features.
+
+**Built.**
+- **`TravellerProfile.shared_details`** (`SharedDetails`): the traveller's documents — kind,
+  nationality, issuing state, what it grants, issue and expiry dates each with whether it was read
+  off the document, status — their stays (country, dates, exempt, whether self-declared), their
+  applications (kind, outcome, decision date) and a date of birth where shared. Read by
+  `OfselfIdentity.shared_details` from fields the DLR already requests; another person's records on
+  the account, a diplomatic passport and a lost or stolen document are left out. Never a number, a
+  name, a scan, a note, an obligation's `where` or a refusal's reason.
+- **Only a signed-in traveller gets them.** `get_traveller_source` returns
+  `SharedDetailsTravellerSource` for a signed-in browser; a request body cannot carry the field. A
+  withdrawn grant refuses the plan with a reconnect; Ofself unreachable plans at corridor level and
+  logs it, since that plan is still correct.
+- **The packet carries them only when there are some**, with countries written out, so every other
+  packet — and its reuse key — is byte for byte what it was.
+- **Plan rule 15**: a rule comes only from a source; a detail is named beside a rule it bears on;
+  a typed-in date or a self-declared stay may raise a question and never confirm a rule is met; a
+  detail never settles a condition and never changes `visa_required`, `visa_type` or
+  `decision_condition`; nothing a source gives is dropped; travel dates are not given, so no
+  validity or day count is computed.
+- **Item 55's rule 1 is amended** to match (TODO).
+
+**Measured** by replaying the plan call on today's packets with synthetic shared details, against
+the same packets without them, three runs each (`var/travel-auth-2026-10-07/shared*`). Nothing is
+built on the page, and no real traveller's records were used — the owner's account holds none.
+
+| traveller | decision, condition and authorisation | what the plan said of the details |
+| --- | --- | --- |
+| Canada `GB/GB`, passport read off the chip, a past eTA | identical in all 6 | 1 of 3: the eTA is tied to "your current UK passport, which expires on 3 March 2027" |
+| United Kingdom `US/US`, expiry typed in, a refused UK visa | identical | 1 of 3: "You shared an expiry date of 30 November 2026" beside "valid for your whole stay"; the refusal never, as no source asks about one |
+| France `US/US`, self-declared stays in Spain and Italy | identical (one run of each arm stated the 90/180 condition) | 3 of 3: the stays "may count toward the Schengen 90-day limit", with no day count |
+| Japan `IN/GB`, a US B1/B2 visa and a typed-in UK Graduate permit | identical, "visa required" | 3 of 3: the permit, beside the eVISA's "permission to reside in the UK", as a question; the US visa never, as nothing turns on it |
+| Singapore `PH/PH`, expiry typed in | identical, "no visa" | 3 of 3: the expiry beside the six-months rule, never as met |
+
+No tailored sentence presented a typed-in value as meeting a rule.
 
 ## 275. A seventh role, `travel_authorisation`, looks for a pre-travel authorisation on every corridor
 

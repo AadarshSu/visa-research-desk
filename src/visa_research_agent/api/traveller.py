@@ -12,8 +12,11 @@ deciding field must ask the traveller instead, or it would research someone else
 them without saying so (item 55, rule 4).
 """
 
+import logging
+from datetime import date
 from typing import Protocol
 
+from visa_research_agent.api.ofself import OfselfIdentity, OfselfUnavailable
 from visa_research_agent.api.schemas import VisaPlanRequest
 from visa_research_agent.config.traveller import DEFAULT_TRAVELLER_PROFILE
 from visa_research_agent.domain.models import TravellerProfile
@@ -34,3 +37,35 @@ class RequestBodyTravellerSource:
         if request.traveller is None:
             return DEFAULT_TRAVELLER_PROFILE
         return request.traveller.to_profile()
+
+
+logger = logging.getLogger(__name__)
+
+
+class SharedDetailsTravellerSource:
+    """The traveller the form describes, with what they shared through Ofself (entry 276).
+
+    The corridor still comes from the form the traveller confirmed; Ofself adds only the details
+    the plan call tailors to. **Only this source fills them** — a request body has no field for
+    them, so nobody can supply another person's documents by posting them.
+
+    A lost grant refuses the plan, as it does everywhere (TODO item 55): a traveller who withdrew
+    access is never quietly served. Ofself being unreachable does not: the corridor-level plan is
+    still correct for them, only less tailored, and that is logged rather than hidden.
+    """
+
+    def __init__(self, identity: OfselfIdentity, user_id: str) -> None:
+        self.identity = identity
+        self.user_id = user_id
+        self.body = RequestBodyTravellerSource()
+
+    async def traveller_for(self, request: VisaPlanRequest) -> TravellerProfile:
+        profile = await self.body.traveller_for(request)
+        try:
+            shared = await self.identity.shared_details(self.user_id, today=date.today())
+        except OfselfUnavailable as exc:
+            logger.warning("Planning without the traveller's shared details: %s", exc)
+            return profile
+        if shared.is_empty():
+            return profile
+        return profile.model_copy(update={"shared_details": shared})

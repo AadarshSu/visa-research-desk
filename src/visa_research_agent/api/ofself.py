@@ -9,9 +9,12 @@ more — stays, obligations, a date of birth — and none of those is read here 
 it. What is read today: citizenships; a travel document's kind, code, nationality, issuing state,
 expiry, status, holder, label, the class a permit grants, and where each date came from; an open
 travel plan's label, window and candidates; and a place's kind, country code and parent, to turn a
-candidate into a country.
+candidate into a country. **For the plan call (entry 276):** the traveller's own documents with
+their dates and what each grants, their stays, and what they applied for and how it ended — never a
+number, a name, a scan, a note or a refusal's reason.
 
-**What it returns is a default for the traveller to confirm, never a corridor.** The node may have
+**What the form gets is a default for the traveller to confirm, never a corridor;** what the plan
+call gets tailors a plan and never decides one. The node may have
 been parsed out of a CV by another app rather than stated by the person, and someone with two
 citizenships chooses which passport a trip is on, so nothing here picks one (item 55, rule 3). An
 identity that yields no nationality means *ask the traveller* — never the default traveller, which
@@ -37,7 +40,14 @@ from pydantic import Field
 
 from visa_research_agent.api.countries import normalise_country
 from visa_research_agent.discovery.lexicon import get_country_registry
-from visa_research_agent.domain.models import StrictModel, TravelPurpose
+from visa_research_agent.domain.models import (
+    SharedApplication,
+    SharedDetails,
+    SharedDocument,
+    SharedStay,
+    StrictModel,
+    TravelPurpose,
+)
 from visa_research_agent.research.errors import VisaResearchError
 from visa_research_agent.research.live_sources import transport_failure_reason
 
@@ -47,6 +57,8 @@ DEFAULT_BASE_URL = "https://api.ofself.ai"
 WORK_AUTHORIZATION_SCHEMA = "work-authorization"
 TRAVEL_DOCUMENT_SCHEMA = "travel-document"
 TRAVEL_PLAN_SCHEMA = "travel-plan"
+TRAVEL_STAY_SCHEMA = "travel-stay"
+TRAVEL_OBLIGATION_SCHEMA = "travel-obligation"
 PLACE_SCHEMA = "place"
 
 ORDINARY_PASSPORT_CODES = frozenset({"P", "P<"})
@@ -314,6 +326,25 @@ class OfselfIdentity:
             raise OfselfUnavailable("Ofself confirmed the sign-in without saying which user it was")
         return user_id
 
+    async def shared_details(self, user_id: str, *, today: date) -> SharedDetails:
+        """What the traveller shared for the plan call to tailor to (entry 276).
+
+        Their documents, stays and applications, as the grant lets this app see them: never a
+        number, a name, a scan, a note or a refusal's reason, none of which is requested. Another
+        person's records on the account are left out, and so is a passport this program would not
+        research. Empty means nothing shared or nothing recorded, never that they hold nothing.
+        """
+
+        user = _user(user_id)
+        documents, stays, obligations = await asyncio.gather(
+            self._read_all(user, TRAVEL_DOCUMENT_SCHEMA),
+            self._read_all(user, TRAVEL_STAY_SCHEMA),
+            self._read_all(user, TRAVEL_OBLIGATION_SCHEMA),
+        )
+        # A stay names its country only through a place, so places are read only when one does.
+        places = await self._read_all(user, PLACE_SCHEMA) if stays else []
+        return _shared(documents, stays, obligations, places, today=today)
+
     async def _read_all(self, user_id: str, schema: str) -> list[Node]:
         """Every node of one schema the grant lets this app see, as its id and `value_json`.
 
@@ -542,6 +573,101 @@ def _defaults(
         unresolved_candidates=unresolved,
         unrecognised=unrecognised,
         encrypted_values=encrypted,
+    )
+
+
+def _shared(
+    documents: list[Node],
+    stays: list[Node],
+    obligations: list[Node],
+    places: list[Node],
+    *,
+    today: date,
+) -> SharedDetails:
+    def country(value: object) -> str | None:
+        # Unreadable values are left out here: the form's defaults already report them.
+        if not isinstance(value, str) or not value.strip():
+            return None
+        if value.startswith(ENCRYPTED_VALUE_PREFIX):
+            return None
+        try:
+            return normalise_country(value)
+        except ValueError:
+            return None
+
+    shared_documents: list[SharedDocument] = []
+    date_of_birth: date | None = None
+    date_of_birth_attested = False
+    for _, document in documents:
+        if document.get("holder_ref"):
+            continue
+        kind = _text(document.get("kind"))
+        if kind is None:
+            continue
+        code = (_text(document.get("document_code")) or "").upper()
+        if kind == "passport" and code and code not in ORDINARY_PASSPORT_CODES:
+            continue
+        status = _text(document.get("status"))
+        if status in {"lost", "stolen"}:
+            continue
+        expires_at = _date(document.get("expires_at"))
+        grants = document.get("grants")
+        born = _date(document.get("date_of_birth"))
+        if born is not None and (date_of_birth is None or _attested(document, "date_of_birth")):
+            date_of_birth = born
+            date_of_birth_attested = _attested(document, "date_of_birth")
+        shared_documents.append(
+            SharedDocument(
+                kind=kind,
+                nationality=country(document.get("nationality")),
+                issuing_state=country(document.get("issuing_state")),
+                grants=_text(grants.get("class")) if isinstance(grants, dict) else None,
+                issued_at=_date(document.get("issued_at")),
+                issued_at_read_off_document=_attested(document, "issued_at"),
+                expires_at=expires_at,
+                expires_at_read_off_document=_attested(document, "expires_at"),
+                expired=status == "expired" or (expires_at is not None and expires_at < today),
+                status=status,
+            )
+        )
+
+    place_countries = _place_countries(places)
+    shared_stays: list[SharedStay] = []
+    for _, stay in stays:
+        # Allowances are per person, so another traveller's stays are never this one's history.
+        if stay.get("traveller_ref"):
+            continue
+        stayed_in = place_countries.get(_text(stay.get("place_ref")) or "")
+        if stayed_in is None:
+            continue
+        exempt = stay.get("exempt")
+        shared_stays.append(
+            SharedStay(
+                country=stayed_in,
+                entered_at=_date(stay.get("entry_at")),
+                exited_at=_date(stay.get("exit_at")),
+                exempt=exempt if isinstance(exempt, bool) else None,
+                purpose=_text(stay.get("purpose")),
+                self_declared=_text(stay.get("provenance")) in {None, "self_declared"},
+            )
+        )
+
+    applications = [
+        SharedApplication(
+            kind=_text(obligation.get("kind")),
+            outcome=_text(obligation.get("state")),
+            decided_at=_date(obligation.get("decided_at")),
+        )
+        for _, obligation in obligations
+        if _text(obligation.get("kind")) or _text(obligation.get("state"))
+    ]
+
+    return SharedDetails(
+        date_of_birth=date_of_birth,
+        date_of_birth_read_off_document=date_of_birth_attested,
+        documents=shared_documents,
+        stays=sorted(shared_stays, key=lambda stay: stay.entered_at or date.min),
+        applications=applications,
     )
 
 

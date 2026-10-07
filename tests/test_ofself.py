@@ -462,3 +462,76 @@ async def test_a_lost_grant_on_any_schema_asks_the_traveller_to_reconnect() -> N
 
     with pytest.raises(OfselfAuthorizationLost):
         await identity(handler).traveller_defaults(USER, today=TODAY)
+
+
+# --- what the plan call tailors to (DECISIONS entry 276) ------------------------------------------
+
+
+async def test_shared_details_read_documents_stays_and_applications_for_this_traveller() -> None:
+    found = await identity(
+        by_schema(
+            travel_document=[
+                passport(
+                    nationality="GBR",
+                    issuing_state="GBR",
+                    issued_at="2017-05-01",
+                    expires_at="2027-03-03",
+                    date_of_birth="1990-01-02",
+                    field_provenance={**chip_read("expires_at"), **typed("issued_at")},
+                ),
+                {
+                    "kind": "visa",
+                    "issuing_state": "USA",
+                    "grants": {"class": "B1/B2"},
+                    "expires_at": "2025-01-01",
+                },
+                passport(nationality="FRA", holder_ref="person-2"),
+                passport(nationality="IND", document_code="PD"),
+            ],
+            travel_stay=[
+                {"place_ref": "spain", "entry_at": "2026-07-01", "exit_at": "2026-07-20"},
+                {"place_ref": "france", "entry_at": "2026-05-01", "provenance": "border_record"},
+                {"place_ref": "spain", "entry_at": "2026-08-01", "traveller_ref": "person-2"},
+            ],
+            travel_obligation=[{"kind": "visa", "state": "refused", "decided_at": "2024-02-10"}],
+            place=[
+                {"_id": "spain", "kind": "country", "country_code": "ESP"},
+                {"_id": "france", "kind": "country", "country_code": "FR"},
+            ],
+        )
+    ).shared_details(USER, today=TODAY)
+
+    british, visa = found.documents
+    assert (british.kind, british.nationality, british.issuing_state) == ("passport", "GB", "GB")
+    assert british.expires_at == date(2027, 3, 3) and british.expires_at_read_off_document
+    assert british.issued_at == date(2017, 5, 1) and not british.issued_at_read_off_document
+    assert (visa.kind, visa.issuing_state, visa.grants, visa.expired) == (
+        "visa",
+        "US",
+        "B1/B2",
+        True,
+    )
+    assert found.date_of_birth == date(1990, 1, 2) and not found.date_of_birth_read_off_document
+    # Ordered by entry; another person's stay is never this traveller's history.
+    france, spain = found.stays
+    assert (france.country, france.exited_at, france.self_declared) == ("FR", None, False)
+    assert (spain.country, spain.exited_at, spain.self_declared) == ("ES", date(2026, 7, 20), True)
+    (refusal,) = found.applications
+    assert (refusal.kind, refusal.outcome, refusal.decided_at) == (
+        "visa",
+        "refused",
+        date(2024, 2, 10),
+    )
+
+
+async def test_shared_details_read_places_only_when_a_stay_needs_one() -> None:
+    asked: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        asked.append(request.url.params["schema_id"])
+        return nodes()
+
+    found = await identity(handler).shared_details(USER, today=TODAY)
+
+    assert sorted(asked) == ["travel-document", "travel-obligation", "travel-stay"]
+    assert found.is_empty()

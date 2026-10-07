@@ -2,7 +2,7 @@ import json
 from datetime import UTC, date, datetime
 from importlib.resources import files
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import pytest
 import yaml
@@ -14,7 +14,11 @@ from visa_research_agent.discovery.adjudication import UsageRecorder
 from visa_research_agent.discovery.recall_log import ModelCall
 from visa_research_agent.domain.models import (
     DestinationConfig,
+    SharedDetails,
+    SharedDocument,
+    SharedStay,
     TravelAuthorisationDraft,
+    TravellerProfile,
     VisaPlan,
     VisaPlanDraft,
 )
@@ -1323,3 +1327,46 @@ def test_a_condition_a_source_states_is_never_dropped_from_the_plan() -> None:
 
     assert "put that limit in condition" in prompt
     assert "Never drop a duty because it applies only under a condition" in prompt
+
+
+@pytest.mark.anyio
+async def test_only_a_traveller_who_shared_something_changes_the_packet() -> None:
+    """Entry 276: the anonymous packet, and so its reuse key, is byte for byte what it was."""
+
+    async def packet_for(profile: TravellerProfile) -> dict[str, Any]:
+        generator = FakeStructuredPlanGenerator(load_golden_draft())
+        fetched_sources = await FixtureSourceFetcher().fetch(singapore_config())
+        await OpenAIVisaPlanExtractor(generator, maximum_input_characters=80_000).extract(
+            singapore_config(), profile, fetched_sources
+        )
+        assert generator.research_packet is not None
+        return cast(dict[str, Any], json.loads(generator.research_packet)["traveller_profile"])
+
+    anonymous = await packet_for(DEFAULT_TRAVELLER_PROFILE)
+    shared = await packet_for(
+        DEFAULT_TRAVELLER_PROFILE.model_copy(
+            update={
+                "shared_details": SharedDetails(
+                    documents=[
+                        SharedDocument(
+                            kind="passport", nationality="IN", expires_at=date(2027, 3, 3)
+                        )
+                    ],
+                    stays=[SharedStay(country="ES", entered_at=date(2026, 7, 1))],
+                )
+            }
+        )
+    )
+
+    assert "shared_details" not in anonymous
+    assert {key: value for key, value in shared.items() if key != "shared_details"} == anonymous
+    assert shared["shared_details"]["documents"][0]["nationality"] == "India (IN)"
+    assert shared["shared_details"]["stays"][0]["country"] == "Spain (ES)"
+
+
+def test_shared_details_tailor_the_plan_and_never_decide_it() -> None:
+    prompt = " ".join(load_extraction_prompt().split())
+
+    assert "15. traveller_profile.shared_details" in prompt
+    assert "never settles a condition and never changes visa_required" in prompt
+    assert "may never confirm that a requirement is met" in prompt

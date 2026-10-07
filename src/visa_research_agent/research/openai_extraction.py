@@ -85,6 +85,32 @@ def describe_country(code: str) -> str:
     return f"{country.name} ({code})" if country is not None else code
 
 
+def traveller_in_packet(traveller_profile: TravellerProfile) -> dict[str, Any]:
+    """The traveller as the plan call reads them, countries written out.
+
+    What a signed-in traveller shared (entry 276) is present only when there is some, so the packet
+    for everyone else is byte for byte what it was, and so are its reuse keys (entry 178).
+    """
+
+    shared = traveller_profile.shared_details
+    traveller: dict[str, Any] = {
+        **traveller_profile.model_dump(mode="json", exclude={"shared_details"}),
+        "passport_nationality": describe_country(traveller_profile.passport_nationality),
+        "country_of_residence": describe_country(traveller_profile.country_of_residence),
+    }
+    if shared is None or shared.is_empty():
+        return traveller
+    details = shared.model_dump(mode="json")
+    for document in details["documents"]:
+        for field in ("nationality", "issuing_state"):
+            if document[field]:
+                document[field] = describe_country(document[field])
+    for stay in details["stays"]:
+        stay["country"] = describe_country(stay["country"])
+    traveller["shared_details"] = details
+    return traveller
+
+
 def travel_authorisation_source_ids(destination: DestinationConfig) -> list[str]:
     """The sources discovery chose for `travel_authorisation`, in the destination's order."""
 
@@ -146,11 +172,7 @@ def build_research_packet(
                 for service in destination.delegated_services
             ],
         },
-        "traveller_profile": {
-            **traveller_profile.model_dump(mode="json"),
-            "passport_nationality": describe_country(traveller_profile.passport_nationality),
-            "country_of_residence": describe_country(traveller_profile.country_of_residence),
-        },
+        "traveller_profile": traveller_in_packet(traveller_profile),
         "sources": [
             {
                 "source_id": fetched_source.source.source_id,

@@ -54,7 +54,8 @@ the edge.
 
 **Made possible.** Showing a traveller their own passport's expiry beside the rule they must meet,
 refusing a diplomatic passport before it is researched as an ordinary one, and starting from a
-trip they are already considering. None of it changes what a plan says; it changes what the
+trip they are already considering. Since DECISIONS entry 276 what the traveller shared also
+reaches the plan call, which tailors what it says to them and never decides from it; the rest
 traveller confirms before one is written.
 
 ## 4. Derivation
@@ -114,14 +115,14 @@ never close one, so nothing self-declared is ever shown as a requirement met.
 **Planned A — the plan checks the traveller's own passport.** A plan states the destination's
 rule: "valid for three months beyond departure", "issued within ten years". **Built:** the form
 shows the chosen passport's expiry and says whether it was read off the passport or typed in.
-**Not built:** the plan itself saying, for this traveller, whether their passport meets the rule,
-which changes what the plan's model call is given; and `issued_at` and `date_of_birth`, which
-would let it check the ten-year rule and name the consent letters a minor needs.
+**Built (entry 276):** the plan call is given the traveller's documents with their dates, and says
+beside a stated rule what their passport's dates mean for it; a typed-in date raises the question
+and never confirms the rule is met.
 
 **Planned B — the right passport and the right residence.** **Built:** a passport whose
 `document_code` is not an ordinary one is named and not offered, and a residence permit's
-`issuing_state` fills the country applied from, with its class and expiry shown. **Not built:** the
-plan using the permit's status, which a non-citizen resident must prove.
+`issuing_state` fills the country applied from, with its class and expiry shown. **Built (entry
+276):** the plan call is given the permit, and names it where a source's rule turns on it.
 
 **Planned C — a plan being considered becomes the starting point.** **Built.** An open
 `travel-plan`'s candidates are offered as destinations, with the plan's window, and a candidate's
@@ -130,10 +131,12 @@ reference into a country. One candidate is researched at a time.
 
 **Planned D — a rolling allowance is flagged.** Where a destination counts days across a zone —
 90 in any 180 for Schengen — `travel-stay` records let the plan say that past stays may count
-against this one. It never states days remaining from self-declared stays.
+against this one. It never states days remaining from self-declared stays. **Built (entry 276):**
+stays reach the plan call, which names them beside a stated allowance and does no arithmetic.
 
 **Planned E — a prior refusal is noticed.** A `travel-obligation` whose `state` records a refusal
-lets the plan say that the application form will ask about it. The reason is not read.
+lets the plan say that the application form will ask about it. The reason is not read. **Built
+(entry 276):** the outcome reaches the plan call, named only where a source asks about refusals.
 
 ## 8. Views
 

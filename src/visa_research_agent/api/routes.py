@@ -19,6 +19,7 @@ from visa_research_agent.api.dependencies import (
     get_traveller_source,
     get_visa_plan_service,
 )
+from visa_research_agent.api.ofself import OfselfAuthorizationLost
 from visa_research_agent.api.reports import (
     MAXIMUM_REPORT_BYTES,
     FileReportStore,
@@ -484,10 +485,28 @@ async def create_visa_plan(
     automatic: Annotated[AutomaticDestinationService | None, Depends(get_automatic_destinations)],
     travellers: Annotated[TravellerSource, Depends(get_traveller_source)],
 ) -> VisaPlan:
-    traveller = await travellers.traveller_for(request)
+    traveller = await traveller_or_reconnect(travellers, request)
     refuse_impossible_corridors(request.destination, traveller)
     gate.spend()
     return await research_plan(request.destination, traveller, service, automatic)
+
+
+async def traveller_or_reconnect(
+    travellers: TravellerSource, request: VisaPlanRequest
+) -> TravellerProfile:
+    """The traveller for this plan, or a request to reconnect where their Ofself grant is gone.
+
+    Reading what a signed-in traveller shared (entry 276) can find the grant withdrawn; a plan is
+    then not written for them at all, as with every other read (TODO item 55).
+    """
+
+    try:
+        return await travellers.traveller_for(request)
+    except OfselfAuthorizationLost as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"message": str(exc), "code": exc.code, "reconnect": True},
+        ) from exc
 
 
 @router.post(
@@ -526,7 +545,7 @@ async def stream_visa_plan(
     event carrying the same `detail` the other route would have answered with.
     """
 
-    traveller = await travellers.traveller_for(request)
+    traveller = await traveller_or_reconnect(travellers, request)
     refuse_impossible_corridors(request.destination, traveller)
     gate.spend()
 

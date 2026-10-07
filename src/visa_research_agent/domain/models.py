@@ -188,6 +188,87 @@ def _require_aware_datetime(value: datetime) -> datetime:
     return value
 
 
+class SharedDocument(StrictModel):
+    """A document the traveller holds, as they shared it through Ofself (entry 276).
+
+    A passport, a visa, a residence permit, an ETA — `kind` as recorded. Never its number, a name,
+    a scan or a note: none is requested. Each date says whether it was read off the document,
+    because a typed-in value may raise a question and never close one (the schema's own rule).
+    """
+
+    kind: str = Field(min_length=1)
+    nationality: str | None = None
+    """Alpha-2 of the nationality it attests, where it attests one."""
+    issuing_state: str | None = None
+    """Alpha-2. Kept apart from `nationality`: they differ for refugee and stateless documents."""
+    grants: str | None = None
+    """The class of permission it grants, as recorded — "Skilled Worker", "B1/B2". None for a
+    passport, which grants nothing."""
+    issued_at: date | None = None
+    issued_at_read_off_document: bool = False
+    expires_at: date | None = None
+    expires_at_read_off_document: bool = False
+    expired: bool = False
+    """Recorded as expired, or its expiry has passed."""
+    status: str | None = None
+    """As recorded — "valid", "expired", "refused". A refused or cancelled visa is kept: it is the
+    history a later application asks about."""
+
+
+class SharedStay(StrictModel):
+    """A past or current stay in one country, as the traveller shared it (entry 276)."""
+
+    country: str
+    """Alpha-2."""
+    entered_at: date | None = None
+    exited_at: date | None = None
+    """None is a real state — still there, or not yet said — and counts as ongoing, never as zero
+    days (the schema's own rule)."""
+    exempt: bool | None = None
+    """True where the stay used no allowance — residence, or a permit that exempts it."""
+    purpose: str | None = None
+    self_declared: bool = True
+    """False only where Ofself records how the stay is known as something other than the person's
+    own word. A self-declared stay may raise a question and never close one."""
+
+
+class SharedApplication(StrictModel):
+    """Something the traveller applied for and how it ended, never why (entry 276).
+
+    A prior refusal changes later checklists and is asked about again, so its outcome is shared;
+    its reason is never requested.
+    """
+
+    kind: str | None = None
+    outcome: str | None = None
+    """The recorded state — "granted", "refused", "not_needed"."""
+    decided_at: date | None = None
+
+
+class SharedDetails(StrictModel):
+    """What the traveller chose to share through Ofself, for the plan call to tailor to (entry 276).
+
+    **It tailors and never decides.** A rule comes only from a source; these say how a stated rule
+    bears on this traveller. They never settle a condition, never change whether a visa is needed
+    and never change a plan's grade — the owner's answers in entry 276. Filled only for a
+    signed-in Ofself traveller, never from a request body.
+    """
+
+    date_of_birth: date | None = None
+    date_of_birth_read_off_document: bool = False
+    documents: list[SharedDocument] = Field(default_factory=list)
+    stays: list[SharedStay] = Field(default_factory=list)
+    applications: list[SharedApplication] = Field(default_factory=list)
+
+    def is_empty(self) -> bool:
+        return (
+            self.date_of_birth is None
+            and not self.documents
+            and not self.stays
+            and not self.applications
+        )
+
+
 class TravellerProfile(StrictModel):
     """Who is travelling, in the terms that change which official pages apply.
 
@@ -217,6 +298,10 @@ class TravellerProfile(StrictModel):
     regular status from a non-citizen resident. None when they are a citizen, or did not say."""
 
     residence_permission_expiry: date | None = None
+
+    shared_details: SharedDetails | None = None
+    """What a signed-in traveller shared through Ofself (entry 276). None for the anonymous form,
+    and whenever nothing was shared — never a claim that they hold nothing."""
 
 
 class ConfiguredSource(StrictModel):

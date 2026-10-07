@@ -1,13 +1,27 @@
 """The traveller a request describes, and the default when it describes nobody."""
 
+from datetime import date
+from typing import cast
+
 import pytest
+from fastapi import HTTPException
 from pydantic import ValidationError
 
 from visa_research_agent.api.countries import normalise_country
+from visa_research_agent.api.ofself import (
+    OfselfAuthorizationLost,
+    OfselfIdentity,
+    OfselfUnavailable,
+)
+from visa_research_agent.api.routes import traveller_or_reconnect
 from visa_research_agent.api.schemas import TravellerRequest, VisaPlanRequest
-from visa_research_agent.api.traveller import RequestBodyTravellerSource
+from visa_research_agent.api.traveller import (
+    RequestBodyTravellerSource,
+    SharedDetailsTravellerSource,
+)
 from visa_research_agent.config.traveller import DEFAULT_TRAVELLER_PROFILE
 from visa_research_agent.discovery.lexicon import get_country_registry
+from visa_research_agent.domain.models import SharedDetails, SharedDocument
 
 
 def test_the_default_profile_is_the_one_the_singapore_fixture_was_recorded_against() -> None:
@@ -18,6 +32,7 @@ def test_the_default_profile_is_the_one_the_singapore_fixture_was_recorded_again
         "region_of_residence": "Scotland",
         "residence_status": "Graduate visa",
         "residence_permission_expiry": "2027-12-23",
+        "shared_details": None,
         "travel_purpose": "tourism",
     }
 
@@ -150,3 +165,70 @@ def test_a_blank_region_is_no_region() -> None:
     )
 
     assert request.region_of_residence is None
+
+
+# --- what a signed-in traveller shared reaches the plan call (DECISIONS entry 276) --------------
+
+SHARED = SharedDetails(documents=[SharedDocument(kind="passport", nationality="GB")])
+
+
+class FakeIdentity:
+    def __init__(self, answer: SharedDetails | Exception) -> None:
+        self.answer = answer
+
+    async def shared_details(self, user_id: str, *, today: date) -> SharedDetails:
+        if isinstance(self.answer, Exception):
+            raise self.answer
+        return self.answer
+
+
+def plan_request() -> VisaPlanRequest:
+    return VisaPlanRequest(
+        destination="canada",
+        traveller=TravellerRequest(passport_nationality="GB", country_of_residence="GB"),
+    )
+
+
+def source(answer: SharedDetails | Exception) -> SharedDetailsTravellerSource:
+    return SharedDetailsTravellerSource(cast(OfselfIdentity, FakeIdentity(answer)), "user")
+
+
+@pytest.mark.anyio
+async def test_a_signed_in_traveller_is_planned_for_with_what_they_shared() -> None:
+    profile = await source(SHARED).traveller_for(plan_request())
+
+    assert profile.passport_nationality == "GB"
+    assert profile.shared_details == SHARED
+
+
+@pytest.mark.anyio
+async def test_nothing_shared_and_ofself_unreachable_both_plan_for_the_corridor() -> None:
+    """Unreachable still gives a correct plan, only less tailored; nothing shared is not a fact."""
+
+    assert (await source(SharedDetails()).traveller_for(plan_request())).shared_details is None
+    unreachable = source(OfselfUnavailable("down"))
+    assert (await unreachable.traveller_for(plan_request())).shared_details is None
+
+
+@pytest.mark.anyio
+async def test_a_withdrawn_grant_is_asked_to_reconnect_and_no_plan_is_written() -> None:
+    lost = source(OfselfAuthorizationLost("EP_REVOKED", "revoked"))
+
+    with pytest.raises(HTTPException) as refused:
+        await traveller_or_reconnect(lost, plan_request())
+
+    assert refused.value.status_code == 403
+    assert cast(dict[str, object], refused.value.detail)["reconnect"] is True
+
+
+def test_a_request_body_can_never_supply_shared_details() -> None:
+    """Only the signed-in Ofself path fills them, so nobody can post another person's documents."""
+
+    with pytest.raises(ValidationError):
+        TravellerRequest.model_validate(
+            {
+                "passport_nationality": "GB",
+                "country_of_residence": "GB",
+                "shared_details": SHARED.model_dump(mode="json"),
+            }
+        )

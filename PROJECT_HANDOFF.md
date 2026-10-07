@@ -8,7 +8,7 @@ stands, what to do next, and what is known to be broken. The history of how it g
 | --- | --- |
 | **Repository** | `github.com/AadarshSu/visa-research-agent` |
 | **Last updated** | 2026-10-07 — update this line when you touch the handoff |
-| **Tests** | 1,112 on the owner's machine, with `var/` present: 1,111 passing and 1 skipped (the opt-in browser test), run 2026-10-07; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
+| **Tests** | 1,120 on the owner's machine, with `var/` present: 1,119 passing and 1 skipped (the opt-in browser test), run 2026-10-07; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
 
 | Question | File |
 | --- | --- |
@@ -59,6 +59,11 @@ the deployed server yet**:
   "Travel authorisation required — not a visa: <name> ↗"; with none found, nothing is shown. It
   replaced entry 274's GB always-read pages and rules. Found on 8 of 8 corridors that have one, 0 of
   8 that do not; **named on the plan 5 of 8** live; with conditions allowed, 11 of 12 replayed — known problem 47.
+- **The plan is written for the specific traveller** (entry 276, the owner's direction). A
+  signed-in traveller's documents, stays and applications from Ofself reach the plan call, which
+  names a detail beside a rule it bears on and never decides from it; the anonymous form is
+  unchanged. Measured on replays with synthetic details only — the owner's account holds no travel
+  records, so it has not been seen on a real traveller.
 - **An open decision leads with where to settle it** (entry 271). The band offers the authority's
   checker, an unread official page or its contractor as a button, and says "Could not be confirmed"
   only with none of them. Where to apply and documents read "if you need a visa" or fold into one

@@ -1,8 +1,16 @@
 """FastAPI dependency factories for independently testable business services."""
 
 from functools import lru_cache
+from typing import Annotated
 
-from visa_research_agent.api.traveller import RequestBodyTravellerSource, TravellerSource
+from fastapi import Depends, Request
+
+from visa_research_agent.api.signin import SignIn, get_sign_in
+from visa_research_agent.api.traveller import (
+    RequestBodyTravellerSource,
+    SharedDetailsTravellerSource,
+    TravellerSource,
+)
 from visa_research_agent.config.loader import get_runtime_policy
 from visa_research_agent.config.settings import settings
 from visa_research_agent.discovery.automatic import AutomaticDestinationService
@@ -136,7 +144,13 @@ def get_automatic_destinations() -> AutomaticDestinationService | None:
     return build_automatic_destinations(get_runtime_policy())
 
 
-def get_traveller_source() -> TravellerSource:
-    """The request body, until Ofself's identity becomes a second source (TODO item 55)."""
+def get_traveller_source(
+    request: Request, sign_in: Annotated[SignIn | None, Depends(get_sign_in)]
+) -> TravellerSource:
+    """The request body; for a signed-in traveller, with what they shared through Ofself too
+    (entry 276)."""
 
-    return RequestBodyTravellerSource()
+    user_id = sign_in.signed_in_user(request) if sign_in is not None else None
+    if sign_in is None or user_id is None:
+        return RequestBodyTravellerSource()
+    return SharedDetailsTravellerSource(sign_in.identity, user_id)

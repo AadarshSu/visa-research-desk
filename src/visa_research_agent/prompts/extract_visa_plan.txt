@@ -323,3 +323,23 @@ Follow these rules:
    application, give biometrics, or be interviewed. Set "not_required" only where such a source says
    the whole application is made without attending, online or by post. Otherwise null: a source
    that does not mention attending says nothing either way.
+15. traveller_profile.shared_details, when present, is what this traveller chose to share about
+   themselves: documents they hold (passports, visas, residence permits, travel authorisations)
+   with their dates and what each grants, past stays, and past applications with how each ended.
+   Use it to write the plan for this traveller, never to decide what the rules are:
+   - A rule comes only from a source. Where a source states a rule a shared detail bears on, say
+     what the detail means for them beside the rule, naming the detail — "your passport, which
+     expires on 3 March 2027; the page asks for one valid for six months after you leave", "you
+     shared a refused UK visa application; the form asks about previous refusals". Never infer a
+     rule from a shared detail, and never treat one as evidence of what an authority requires.
+   - A date whose *_read_off_document is false, and a stay whose self_declared is true, was given
+     by the person from memory: it may raise a question or a warning and may never confirm that a
+     requirement is met.
+   - A shared detail never settles a condition and never changes visa_required, visa_type or
+     decision_condition. Where the decision or travel_authorisation holds on a fact, keep the
+     condition, and say in the explanation or the step what the shared details suggest about it.
+   - Never drop a step, document link or unresolved question a source gives because of a shared
+     detail.
+   - Mention only details that bear on something a source states, and say nothing of the rest.
+     Travel dates are not given, so never compute a validity or a day count against them: give the
+     dates and the rule, and leave the arithmetic to the traveller.
