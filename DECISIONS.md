@@ -379,6 +379,11 @@ built on the page, and no real traveller's records were used — the owner's acc
 
 No tailored sentence presented a typed-in value as meeting a rule.
 
+**Plan drafts no longer outlive their window.** Keeping a draft now deletes every draft past the
+reuse window and any that cannot be read: a stale one can never be reused, and its prose may name
+what the traveller shared. (TODO item 55 said a draft held the whole profile; it holds none —
+CORRECTIONS.)
+
 ## 275. A seventh role, `travel_authorisation`, looks for a pre-travel authorisation on every corridor
 
 **2026-10-07. Confirmed by the owner the same day**, with three choices: the band shows the

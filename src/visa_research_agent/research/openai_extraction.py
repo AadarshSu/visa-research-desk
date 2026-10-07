@@ -356,6 +356,7 @@ class OpenAIVisaPlanExtractor:
             return
         with suppress(PlanStoreError):
             self.reuse.store.store(key, draft, now=self.now())
+            self.reuse.store.prune(now=self.now(), maximum_age_hours=self.reuse.maximum_age_hours)
 
     async def extract(
         self,

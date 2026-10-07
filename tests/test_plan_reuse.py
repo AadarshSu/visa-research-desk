@@ -298,3 +298,34 @@ def test_the_generator_fingerprint_changes_with_the_model_and_its_settings() -> 
     assert fingerprint("gpt-5.6-terra", "low") == fingerprint("gpt-5.6-terra", "low")
     assert fingerprint("gpt-5.6-terra", "low") != fingerprint("gpt-5.6-luna", "low")
     assert fingerprint("gpt-5.6-terra", "low") != fingerprint("gpt-5.6-terra", "none")
+
+
+def test_drafts_past_their_window_and_unreadable_ones_are_deleted(tmp_path: Path) -> None:
+    """Entry 276: a draft past its window can never be reused, and its prose may name what the
+    traveller shared, so it is not kept."""
+
+    store = FilePlanStore(tmp_path)
+    old, fresh = "a" * 64, "b" * 64
+    store.store(old, golden_draft(), now=NOW)
+    store.store(fresh, golden_draft(), now=NOW + timedelta(hours=20))
+    (tmp_path / f"{'c' * 64}.json").write_text("not json", encoding="utf-8")
+    (tmp_path / "notes.json").write_text("{}", encoding="utf-8")
+
+    removed = store.prune(now=NOW + timedelta(hours=25), maximum_age_hours=24)
+
+    assert removed == 2
+    assert sorted(path.name for path in tmp_path.iterdir()) == [f"{fresh}.json", "notes.json"]
+
+
+@pytest.mark.anyio
+async def test_keeping_a_draft_prunes_the_expired_ones(tmp_path: Path) -> None:
+    report = await singapore_report()
+    await extractor(CountingGenerator(golden_draft()), tmp_path / "plans").extract(
+        singapore(), DEFAULT_TRAVELLER_PROFILE, report
+    )
+    other = DEFAULT_TRAVELLER_PROFILE.model_copy(update={"region_of_residence": "England"})
+    await extractor(
+        CountingGenerator(golden_draft()), tmp_path / "plans", now=NOW + timedelta(hours=30)
+    ).extract(singapore(), other, report)
+
+    assert len(list((tmp_path / "plans").glob("*.json"))) == 1

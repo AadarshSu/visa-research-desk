@@ -14,7 +14,8 @@ re-checked, moves its retrieval time and so misses: a `304` moves `fetched_at` (
 window is reviewable policy and may not outlast the page cache's own freshness window.
 
 **A refusal is never kept.** Only a draft that became a plan is stored, so a request that refused
-asks the model again next time, as it always has (entry 151).
+asks the model again next time, as it always has (entry 151). **Nor is a draft past its window:**
+each new draft kept prunes the ones that can no longer be reused (TODO item 55, entry 276).
 """
 
 import json
@@ -126,6 +127,32 @@ class FilePlanStore:
             temporary.replace(path)
         except OSError as exc:
             raise PlanStoreError("The plan store could not be written") from exc
+
+    def prune(self, *, now: datetime, maximum_age_hours: float) -> int:
+        """Delete every draft past the reuse window, and any that cannot be read; return how many.
+
+        A draft past its window can never be reused, so keeping it bought nothing, and since entry
+        276 its prose may name what the traveller shared — a passport's expiry, a past refusal.
+        """
+
+        removed = 0
+        for path in self.directory.glob("*.json"):
+            if not _KEY_PATTERN.match(path.stem):
+                continue
+            try:
+                stored = StoredPlanDraft.model_validate_json(path.read_text(encoding="utf-8"))
+                expired = stored.age_hours(now) >= maximum_age_hours
+            except (OSError, ValidationError):
+                expired = True
+            if expired:
+                try:
+                    path.unlink()
+                except FileNotFoundError:
+                    continue
+                except OSError as exc:
+                    raise PlanStoreError("The plan store could not be pruned") from exc
+                removed += 1
+        return removed
 
 
 @dataclass(frozen=True)
