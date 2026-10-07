@@ -1243,6 +1243,13 @@ html {
   border-style: dashed;
 }
 
+/* "Unconfirmed" is one eleven-letter word: at the other stamps' size it cannot wrap and runs past
+   the ring, so it is set smaller to sit inside it. */
+.verdict--uncertain .verdict-stamp-word {
+  font-size: 14px;
+  letter-spacing: 0.02em;
+}
+
 .verdict-facts {
   position: relative;
   display: grid;
@@ -1357,6 +1364,10 @@ a.glance-cell:hover {
 
   .verdict-stamp-word {
     font-size: 13px;
+  }
+
+  .verdict--uncertain .verdict-stamp-word {
+    font-size: 10px;
   }
 
   .verdict-text {
