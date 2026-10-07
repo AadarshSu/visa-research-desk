@@ -353,7 +353,23 @@ The checker is still offered: by the band (entry 271) and in the decision panel.
 changes; one misfiled link is removed.
 
 **Tested:** two fake-generator tests, one where the checker is taken out (including a trailing-slash
-variant) and one where a real route is kept. **Not yet seen on a real run.**
+variant) and one where a real route is kept.
+
+**Five real runs, 2026-10-07** (`var/purposes-2026-10-03/uk-checker-2026-10-07/`, each with its own
+empty corridor and plan folders):
+- **The checker was never filed as where to apply.** All five drafts had `where_to_apply: null`, so
+  the prompt line did the work and the code guard had nothing to catch.
+- **Runs 1 and 4:** the decision was open with the checker in `official_tools`, so the band led
+  with it as entry 271 intended.
+- **Runs 2, 3 and 5:** "no visa" under 8e, `verified`, from the carriers' list of nationalities who
+  need a visa, which the US is not on. **None of the three tells the traveller they need an ETA.**
+  Runs 3 and 5 say in the explanation that the list does not settle it. The traveller still needs
+  one, and would be refused boarding without it.
+- **Why the answer varies:** the selection pool of 160 candidates held none of the pages that
+  state the ETA. Missing were `gov.uk/eta`, the ETA eligibility list (`gov.uk/guidance/check-when-you-can-get-an-electronic-travel-authorisation-eta`,
+  which names the United States), Appendix Visitor's visa national list and
+  `gov.uk/visit-uk-holiday-family-friends`. All four are in the GB page store. Whether a run states
+  the decision depends on whether the carriers' list is picked and read as complete.
 
 ## 271. An open decision leads with where to settle it, and the strip under it shows only what the plan shows
 

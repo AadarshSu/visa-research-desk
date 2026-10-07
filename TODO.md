@@ -106,11 +106,12 @@ at-a-glance box. **Left:** Finland answered `429` after five links; Czechia's pa
 the address; Russia waits on evidence for `mid.ru`; the eight unclear governments; re-run
 `visa-discover advisory-links` when a government moves its pages. **Not deployed.**
 
-**An open decision leads with where to settle it — built 2026-10-07 (entry 271).** **Next, with
-the owner:** run United Kingdom `US/US` tourism several times. GOV.UK's checker was filed as
-"where to apply" on some runs; entry 272 takes it out in code, and the run should show the band
-leading with it every time. Also check whether the UK's own pages state the answer outright,
-since a reachable answer missed is a selection defect.
+**An open decision leads with where to settle it — built 2026-10-07 (entries 271, 272).** Five
+United Kingdom `US/US` tourism runs: the checker was never filed as where to apply; 2 led with it,
+3 stated "no visa" from the carriers' list and **said nothing of the ETA**. **Next, with the
+owner:** the ETA pages never reach the selection pool although the store holds them (entry 272).
+Proposed fix, not built: list the ETA eligibility page, and perhaps the visa national list, for GB in
+`always_read.yaml` (entry 267), then re-run five times.
 
 **The result page redesign — built 2026-10-06 (entry 270):** a verdict band, the pass as the result's
 header, advice and weather in a sidebar, and a no-visa plan's travel authorisation
