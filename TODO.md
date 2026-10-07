@@ -106,6 +106,12 @@ at-a-glance box. **Left:** Finland answered `429` after five links; Czechia's pa
 the address; Russia waits on evidence for `mid.ru`; the eight unclear governments; re-run
 `visa-discover advisory-links` when a government moves its pages. **Not deployed.**
 
+**An open decision leads with where to settle it — built 2026-10-07 (entry 271).** **Next, with
+the owner:** run United Kingdom `US/US` tourism several times. GOV.UK's checker is named as a
+`visa_decision` tool on some runs and as "where to apply" or nothing on others, and the band can only
+lead with what the plan names. Also check whether the UK's own pages state the answer outright,
+since a reachable answer missed is a selection defect.
+
 **The result page redesign — built 2026-10-06 (entry 270):** a verdict band, the pass as the result's
 header, advice and weather in a sidebar, and a no-visa plan's travel authorisation and entry steps
 beside the decision (entry 263). A bolder makeover is parked on the local branch `design-bold`.

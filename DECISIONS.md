@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [271](#271-an-open-decision-leads-with-where-to-settle-it-and-the-strip-under-it-shows-only-what-the-plan-shows) | **An open decision leads with where to settle it** — the authority's checker, an unread official page or its contractor, as a button on the band; "Could not be confirmed" only with none; where to apply and documents marked "if you need a visa" or folded into one line; a documents cell only over a documents section |
 | [270](#270-the-result-page-redesign-a-verdict-band-a-pass-header-a-sidebar-and-a-bolder-version-parked-on-a-branch) | **The result page redesigned** — verdict band coloured by the decision, the boarding pass as the result's header, advice and weather in a sidebar, empty sections dropped on a no-visa plan, the travel-advice "could not check" note removed; a bolder makeover parked on `design-bold` |
 | [269](#269-a-source-id-written-into-a-plans-prose-is-taken-out) | **A source id written into a plan's prose is taken out** — "[australi_immi_electronic_travel_author]" reached a traveller; only a bracket of ids the plan cites is removed, the citation stays in `source_ids` |
 | [268](#268-rule-8k-names-a-condition-only-where-it-changes-whether-a-visa-is-needed) | **8k names a condition only where it changes whether a visa is needed** — where every side needs a visa it decides which visa, not whether; a disqualification (a conviction, a refusal) is never the condition; Australia `GB/GB` 2 of 9 pointless conditions → 0 of 9; two wordings rejected for costing Japan study and New Zealand transit |
@@ -311,6 +312,37 @@ s more pressing |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
 
 ---
+
+## 271. An open decision leads with where to settle it, and the strip under it shows only what the plan shows
+
+**2026-10-07. The owner:** an American going to the United Kingdom saw "Could not be confirmed", an
+"Unconfirmed" stamp, "Where to apply: not confirmed" and "Documents: no checklist found" in large
+type. A traveller reading that turns away thinking there is no answer, yet the plan held the link to
+GOV.UK's own visa checker, shown only as one timeline step's source. The top of the page should turn a
+traveller away only when we really have nothing to give them.
+
+**The band.** Where `visa_required` is null, it leads with the first of these the plan names:
+1. a `visa_decision` questionnaire ("Find out on the official checker");
+2. an official page we could not read that may hold the decision (`may_hold_decision` or a
+   `visa_page_unread_` failure: "Open the official page");
+3. a `visa_decision` contractor ("Check with the authority's provider").
+
+Each is shown as a button out, and the stamp names it. "Could not be confirmed" stays only for a plan
+with none of them. Nothing new is claimed: each is already named in the decision panel, under the
+same rules (entries 27, 59, 60, 89). The band stays slate, so it never reads as either answer.
+
+**The strip.** With the decision open, where to apply and the documents answer a question not yet
+settled, so two more failures under it only repeated one gap. Where the plan holds a route or a
+checklist, they show it under "… if you need a visa". Otherwise one line reads "Depend on the
+decision". On every plan, a **documents cell appears only over a documents section**. Before this,
+"No checklist found" sat at the top of plans that had no documents section below it.
+
+**Not done here:** the US→UK checker reaches `official_tools` on some runs and not others. On one
+owner run it was "where to apply" and on another "not confirmed". The band can only lead with what
+the plan names, so that comes next (TODO).
+
+Seen in the browser at 1280px and 375px on stub plans for each case. A real US→UK run waits on the
+item above.
 
 ## 270. The result page redesign: a verdict band, a pass header, a sidebar, and a bolder version parked on a branch
 

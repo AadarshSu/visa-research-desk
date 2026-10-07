@@ -1193,6 +1193,36 @@ html {
   opacity: 0.85;
 }
 
+a.verdict-more {
+  justify-self: start;
+  color: inherit;
+}
+
+/* Where an open decision can be settled: the one thing on the band to press, so it reads as a button
+   rather than a line of small print. */
+.verdict-action {
+  justify-self: start;
+  padding: 13px 22px;
+  border-radius: 999px;
+  color: var(--ink);
+  background: #fff8e6;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 22%);
+  font-size: 17px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.verdict-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgb(0 0 0 / 28%);
+}
+
+.verdict-action:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
 .verdict:hover .verdict-more {
   text-decoration: underline;
   text-underline-offset: 3px;

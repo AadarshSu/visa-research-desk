@@ -754,6 +754,8 @@ function renderRefusal(detail) {
 // no more than it: where a section hedges, the box hedges.
 function glanceDecision(plan) {
   if (plan.visa_required === null) {
+    const route = decisionRoute(plan);
+    if (route) return { tone: "uncertain", value: route.headline, note: route.note, route };
     return { tone: "uncertain", value: "Could not be confirmed", note: "See why in the visa decision" };
   }
   const condition = plan.decision_condition
@@ -763,6 +765,50 @@ function glanceDecision(plan) {
     return { tone: "visa", value: "Visa required", note: condition || sentenceCase(plan.visa_type) || "" };
   }
   return { tone: "no-visa", value: "No visa required", note: condition };
+}
+
+// Where a decision could not be stated, the band leads with where the traveller can get it, if this
+// run found anywhere: "Could not be confirmed" over a link to the authority's own checker turned
+// travellers away from an answer one click off. Each is something the decision panel already names,
+// and none is a claim about the answer — a checker is named, never driven (entries 59, 60); a page
+// we could not read is named, never read (entry 27); a contractor is named as a company (entry 89).
+// "Could not be confirmed" stays for a plan with none of them, which really has nothing to offer.
+function decisionRoute(plan) {
+  const tool = toolsFor(plan, "visa_decision")[0];
+  if (tool) {
+    return {
+      headline: "Find out on the official checker",
+      note: `${tool.authority} decides whether you need a visa through its own questions about your trip, which we cannot answer for you.`,
+      action: "Open the official checker",
+      url: tool.url,
+      stamp: "Checker",
+    };
+  }
+  const unread = (plan.unavailable_sources || []).find(
+    (failure) =>
+      failure.attempted_url &&
+      (failure.may_hold_decision || String(failure.source_id).startsWith("visa_page_unread_")),
+  );
+  if (unread) {
+    return {
+      headline: "Open the official page",
+      note: `${unread.authority} may state it on a page we could not read, so we say nothing about what it says.`,
+      action: "Open the official page",
+      url: unread.attempted_url,
+      stamp: "Open page",
+    };
+  }
+  const delegate = delegatesFor(plan, "visa_decision")[0];
+  if (delegate) {
+    return {
+      headline: "Check with the authority's provider",
+      note: `The authority sends travellers to ${delegate.provider}, a company rather than a government site. We have not read it.`,
+      action: `Open ${delegate.provider}`,
+      url: delegate.url,
+      stamp: "Provider",
+    };
+  }
+  return null;
 }
 
 function glanceApply(plan) {
@@ -782,11 +828,8 @@ function glanceApply(plan) {
   return { value: location.authority, note: [inPerson, place].filter(Boolean).join(" · ") };
 }
 
-function glanceDocuments(plan, documentsShown) {
+function glanceDocuments(plan) {
   if (needsNoVisa(plan)) return { value: "None to gather", note: "No visa application" };
-  if (!documentsShown) {
-    return { value: "No checklist found", note: "Not among the official pages we could read" };
-  }
   if (plan.requirements.length) {
     return { value: `${plan.requirements.length} listed`, note: "From the official source" };
   }
@@ -843,13 +886,48 @@ function beforeYouGo(plan) {
   return box;
 }
 
+// The strip under the band says no more than the sections below it: a documents cell only over a
+// documents section, since "No checklist found" above a plan with no documents section was a failure
+// the page itself never showed. Where the decision is open, where to apply and the documents are
+// answers to a question not yet settled, and two more "not found"s under it only repeated that one
+// gap — so they are shown as what they are, conditional on the decision, or folded into one line.
+function glanceFacts(plan, documentsShown, applyShown) {
+  if (plan.visa_required === null) {
+    const cells = [];
+    if (plan.where_to_apply) {
+      cells.push(["Where to apply, if you need a visa", glanceApply(plan), applyShown ? "plan-apply" : null, "⌂"]);
+    }
+    if (documentsShown) {
+      cells.push(["Documents, if you need a visa", glanceDocuments(plan), "plan-documents", "☰"]);
+    }
+    if (cells.length) return cells;
+    const route = decisionRoute(plan);
+    return [[
+      "Where to apply and documents",
+      {
+        value: "Depend on the decision",
+        note: route ? "Settle whether you need a visa first, using the link above" : "Whether you need a visa comes first",
+      },
+      null,
+      "⌂",
+    ]];
+  }
+  return [
+    ["Where to apply", glanceApply(plan), applyShown ? "plan-apply" : null, "⌂"],
+    // With no visa there are no documents to gather; what to do instead is on the band above.
+    needsNoVisa(plan) || !documentsShown ? null : ["Documents", glanceDocuments(plan), "plan-documents", "☰"],
+  ].filter(Boolean);
+}
+
 function renderGlance(plan, documentsShown, applyShown) {
   const box = element("section", "glance");
   box.setAttribute("aria-label", "At a glance");
   const decision = glanceDecision(plan);
   const conditional = Boolean(plan.decision_condition) && decision.tone !== "uncertain";
-  const band = element("a", `verdict verdict--${decision.tone}${conditional ? " verdict--conditional" : ""}`);
-  band.href = "#plan-decision";
+  const { route } = decision;
+  // A band carrying a link out cannot itself be a link, so it links down only through its "Why" line.
+  const band = element(route ? "div" : "a", `verdict verdict--${decision.tone}${conditional ? " verdict--conditional" : ""}`);
+  if (!route) band.href = "#plan-decision";
   const kicker = [
     optionLabel(destinationSelect, destinationSelect.value),
     `${optionLabel(nationalitySelect, nationalitySelect.value)} passport`,
@@ -862,24 +940,25 @@ function renderGlance(plan, documentsShown, applyShown) {
   const before = beforeYouGo(plan);
   if (before) text.append(before);
   if (decision.note) text.append(element("span", conditional ? "verdict-condition" : "verdict-note", decision.note));
-  text.append(element("span", "verdict-more", "Why, with sources ↓"));
+  if (route) {
+    text.append(externalLink(`${route.action} ↗`, route.url, "verdict-action"));
+    const more = element("a", "verdict-more", "Why we could not say, with sources ↓");
+    more.href = "#plan-decision";
+    text.append(more);
+  } else {
+    text.append(element("span", "verdict-more", "Why, with sources ↓"));
+  }
   const stamp = element("span", "verdict-stamp");
   stamp.setAttribute("aria-hidden", "true");
   stamp.append(
     element("span", "verdict-stamp-top", conditional ? "Conditional" : "Decision"),
-    element("span", "verdict-stamp-word", VERDICT_STAMPS[decision.tone]),
+    element("span", "verdict-stamp-word", route ? route.stamp : VERDICT_STAMPS[decision.tone]),
     element("span", "verdict-stamp-date", new Date().toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })),
   );
   band.append(text, stamp);
 
   const facts = element("div", "verdict-facts");
-  [
-    ["Where to apply", glanceApply(plan), applyShown ? "plan-apply" : null, "⌂"],
-    // With no visa there are no documents to gather; what to do instead is on the band above.
-    needsNoVisa(plan)
-      ? null
-      : ["Documents", glanceDocuments(plan, documentsShown), documentsShown ? "plan-documents" : applyShown ? "plan-apply" : null, "☰"],
-  ].filter(Boolean).forEach(([label, fact, target, glyph]) => {
+  glanceFacts(plan, documentsShown, applyShown).forEach(([label, fact, target, glyph]) => {
     // With no section below to read more in, the cell is the whole answer and links nowhere.
     const cell = element(target ? "a" : "div", target ? "glance-cell" : "glance-cell glance-cell--final");
     if (target) cell.href = `#${target}`;

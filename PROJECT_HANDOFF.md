@@ -50,6 +50,10 @@ the deployed server yet**:
 - **Plans no longer need sign-in** (entry 262). A visitor gets ten free plans per address, counted
   under a keyed hash in `var/allowance/`, and signing in with Ofself imports their details and lifts
   the limit.
+- **An open decision leads with where to settle it** (entry 271). The band offers the authority's
+  checker, an unread official page or its contractor as a button, and says "Could not be confirmed"
+  only with none of them. Where to apply and documents read "if you need a visa" or fold into one
+  line, and a documents cell shows only over a documents section.
 - **The result page was redesigned** (entry 270): a verdict band, the pass as the result's header,
   and advice and weather in a sidebar. A bolder makeover is parked on the local branch `design-bold`.
 - **A travel authorisation is never called a visa** (entry 263). New Zealand on a US passport reads
