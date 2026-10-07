@@ -53,10 +53,10 @@ the deployed server yet**:
 - **A checker is never where to apply** (entry 272). United Kingdom `US/US` sometimes filed GOV.UK's
   visa checker as the route. The plan now drops a route whose address is a named questionnaire for
   another question. In five real runs it was never filed there.
-- **Known problem: United Kingdom `US/US` says "no visa" on 3 runs of 5 without the ETA** (entry
-  272). The ETA pages are in the GB store but never reach the selection pool, so a `verified` plan
-  can omit a pre-travel authorisation the traveller needs. A fix through `always_read.yaml` is
-  proposed and waits on the owner.
+- **United Kingdom `US/US` now names the ETA on every run** (entry 272). Its ETA list and visa
+  national list are in `always_read.yaml`. **Known problem:** on 2 runs of 5 the plan leaves
+  where to apply empty, and the band then shows "No visa required" with no ETA. The ETA is only in
+  "Before you travel" below.
 - **An open decision leads with where to settle it** (entry 271). The band offers the authority's
   checker, an unread official page or its contractor as a button, and says "Could not be confirmed"
   only with none of them. Where to apply and documents read "if you need a visa" or fold into one

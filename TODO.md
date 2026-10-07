@@ -106,12 +106,12 @@ at-a-glance box. **Left:** Finland answered `429` after five links; Czechia's pa
 the address; Russia waits on evidence for `mid.ru`; the eight unclear governments; re-run
 `visa-discover advisory-links` when a government moves its pages. **Not deployed.**
 
-**An open decision leads with where to settle it — built 2026-10-07 (entries 271, 272).** Five
-United Kingdom `US/US` tourism runs: the checker was never filed as where to apply; 2 led with it,
-3 stated "no visa" from the carriers' list and **said nothing of the ETA**. **Next, with the
-owner:** the ETA pages never reach the selection pool although the store holds them (entry 272).
-Proposed fix, not built: list the ETA eligibility page, and perhaps the visa national list, for GB in
-`always_read.yaml` (entry 267), then re-run five times.
+**An open decision leads with where to settle it — built 2026-10-07 (entries 271, 272).** The
+checker is no longer filed as where to apply. GB now reads its ETA list and visa national list on
+every visitor corridor. In five United Kingdom `US/US` runs, all five name the ETA and four state
+"no visa". **Left:** on 2 of 5 runs where to apply is empty, so the band shows no ETA (entry 272).
+Open with the owner: whether the prompt should require a stated pre-travel authorisation in
+`where_to_apply`, or whether the band should name one some other way.
 
 **The result page redesign — built 2026-10-06 (entry 270):** a verdict band, the pass as the result's
 header, advice and weather in a sidebar, and a no-visa plan's travel authorisation

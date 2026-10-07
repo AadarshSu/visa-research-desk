@@ -371,6 +371,22 @@ empty corridor and plan folders):
   `gov.uk/visit-uk-holiday-family-friends`. All four are in the GB page store. Whether a run states
   the decision depends on whether the carriers' list is picked and read as complete.
 
+**The fix, the owner's decision the same day:** both the ETA eligibility list and the visa national
+list go in `always_read.yaml` for GB, tourism and business (entry 267). Five more runs
+(`var/purposes-2026-10-03/uk-always-read-2026-10-07/`):
+- **Every plan now names the ETA,** against none before. The role adjudicator chose the ETA list
+  for `visa_decision` on all five runs.
+- **4 of 5 state "no visa"** from that list, against 3 of 5 from the carriers' list before. Run 2
+  read the same page and left the decision open, saying the page does not state whether a visa is
+  needed. That run named no checker either, so its band reads "Could not be confirmed".
+- **The visa national list reached the role adjudicator on every run and was never chosen.** It is
+  read, not believed. The plan packet carries only chosen pages, so 8e never saw it.
+- **Where to apply:** runs 3–5 name the ETA, so the band shows "Travel authorisation required — not
+  a visa", but its link is the eligibility list rather than `gov.uk/eta/apply`. Runs 1 and 2 leave
+  where to apply empty, with the ETA only in a step. Since entry 273 took the steps off the band,
+  **run 1's band says "No visa required" with no ETA at the top**, and the ETA appears only in
+  "Before you travel" below.
+
 ## 271. An open decision leads with where to settle it, and the strip under it shows only what the plan shows
 
 **2026-10-07. The owner:** an American going to the United Kingdom saw "Could not be confirmed", an
