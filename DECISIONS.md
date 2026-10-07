@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [279](#279-travel-dates-reach-the-plan-call-and-no-store-shared-between-travellers-holds-anything-about-one) | **Travel dates reach the plan call; no shared store holds anything about one traveller** — counts made by the app, the model compares; dates never change the decision; corridor store and plan reuse checked and frozen in tests |
 | [278](#278-what-a-traveller-must-see-leaves-the-open-questions-exceptions-disagreements-and-gaps) | **What a traveller must see leaves the open questions** — `exceptions`, `disagreements` and `gaps` are shown, `unresolved_questions` kept for us; `disagreements` returns entry 30's field within item 13's bounds |
 | [277](#277-a-corridor-resolved-under-other-discovery-rules-is-resolved-again) | **A corridor resolved under other discovery rules is resolved again** — a stored corridor records a digest of the roles, prompts, vocabulary and always-read pages; New Zealand `US/US` had been served from one resolved before the authorisation role existed |
 | [276](#276-the-plan-is-written-for-the-specific-traveller-what-they-share-through-ofself-reaches-the-plan-call) | **The plan is written for the specific traveller** — what a signed-in traveller shares through Ofself (documents, stays, applications) reaches the plan call, which names a detail beside a rule it bears on and never decides from it; typed-in values never confirm a rule; decisions identical with and without, over five replayed travellers |
@@ -319,6 +320,53 @@ s more pressing |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
 
 ---
+
+## 279. Travel dates reach the plan call, and no store shared between travellers holds anything about one
+
+**2026-10-07. The owner:** use the trip dates, when given, wherever the plan needs them; and make sure
+the cache is not so general that one traveller's specific plan is served to another.
+
+**The dates.** Entry 256 kept them in the page. Now:
+- **`VisaPlanRequest.trip`** (`TripDates`: `mode` exact or rough, `start`, `end`) is sent by the form
+  when dates are entered, and joins the profile the plan call reads. A rough span runs from the
+  first of its first month to the last of its last. Discovery still works from the corridor alone.
+- **The app counts, the model compares** (as for expiry, entry 276): the packet's `trip` carries
+  `as_of`, `days_until_departure`, `months_until_departure` and `nights`, and a shared document
+  gains `months_valid_on_arrival`, `months_valid_after_return` and `days_valid_after_return`.
+  Present only with dates, so every other packet and reuse key is unchanged.
+- **Rule 17**: set the dates beside any rule they bear on, in bold — a stay limit, an application
+  window or processing time, a passport-validity rule measured against this trip (a typed-in date
+  still never confirms a rule is met). **The dates never change the decision, its type or its
+  condition**: where the trip crosses a rule's own date ("visa-exempt until 31 December 2026"), the
+  decision stays as stated for arrival and an exception covers the rest. Rule 15's "depends on
+  travel dates" now defers to rule 17 when they are given.
+
+**Replayed** on eight packets from today's runs with trips added, two runs each, then once more
+after the crossing-date clause (`var/trip-dates-2026-10-07/`):
+- **Passport verdicts against the trip:** Singapore (two months on arrival, six needed), New
+  Zealand and Germany (one month after return, three needed) "does not meet" in every run — New
+  Zealand and Germany were "depends on dates" without them. The United Kingdom's whole-stay rule
+  with a typed-in expiry: never "meets" ("this typed-in date cannot confirm compliance").
+- **Stays and windows:** "Your trip is 241 nights, longer than the ETA's up-to-six-month travel
+  limit" with "no visa" kept; Japan "Departure is in 20 days" beside its two-month advice; New
+  Zealand's 19 nights within its stated maximum.
+- **Malaysia, a trip across "visa-exempt until 31 December 2026":** before the clause, 1 of 2 runs
+  left the decision open; after it, "no visa" 4 of 4, each with "If you remain in Malaysia after
+  31 December 2026 — the stated visa exemption no longer covers that part of your stay". **Left
+  for the owner:** whether a dated rule may decide the plan for exact dates.
+- **Control** Singapore `PH/PH` unchanged; no decision changed elsewhere.
+
+**The cache, checked.** What is stored, and for whom:
+- **Corridor store — shared by every traveller on a corridor.** Keyed on, and resolved from, the
+  four corridor codes; discovery never receives the profile. A test now asserts a stored corridor
+  holds no region, residence status, shared details, trip or expiry.
+- **Plan drafts — one traveller.** Keyed on everything the plan call is shown, so a different trip
+  (by one day), a shared passport or another region is a new call; the same traveller asking again
+  about the same trip reuses theirs. Frozen in tests. Pruned past 24 hours (entry 276).
+- **Page cache, corpus and page text** hold official pages only. The allowance store counts, under
+  a keyed hash.
+So nothing personal is in a shared store, and a draft can be served only to identical inputs.
+Whether a shared corridor is *right* is TODO item 82.
 
 ## 278. What a traveller must see leaves the open questions: exceptions, disagreements and gaps
 
@@ -1532,6 +1580,9 @@ section, the closing note last).
 ---
 
 ## 256. Travel dates on the form, in three modes, kept in the page and out of the research
+
+**Amended by entry 279 (2026-10-07):** the dates now reach the plan call, which measures the trip
+against the rules it states. They still never reach discovery or any shared store.
 
 **2026-10-05. The owner's decisions; the first piece of entry 251's dates. Changes
 `templates/index.html`, `static/app.js` and `static/styles.css`; nothing sent to the server changes.**

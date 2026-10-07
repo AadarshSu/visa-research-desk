@@ -22,6 +22,7 @@ from visa_research_agent.domain.models import (
     SourceDisagreement,
     TravelAuthorisationDraft,
     TravellerProfile,
+    TripDates,
     VisaPlan,
     VisaPlanDraft,
 )
@@ -34,6 +35,7 @@ from visa_research_agent.research.model_usage import FileModelUsageLog, ModelCal
 from visa_research_agent.research.openai_extraction import (
     OpenAIVisaPlanExtractor,
     load_extraction_prompt,
+    traveller_in_packet,
     whole_months_between,
     without_inline_source_ids,
 )
@@ -1454,3 +1456,45 @@ def test_what_the_traveller_must_see_never_goes_only_to_the_open_questions() -> 
     assert "Record the set-aside option and its condition in exceptions (rule 16)" in prompt
     assert "Never say which page is right" in prompt
     assert "Never one about whether this traveller needs a visa" in prompt
+
+
+def test_the_trip_and_every_count_from_it_are_given_to_the_plan_call() -> None:
+    """Entry 279: counted by the app, as with expiry, so the model never does date arithmetic."""
+
+    trip = TripDates(mode="exact", start=date(2026, 12, 1), end=date(2026, 12, 20))
+    passport = SharedDetails(
+        documents=[SharedDocument(kind="passport", nationality="IN", expires_at=date(2027, 2, 7))]
+    )
+    today = date(2026, 10, 7)
+
+    anonymous = traveller_in_packet(
+        DEFAULT_TRAVELLER_PROFILE.model_copy(update={"trip": trip}), today=today
+    )
+    shared = traveller_in_packet(
+        DEFAULT_TRAVELLER_PROFILE.model_copy(update={"trip": trip, "shared_details": passport}),
+        today=today,
+    )
+
+    assert anonymous["trip"] == {
+        "mode": "exact",
+        "start": "2026-12-01",
+        "end": "2026-12-20",
+        "as_of": "2026-10-07",
+        "days_until_departure": 55,
+        "months_until_departure": 1,
+        "nights": 19,
+    }
+    assert "shared_details" not in anonymous
+    document = shared["shared_details"]["documents"][0]
+    assert document["months_valid_on_arrival"] == 2
+    assert document["months_valid_after_return"] == 1
+    assert document["days_valid_after_return"] == 49
+    assert "trip" not in traveller_in_packet(DEFAULT_TRAVELLER_PROFILE, today=today)
+
+
+def test_dates_tailor_the_plan_and_never_decide_it() -> None:
+    prompt = " ".join(load_extraction_prompt().split())
+
+    assert "17. traveller_profile.trip, when present" in prompt
+    assert "The dates never change visa_required, visa_type or decision_condition" in prompt
+    assert "a typed-in date may never confirm a rule is met" in prompt

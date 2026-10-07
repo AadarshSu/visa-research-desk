@@ -206,6 +206,10 @@ defect.
   which page answers a traveller stays live. A plan is a rendering; only the model's *draft* may be
   reused, for byte-identical inputs inside the page TTL, and every request still
   validates and grades (entry 178). A `visa_rule` decision table is deliberately not built.
+- **A store shared between travellers holds nothing about one traveller (entry 279).** The corridor
+  store is keyed on, and filled from, the corridor's four codes alone; a traveller's region, shared
+  details and trip dates reach only the plan call, whose draft is reused only for byte-identical
+  inputs — so one traveller's plan is never served to another. Frozen in tests; keep it so.
 - **Stored page text ranks; it never speaks (entries 78, 83).** `PageTextStore.rank` returns URLs and
   scores; `TextMatch` has no body field. The one accessor returning bodies, `text_for_selection`,
   feeds `discovery/selection.py`, whose `Selection` type holds ids and no prose. **Do not add a

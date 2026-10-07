@@ -1,6 +1,6 @@
 """A plan the model wrote is reused only for exactly the same inputs (DECISIONS entry 178)."""
 
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from importlib.resources import files
 from pathlib import Path
 from typing import Any
@@ -15,7 +15,10 @@ from visa_research_agent.domain.models import (
     DestinationConfig,
     RetrievalReport,
     RuntimePolicy,
+    SharedDetails,
+    SharedDocument,
     TravellerProfile,
+    TripDates,
     VisaPlanDraft,
 )
 from visa_research_agent.research import openai_extraction
@@ -329,3 +332,55 @@ async def test_keeping_a_draft_prunes_the_expired_ones(tmp_path: Path) -> None:
     ).extract(singapore(), other, report)
 
     assert len(list((tmp_path / "plans").glob("*.json"))) == 1
+
+
+TRIP = TripDates(mode="exact", start=date(2026, 12, 1), end=date(2026, 12, 20))
+PASSPORT = SharedDetails(
+    documents=[SharedDocument(kind="passport", nationality="IN", expires_at=date(2027, 2, 7))]
+)
+
+
+@pytest.mark.parametrize(
+    "other",
+    [
+        pytest.param({"trip": None}, id="no-dates"),
+        pytest.param({"trip": TRIP.model_copy(update={"end": date(2026, 12, 21)})}, id="a-day-on"),
+        pytest.param({"shared_details": PASSPORT}, id="shared-passport"),
+        pytest.param({"region_of_residence": "England"}, id="other-region"),
+    ],
+)
+@pytest.mark.anyio
+async def test_a_plan_written_for_one_traveller_is_never_served_to_another(
+    tmp_path: Path, other: dict[str, object]
+) -> None:
+    """Entry 279: a plan is written for this traveller's details and dates, and a draft is reused
+    only for byte-identical inputs — so a traveller differing in any of them is asked about anew."""
+
+    generator = CountingGenerator(golden_draft())
+    plans = extractor(generator, tmp_path / "plans")
+    report = await singapore_report()
+    first = DEFAULT_TRAVELLER_PROFILE.model_copy(update={"trip": TRIP})
+
+    await plans.extract(singapore(), first, report)
+    await plans.extract(singapore(), first.model_copy(update=other), report)
+
+    assert generator.calls == 2
+
+
+@pytest.mark.anyio
+async def test_the_same_traveller_asking_again_about_the_same_trip_reuses_their_draft(
+    tmp_path: Path,
+) -> None:
+    """The owner: so one traveller is not given two different plans for one trip."""
+
+    generator = CountingGenerator(golden_draft())
+    plans = extractor(generator, tmp_path / "plans")
+    report = await singapore_report()
+    traveller = DEFAULT_TRAVELLER_PROFILE.model_copy(
+        update={"trip": TRIP, "shared_details": PASSPORT}
+    )
+
+    await plans.extract(singapore(), traveller, report)
+    await plans.extract(singapore(), traveller.model_copy(), report)
+
+    assert generator.calls == 1

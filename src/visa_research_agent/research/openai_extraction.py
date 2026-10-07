@@ -106,11 +106,24 @@ def traveller_in_packet(traveller_profile: TravellerProfile, *, today: date) -> 
     """
 
     shared = traveller_profile.shared_details
+    trip = traveller_profile.trip
     traveller: dict[str, Any] = {
-        **traveller_profile.model_dump(mode="json", exclude={"shared_details"}),
+        **traveller_profile.model_dump(mode="json", exclude={"shared_details", "trip"}),
         "passport_nationality": describe_country(traveller_profile.passport_nationality),
         "country_of_residence": describe_country(traveller_profile.country_of_residence),
     }
+    # The dates, and every count the plan needs from them, counted here (entry 279). Absent with no
+    # dates, so every other packet and its reuse key is unchanged.
+    if trip is not None:
+        traveller["trip"] = {
+            "mode": trip.mode,
+            "start": trip.start.isoformat(),
+            "end": trip.end.isoformat(),
+            "as_of": today.isoformat(),
+            "days_until_departure": (trip.start - today).days,
+            "months_until_departure": whole_months_between(today, trip.start),
+            "nights": (trip.end - trip.start).days,
+        }
     if shared is None or shared.is_empty():
         return traveller
     details: dict[str, Any] = {"as_of": today.isoformat(), **shared.model_dump(mode="json")}
@@ -121,6 +134,14 @@ def traveller_in_packet(traveller_profile: TravellerProfile, *, today: date) -> 
         if held.expires_at is not None:
             document["days_until_expiry"] = (held.expires_at - today).days
             document["months_until_expiry"] = whole_months_between(today, held.expires_at)
+            if trip is not None:
+                document["months_valid_on_arrival"] = whole_months_between(
+                    trip.start, held.expires_at
+                )
+                document["months_valid_after_return"] = whole_months_between(
+                    trip.end, held.expires_at
+                )
+                document["days_valid_after_return"] = (held.expires_at - trip.end).days
     for stay in details["stays"]:
         stay["country"] = describe_country(stay["country"])
     traveller["shared_details"] = details

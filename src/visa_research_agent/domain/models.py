@@ -188,6 +188,26 @@ def _require_aware_datetime(value: datetime) -> datetime:
     return value
 
 
+class TripDates(StrictModel):
+    """When the traveller means to travel, as they entered it on the form (entry 279).
+
+    Read by the plan call only. Discovery never sees it — it works from the corridor — so the
+    research stays shared between travellers and only the plan is written for these dates. A rough
+    span runs from the first day of its first month to the last of its last, so a passport is
+    measured against the latest the trip could end.
+    """
+
+    mode: Literal["exact", "rough"]
+    start: date
+    end: date
+
+    @model_validator(mode="after")
+    def validate_order(self) -> "TripDates":
+        if self.end < self.start:
+            raise ValueError("a trip cannot end before it starts")
+        return self
+
+
 class SharedDocument(StrictModel):
     """A document the traveller holds, as they shared it through Ofself (entry 276).
 
@@ -302,6 +322,10 @@ class TravellerProfile(StrictModel):
     shared_details: SharedDetails | None = None
     """What a signed-in traveller shared through Ofself (entry 276). None for the anonymous form,
     and whenever nothing was shared — never a claim that they hold nothing."""
+
+    trip: TripDates | None = None
+    """The dates the traveller entered, for the plan call only (entry 279). None when they gave
+    none."""
 
 
 class ConfiguredSource(StrictModel):

@@ -1042,3 +1042,24 @@ async def test_a_country_nobody_has_built_is_refused_as_not_supported(tmp_path: 
         ).destination_for("France", corridor())
 
     assert raised.value.cause == "not_supported"
+
+
+async def test_a_stored_corridor_holds_nothing_about_one_traveller(tmp_path: Path) -> None:
+    """Entry 279: the corridor store is shared by every traveller on the corridor, so nothing
+    personal may be in it — only the corridor's four codes and the pages."""
+
+    provider = StubProvider(["https://france-visas.gouv.fr/en/applying"])
+    await build_service(tmp_path, provider, StubResolver(resolved())).destination_for(
+        "France", corridor()
+    )
+    (stored,) = (tmp_path / "corridors").glob("*.json")
+    text = stored.read_text(encoding="utf-8")
+
+    for personal in (
+        "region_of_residence",
+        "residence_status",
+        "shared_details",
+        "trip",
+        "expires_at",
+    ):
+        assert f'"{personal}"' not in text

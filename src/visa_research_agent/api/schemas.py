@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from visa_research_agent.api.countries import normalise_country
 from visa_research_agent.config.regions import normalise_region
 from visa_research_agent.discovery.advisories import AdviceLink
-from visa_research_agent.domain.models import TravellerProfile, TravelPurpose
+from visa_research_agent.domain.models import TravellerProfile, TravelPurpose, TripDates
 from visa_research_agent.weather.panel import WeatherPanel
 
 
@@ -98,6 +98,9 @@ class VisaPlanRequest(ApiModel):
     traveller: TravellerRequest | None = None
     """Absent means the default profile. The interface opens on one, and the offline Singapore
     fixture was recorded against it."""
+    trip: TripDates | None = None
+    """The dates on the form, exact or a rough span of months (entry 279). Absent when the traveller
+    chose "not sure". Only the plan call reads them."""
 
     @field_validator("destination")
     @classmethod

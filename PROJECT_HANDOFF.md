@@ -8,7 +8,7 @@ stands, what to do next, and what is known to be broken. The history of how it g
 | --- | --- |
 | **Repository** | `github.com/AadarshSu/visa-research-agent` |
 | **Last updated** | 2026-10-07 — update this line when you touch the handoff |
-| **Tests** | 1,127 on the owner's machine, with `var/` present: 1,126 passing and 1 skipped (the opt-in browser test), run 2026-10-07; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
+| **Tests** | 1,137 on the owner's machine, with `var/` present: 1,136 passing and 1 skipped (the opt-in browser test), run 2026-10-07; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
 
 | Question | File |
 | --- | --- |
@@ -65,6 +65,11 @@ the deployed server yet**:
   unchanged. Seen live on Ofself's sandbox test user with a typed-in Indian passport expiring
   2027-02-07: the expiry is named beside the validity rule. A developer token cannot write the
   owner's own account (OFSELF_FEEDBACK 9.9), so no real traveller's records have been used.
+- **Trip dates reach the plan** (entry 279): measured against stay limits, application windows and
+  passport validity, in bold, counted by the app; never the decision. No shared store holds
+  anything about one traveller, checked and frozen in tests. **Open for the owner:** whether a
+  rule with its own date ("visa-exempt until 31 December 2026") may decide the plan for exact
+  dates.
 - **An open decision leads with where to settle it** (entry 271). The band offers the authority's
   checker, an unread official page or its contractor as a button, and says "Could not be confirmed"
   only with none of them. Where to apply and documents read "if you need a visa" or fold into one

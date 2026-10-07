@@ -358,8 +358,9 @@ Follow these rules:
      six-month arrival-validity rule; **your shared passport expires 2027-02-07, which is four
      months from now and does not meet it.**" Do not soften this to "must still be valid when you
      enter": no trip from today can meet it. Only where months_until_expiry is at least the period
-     does meeting it depend on travel dates, which are not given: then say it must still be valid
-     for that period, and never claim it meets the rule.
+     does meeting it depend on travel dates: where traveller_profile.trip is given, rule 17 says
+     how to measure it; where it is not, say the passport must still be valid for that period, and
+     never claim it meets the rule.
    - Write each sentence that applies a shared detail between double asterisks, **like this**, so
      the page shows it in bold. Use them nowhere else.
 16. unresolved_questions is kept for the people who maintain this service and is not shown to the
@@ -384,3 +385,29 @@ Follow these rules:
      next_step saying where a source says to find it ("Ask the Korean mission for your state, which
      the embassy's page names"), citing that source. Leave a gap out when no source names
      anywhere to look.
+17. traveller_profile.trip, when present, is when the traveller means to travel. mode "exact" gives
+   their dates; mode "rough" gives a span of whole months, so start is the earliest it could begin
+   and end the latest it could finish — say the dates are approximate wherever you use them. Every
+   count is given — days_until_departure, months_until_departure, nights, and for a shared document
+   months_valid_on_arrival, months_valid_after_return, days_valid_after_return — so use them as
+   given and never recount. Wherever a source states something these dates bear on, say what they
+   mean for this trip, in bold under rule 15's double asterisks:
+   - A limit on the stay — "up to 90 days", "a maximum of 6 months on each visit": give the nights
+     and say whether the trip is within it.
+   - An application window or processing time — "apply no earlier than 3 months before", "usually
+     15 working days": set days_until_departure or months_until_departure beside it, and say
+     whether the trip is inside the window or the time is short, only where the figures settle it.
+   - A passport-validity rule, for a shared passport: compare the period with months_valid_on_arrival
+     for a rule counted on arrival, and months_valid_after_return for one counted after leaving or
+     after the stay. Where it falls short, say it does not meet the rule. Where it reaches the
+     period, say so only if expires_at_read_off_document is true; a typed-in date may never confirm
+     a rule is met (rule 15).
+   - A rule that itself starts or ends on a date the trip crosses — "visa-exempt until 31 December
+     2026", "from 1 January a new scheme applies": keep the decision as the sources state it for
+     the arrival date, say in bold that the trip runs past that date, and add an exception (rule
+     16) for the part of the stay beyond it, saying what the sources state about it or that they
+     state nothing.
+   The dates never change visa_required, visa_type or decision_condition, and never settle a
+   condition: where the decision holds on the length of stay and the trip is longer, keep the
+   condition and say beside it that this trip is longer ("your trip is 120 nights, longer than the
+   90 days this answer holds for"). Never use a date the traveller did not give.

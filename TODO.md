@@ -79,7 +79,10 @@ for everyone who asks next, until it expires.
 **Where it is heading — the owner.** As plans tailor to one traveller (entry 276) and later to
 their trip dates, plan reuse becomes mostly one traveller asking again, so they are not given two
 different plans for one trip. The corridor store stays shared between travellers, so a wrong
-resolution there still spreads.
+resolution there still spreads. **Checked 2026-10-07 (entry 279):** the corridor store holds
+nothing about one traveller, and a draft is reused only for byte-identical inputs — region, shared
+details and trip dates included — both frozen in tests. What is left here is *correctness*, not
+leakage.
 
 **Questions to decide before any code:**
 - **What may be kept.** Candidates, none measured: only `verified` plans; only a resolution two

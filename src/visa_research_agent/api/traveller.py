@@ -34,9 +34,10 @@ class RequestBodyTravellerSource:
     async def traveller_for(self, request: VisaPlanRequest) -> TravellerProfile:
         # The default is what the interface opens on and what the offline Singapore fixture was
         # recorded against.
-        if request.traveller is None:
-            return DEFAULT_TRAVELLER_PROFILE
-        return request.traveller.to_profile()
+        traveller = request.traveller
+        profile = DEFAULT_TRAVELLER_PROFILE if traveller is None else traveller.to_profile()
+        # The dates ride with the traveller to the plan call and no further (entry 279).
+        return profile.model_copy(update={"trip": request.trip}) if request.trip else profile
 
 
 logger = logging.getLogger(__name__)

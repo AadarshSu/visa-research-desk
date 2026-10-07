@@ -1,5 +1,6 @@
 """The traveller a request describes, and the default when it describes nobody."""
 
+import asyncio
 from datetime import date
 from typing import cast
 
@@ -13,7 +14,7 @@ from visa_research_agent.api.ofself import (
     OfselfIdentity,
     OfselfUnavailable,
 )
-from visa_research_agent.api.routes import traveller_or_reconnect
+from visa_research_agent.api.routes import corridor_for, traveller_or_reconnect
 from visa_research_agent.api.schemas import TravellerRequest, VisaPlanRequest
 from visa_research_agent.api.traveller import (
     RequestBodyTravellerSource,
@@ -21,7 +22,8 @@ from visa_research_agent.api.traveller import (
 )
 from visa_research_agent.config.traveller import DEFAULT_TRAVELLER_PROFILE
 from visa_research_agent.discovery.lexicon import get_country_registry
-from visa_research_agent.domain.models import SharedDetails, SharedDocument
+from visa_research_agent.discovery.models import Corridor
+from visa_research_agent.domain.models import SharedDetails, SharedDocument, TripDates
 
 
 def test_the_default_profile_is_the_one_the_singapore_fixture_was_recorded_against() -> None:
@@ -33,6 +35,7 @@ def test_the_default_profile_is_the_one_the_singapore_fixture_was_recorded_again
         "residence_status": "Graduate visa",
         "residence_permission_expiry": "2027-12-23",
         "shared_details": None,
+        "trip": None,
         "travel_purpose": "tourism",
     }
 
@@ -232,3 +235,33 @@ def test_a_request_body_can_never_supply_shared_details() -> None:
                 "shared_details": SHARED.model_dump(mode="json"),
             }
         )
+
+
+def test_trip_dates_reach_the_plan_and_never_the_corridor() -> None:
+    """Entry 279: research is shared by everyone on a corridor, so it must never be keyed on, or
+    hold, anything about one traveller — their dates, what they shared, or their region."""
+
+    trip = TripDates(mode="exact", start=date(2026, 12, 1), end=date(2026, 12, 20))
+    request = VisaPlanRequest(
+        destination="canada",
+        traveller=TravellerRequest(passport_nationality="GB", country_of_residence="GB"),
+        trip=trip,
+    )
+    profile = asyncio.run(RequestBodyTravellerSource().traveller_for(request))
+    bare = asyncio.run(
+        RequestBodyTravellerSource().traveller_for(request.model_copy(update={"trip": None}))
+    )
+
+    assert profile.trip == trip
+    assert corridor_for("canada", profile) == corridor_for("canada", bare)
+    assert set(Corridor.model_fields) == {
+        "destination_slug",
+        "passport_nationality",
+        "applying_from",
+        "purpose",
+    }
+
+
+def test_a_trip_cannot_end_before_it_starts() -> None:
+    with pytest.raises(ValidationError, match="end before it starts"):
+        TripDates(mode="exact", start=date(2026, 12, 20), end=date(2026, 12, 1))

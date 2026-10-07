@@ -1711,6 +1711,10 @@ async function generatePlan(event) {
         travel_purpose: purposeSelect.value,
       },
     };
+    // The dates go to the plan call so it can measure this trip against the rules (entry 279);
+    // research never sees them. "Not sure" sends none.
+    const trip = tripDates();
+    if (trip) request.trip = { mode: trip.mode, start: isoDay(trip.start), end: isoDay(trip.end) };
     lastRun = { request, stages: [] };
     // Looked up beside the plan rather than after it, and shown with it: a lookup in committed
     // data, so it is ready long before the plan (entry 260).
