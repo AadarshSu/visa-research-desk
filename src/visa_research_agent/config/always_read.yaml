@@ -21,14 +21,16 @@ countries:
       known problem 46).
 - code: GB
   pages:
-  - url: https://www.gov.uk/guidance/check-when-you-can-get-an-electronic-travel-authorisation-eta
-    title: Check if you can get an electronic travel authorisation (ETA)
+  - url: https://www.gov.uk/eta
+    title: Get an electronic travel authorisation (ETA) to visit the UK
     purposes: [tourism, business]
     why: >-
-      UK Visas and Immigration's list of the nationalities that can apply for an ETA, the
-      authorisation a visitor who needs no visa must hold before travel. In the GB store, but
-      absent from the selection pool of 160 on all five united-kingdom/US/US tourism runs of
-      2026-10-07, three of which stated "no visa" and never mentioned the ETA (entry 272).
+      GOV.UK's ETA overview: "Most visitors need an ETA or a visa", and visitors from the USA and
+      others usually need an ETA rather than a visa. It links where the ETA is applied for. In the
+      GB store, but absent from the selection pool of 160 on all five united-kingdom/US/US tourism
+      runs of 2026-10-07. Three of those stated "no visa" and never mentioned the ETA (entry 272).
+      It replaced the ETA eligibility list, which says only that US nationals "can apply", so plans
+      read from it left the ETA as an open question.
   - url: https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-visitor-visa-national-list
     title: 'Immigration Rules Appendix Visitor: visa national list'
     purposes: [tourism, business]

@@ -53,10 +53,10 @@ the deployed server yet**:
 - **A checker is never where to apply** (entry 272). United Kingdom `US/US` sometimes filed GOV.UK's
   visa checker as the route. The plan now drops a route whose address is a named questionnaire for
   another question. In five real runs it was never filed there.
-- **United Kingdom `US/US` names the ETA on every run** (entry 272). Its ETA list and visa
-  national list are in `always_read.yaml`, and a stated pre-travel authorisation is always where to
-  apply, so 4 runs of 5 show the ETA on the band. **Known problem:** 1 run in 5 leaves the decision
-  open from the same list, and its band reads "Could not be confirmed".
+- **United Kingdom `US/US` is settled** (entries 272, 274). It reads `gov.uk/eta` and the visa
+  national list on every visitor corridor. Roles rule 7e puts a pre-travel authorisation under
+  where to apply, not the decision. "No visa" on 5 runs of 5, with the ETA on the band on 4.
+  **Known problem:** the fifth keeps the ETA only as a step, and is still `verified`.
 - **An open decision leads with where to settle it** (entry 271). The band offers the authority's
   checker, an unread official page or its contractor as a button, and says "Could not be confirmed"
   only with none of them. Where to apply and documents read "if you need a visa" or fold into one

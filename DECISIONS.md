@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [274](#274-a-pre-travel-authorisation-fills-where-to-apply-not-the-visa-decision) | **A pre-travel authorisation fills where to apply, not the visa decision** — roles rule 7e; GB reads `gov.uk/eta` in place of the ETA eligibility list; United Kingdom `US/US` 5 of 5 "no visa" from the visa national list, 4 of 5 with the ETA on the band |
 | [273](#273-the-band-no-longer-lists-a-no-visa-plans-entry-steps) | **The band no longer lists a no-visa plan's entry steps** — the owner wants travellers to scroll to the section that sets them out; the travel-authorisation box stays (part-reverses 263's display) |
 | [272](#272-a-questionnaire-for-another-question-is-never-where-to-apply) | **A questionnaire for another question is never where to apply** — United Kingdom `US/US` filed GOV.UK's visa checker as the route on some runs; the location is dropped in code and the prompt no longer invites it |
 | [271](#271-an-open-decision-leads-with-where-to-settle-it-and-the-strip-under-it-shows-only-what-the-plan-shows) | **An open decision leads with where to settle it** — the authority's checker, an unread official page or its contractor, as a button on the band; "Could not be confirmed" only with none; where to apply and documents marked "if you need a visa" or folded into one line; a documents cell only over a documents section |
@@ -314,6 +315,44 @@ s more pressing |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
 
 ---
+
+## 274. A pre-travel authorisation fills where to apply, not the visa decision
+
+**2026-10-07. The owner asked** that the open decision on 1 United Kingdom `US/US` run in 5 be fixed
+(entry 272).
+
+**Cause:** the role adjudicator chose the ETA eligibility list for `visa_decision` on every run, and
+rule 7b ("choose the list") did not tell it otherwise. The visa national list was read and never
+chosen. The plan packet carries only chosen pages, so 8e never saw the list that settles the
+question. Whether a plan stated "no visa" then rested on reading "US nationals can apply for an
+ETA" as "no visa", which 1 run in 5 declined to do.
+
+**Fix, in two parts:**
+1. **Roles rule 7e:** a pre-travel authorisation that is not a visa (ETA, ESTA, eTA, NZeTA) fills
+   `application_route`, not `visa_decision`. Where the list of who needs a visa is a candidate, it
+   fills `visa_decision`, so the plan reads both. The authorisation page decides only where nothing
+   answers the visa question more directly.
+2. **GB's always-read ETA page is now `gov.uk/eta`** in place of the eligibility list. With 7e alone,
+   5 of 5 runs said "no visa" from the visa national list, but 4 of 5 left the ETA as an open
+   question, because the list says only that US nationals "can apply". `gov.uk/eta` says "Most
+   visitors need an ETA or a visa" and that visitors from the USA usually need an ETA. Read with
+   the visa list, that is the requirement. It is also the overview linking "Apply for an ETA".
+
+**Runs** (`var/purposes-2026-10-03/`):
+
+| | "no visa" | ETA on the band |
+| --- | --- | --- |
+| before (`uk-eta-route-2026-10-07`) | 4 of 5 | 4 of 5, linking the eligibility list |
+| 7e only (`uk-roles-7e-2026-10-07`) | 5 of 5 | 1 of 5 |
+| 7e + `gov.uk/eta` (`uk-eta-overview-2026-10-07`) | **5 of 5** | **4 of 5, linking `gov.uk/eta`** |
+
+On the fifth run (run 1), the plan read "usually" as leaving room. Its ETA is a step and an
+unresolved question, not where to apply, and the plan was still `verified`.
+
+**Controls under 7e**, with the eligibility list still configured: New Zealand `US/US` ×2 kept
+"no visa" with the NZeTA as where to apply. Australia `US/US` ×2 kept "visa required", since its ETA
+is a visa (subclass 601). Japan `GB/GB` ×2 kept "no visa" with where to apply empty. The swap to
+`gov.uk/eta` touches only GB.
 
 ## 273. The band no longer lists a no-visa plan's entry steps
 

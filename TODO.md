@@ -106,12 +106,10 @@ at-a-glance box. **Left:** Finland answered `429` after five links; Czechia's pa
 the address; Russia waits on evidence for `mid.ru`; the eight unclear governments; re-run
 `visa-discover advisory-links` when a government moves its pages. **Not deployed.**
 
-**An open decision leads with where to settle it — built 2026-10-07 (entries 271, 272).** The
-checker is no longer filed as where to apply. GB reads its ETA list and visa national list on every
-visitor corridor. A stated pre-travel authorisation is always where to apply. In five United
-Kingdom `US/US` runs, four state "no visa" with the ETA on the band. **Left:** 1 run in 5 leaves the
-decision open from the same ETA list, and its band reads "Could not be confirmed". The ETA links to
-the eligibility list rather than `gov.uk/eta/apply`, which no corridor reads.
+**An open decision leads with where to settle it — built 2026-10-07 (entries 271, 272, 274).**
+United Kingdom `US/US` now states "no visa" on 5 runs of 5 from the visa national list, with the ETA
+on the band linking `gov.uk/eta` on 4. **Left:** 1 run in 5 reads "usually need an ETA" as leaving
+room, and keeps the ETA as a step and an unresolved question. That plan is still `verified`.
 
 **The result page redesign — built 2026-10-06 (entry 270):** a verdict band, the pass as the result's
 header, advice and weather in a sidebar, and a no-visa plan's travel authorisation

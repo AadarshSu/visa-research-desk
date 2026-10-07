@@ -58,6 +58,12 @@ Follow these rules:
    trip is for study or business — says nothing about this trip, either way. It does not fill
    `visa_decision`, and it does not stop a candidate that states travellers for this trip's purpose
    need a visa from filling it.
+7e. A pre-travel authorisation that is not a visa — an ETA, ESTA, eTA or NZeTA — is not the visa
+   decision. A list of the nationalities who can get one, or a page about applying for one, fills
+   `application_route`: for a traveller who needs no visa, that authorisation is what they apply
+   for. Where the authority's list of who needs a visa is also a candidate, it fills
+   `visa_decision` (7b), so the plan reads both. Choose the authorisation page for `visa_decision`
+   only where no candidate answers the visa question more directly.
 8. One page may fill several roles. A per-nationality page often establishes the decision and lists
    the documents; say so rather than splitting the answer artificially.
 9. `published_in_path` is what the URL claims about when the page was published, where it claims
