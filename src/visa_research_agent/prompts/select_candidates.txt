@@ -40,7 +40,9 @@ Follow these rules:
 8. Cover the roles that matter most first. `visa_decision` — whether this traveller needs a visa at
    all — and `document_checklist` — which documents to bring for this application — are the two the
    traveller cannot do without. `application_route`, `fees`, `processing_times` and `general_entry`
-   are worth a place each when a candidate clearly serves them.
+   are worth a place each when a candidate clearly serves them, and so is `travel_authorisation` —
+   a pre-travel authorisation that is not a visa, such as an ETA, ESTA or NZeTA — when a candidate
+   names one for travel to this destination.
 9. An excerpt is the head of a page. A page whose head does not say what it is may still be the
    right page; weigh its address and link text too, rather than rejecting it for a dull opening.
 10. A candidate with `stored_excerpt_same_as` has exactly the same stored excerpt as the candidate it

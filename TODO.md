@@ -106,10 +106,14 @@ at-a-glance box. **Left:** Finland answered `429` after five links; Czechia's pa
 the address; Russia waits on evidence for `mid.ru`; the eight unclear governments; re-run
 `visa-discover advisory-links` when a government moves its pages. **Not deployed.**
 
-**An open decision leads with where to settle it — built 2026-10-07 (entries 271, 272, 274).**
-United Kingdom `US/US` now states "no visa" on 5 runs of 5 from the visa national list, with the ETA
-on the band linking `gov.uk/eta` on 4. **Left:** 1 run in 5 reads "usually need an ETA" as leaving
-room, and keeps the ETA as a step and an unresolved question. That plan is still `verified`.
+**An open decision leads with where to settle it — built 2026-10-07 (entries 271, 272).**
+
+**A pre-travel authorisation has its own role — built 2026-10-07 (entry 275),** replacing entry
+274's GB-only pages and rules. Found on 8 of 8 corridors that have one; on the plan 5 of 8.
+**Left, the owner's to decide (known problem 47):** whether a plan may name an authorisation needed
+only for the ordinary way in — Canada's eTA, required to fly — as 8k states the ordinary side
+(entry 264). Measure first by replaying the plan call on `travel-auth-2026-10-07`'s Canada and
+United States packets with `var/travel-auth-2026-10-07/replay_plan.py`.
 
 **The result page redesign — built 2026-10-06 (entry 270):** a verdict band, the pass as the result's
 header, advice and weather in a sidebar, and a no-visa plan's travel authorisation
@@ -392,6 +396,7 @@ The reasoning is in the DECISIONS entry; this is the index. Code comments cite s
 
 | Was | Done | Entry | What building it found |
 | --- | --- | --- | --- |
+| — A seventh role, `travel_authorisation` | 10-07 | 275 | A body vocabulary could not find the page — every GOV.UK visa page carries the ETA notice; title and address could. Discovery 8 of 8, the plan 5 of 8; GB always-read entries removed |
 | — Pages a country's corridors read on every run | 10-06 | 265–267 | Australia's ETA page ranked 55th after two scoring fixes; named in `config/always_read.yaml`, `US/US` went to 3 of 3 "visa required, ETA (601)" and `IN/IN` stayed on the subclass 600 |
 | — A travel authorisation is never called a visa; 8k states the ordinary side, and never a which-visa fact | 10-06 | 263, 264, 268 | Each a prompt change measured by replaying captured packets. Two wordings of 268 were rejected for costing Japan study and New Zealand transit |
 | — Plans without sign-in | 10-06 | 262 | Ten free plans per address, under a keyed hash; counted only once a request is answerable; an unreadable count refuses |

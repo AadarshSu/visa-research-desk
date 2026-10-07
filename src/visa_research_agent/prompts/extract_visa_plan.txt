@@ -92,15 +92,10 @@ Follow these rules:
      traveller told they need no visa has nothing left to check it against.
    - A permission the border grants by itself, with no application or fee there, does not stop
      this rule even where a page calls it a visa (rule 8g).
-   - Set where_to_apply to null when there is nothing to apply for. If the sources say a visa-free
-     traveller must still hold a pre-travel authorisation that is not a visa (an ETA, ESTA, eTA or
-     NZeTA), where_to_apply is never null: it names that authorisation in application_method, and
-     its application_url is the supplied page where it is applied for, or, where none was supplied,
-     the supplied page stating that this traveller needs or can get it, such as a list of the
-     nationalities eligible for it. A plan with a step telling the traveller to obtain such an
-     authorisation has where_to_apply set. The step opening it may use link_target
-     "application_route". Never suppress such a requirement because the visa answer was no: it is
-     the one thing that will stop them at the gate.
+   - Set where_to_apply to null: there is no visa to apply for. A pre-travel authorisation that is
+     not a visa (an ETA, ESTA, eTA or NZeTA) goes in travel_authorisation (rule 8m), never in
+     where_to_apply. Never suppress such a requirement because the visa answer was no: it is the
+     one thing that will stop them at the gate.
    - Only use this shape where a page states the answer. If destination.decision_is_unverified is
      true, rule 8b governs instead and visa_required is null: an authority that would not let us
      read the page, or that answers through a questionnaire, has not said no.
@@ -157,9 +152,9 @@ Follow these rules:
    not — even where a page calls it a visa, or says a visa is "granted" or "issued" at the border
    (a "visa waiver visitor visa", say). A scheme like that is a way in without a visa: if the only
    thing this traveller must obtain beforehand is a pre-travel authorisation the sources do not
-   call a visa, rule 8e governs, visa_required is false, and that authorisation's page is
-   where_to_apply. A document the authority itself calls a visa stays a visa, whether applied for
-   in advance or at the border. Where the sources describe, for this traveller's
+   call a visa, rule 8e governs, visa_required is false, and that authorisation goes in
+   travel_authorisation (rule 8m). A document the authority itself calls a visa stays a visa,
+   whether applied for in advance or at the border. Where the sources describe, for this traveller's
    passport, only ways in that each end in the traveller holding a visa — one applied for in
    advance, one issued on arrival, or one whose eligibility turns on a residence permit or another
    country's visa that the profile does not establish — set visa_required to true, even though
@@ -261,6 +256,20 @@ Follow these rules:
      an unresolved question naming them.
    - Never write a visa name a source does not print, and never use visa_type to decide
      visa_required: the decision rules above still govern it.
+8m. travel_authorisation names a pre-travel authorisation that is not a visa — an ETA, ESTA, eTA,
+   NZeTA or K-ETA — that this traveller must hold before they travel. Set it only when all of these
+   hold, and otherwise set it to null:
+   - visa_required is false;
+   - a source in destination.travel_authorisation_source_ids states that a traveller with this
+     passport, for this purpose, must hold it, or that travellers like them need it and lists their
+     passport among those who can get it;
+   - no source says it is waived, suspended or not required for this passport or purpose, or that
+     it is not yet in force.
+   Give its name in a source's own words ("Electronic Travel Authorisation (ETA)") and cite only
+   ids from destination.travel_authorisation_source_ids, the page where it is applied for first
+   where one was supplied. A document the authority itself calls a visa is a visa and never goes
+   here (rule 8g). The step telling the traveller to get it opens that page with link_target
+   "source".
 9. Each step's title is a short label of at most eight words — "Book the appointment", "Pay the
    fee" — that fits in seventy characters with room to spare. Never write a sentence there or let it
    run past the limit: a title that stops mid-clause reads as a broken interface. Everything the

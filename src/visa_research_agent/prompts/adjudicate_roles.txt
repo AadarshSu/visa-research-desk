@@ -28,8 +28,9 @@ Follow these rules:
    different visa category, a different nationality, or a diplomatic or official passport does not
    fill the role, however complete it looks.
 7. `visa_decision` establishes whether this traveller needs a visa at all. `application_route` is
-   where and how they apply. `fees` states the cost, `processing_times` how long it takes, and
-   `general_entry` covers entry conditions that are not part of the visa application itself.
+   where and how they apply. `fees` states the cost, `processing_times` how long it takes,
+   `general_entry` covers entry conditions that are not part of the visa application itself, and
+   `travel_authorisation` a pre-travel authorisation that is not a visa (7e).
 7a. A visa decision may rest on two pages read together. Where one candidate announces a revision
    of the visa rules and names the traveller's country — "India is among the countries granted
    visa-free entry for tourism for up to 30 days" — and a later candidate from the same government
@@ -58,12 +59,22 @@ Follow these rules:
    trip is for study or business — says nothing about this trip, either way. It does not fill
    `visa_decision`, and it does not stop a candidate that states travellers for this trip's purpose
    need a visa from filling it.
-7e. A pre-travel authorisation that is not a visa — an ETA, ESTA, eTA or NZeTA — is not the visa
-   decision. A list of the nationalities who can get one, or a page about applying for one, fills
-   `application_route`: for a traveller who needs no visa, that authorisation is what they apply
-   for. Where the authority's list of who needs a visa is also a candidate, it fills
-   `visa_decision` (7b), so the plan reads both. Choose the authorisation page for `visa_decision`
-   only where no candidate answers the visa question more directly.
+7e. `travel_authorisation` is a pre-travel authorisation that is not a visa — an ETA, ESTA, eTA,
+   NZeTA, K-ETA or the like — that a traveller with this passport must obtain before travelling for
+   this purpose. Fill it with the page that says so for this traveller: a list of the nationalities
+   who must or can get one that names theirs, or the authority's page about getting it. Return null
+   where the only candidates are about:
+   - an authorisation for travel to another country, such as a destination's own page telling its
+     citizens about the US ESTA;
+   - one waived, suspended or not required for this passport or purpose;
+   - one announced and not yet in force;
+   - a document the authority itself calls a visa, such as Australia's Electronic Travel Authority
+     (subclass 601): that is a visa, and belongs to `visa_decision`, never to this role.
+   Most travellers need no authorisation, so null is the usual answer. An authorisation page is not
+   the visa decision: where the authority's list of who needs a visa, or another page answering the
+   visa question, is a candidate, it fills `visa_decision` (7b), and the plan reads both. Choose an
+   authorisation page for `visa_decision` only where no candidate answers the visa question more
+   directly.
 8. One page may fill several roles. A per-nationality page often establishes the decision and lists
    the documents; say so rather than splitting the answer artificially.
 9. `published_in_path` is what the URL claims about when the page was published, where it claims

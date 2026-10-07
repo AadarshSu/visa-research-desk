@@ -47,6 +47,9 @@ LOAD_BEARING_ROLES: tuple[DiscoveryRole, ...] = ("visa_decision",)
 # A missing checklist stops being fatal, but it must never become invisible: it changes what the
 # traveller can be told, so it is reported and moves the command's exit code from 0 to 1.
 REPORTED_ROLES: tuple[DiscoveryRole, ...] = (*LOAD_BEARING_ROLES, "document_checklist")
+#
+# `travel_authorisation` is in neither, deliberately (entry 275). Most travellers need none, so an
+# empty one is the common case, and it means only that none was found — never that none is needed.
 
 # Why one run ended the way it did, as a value rather than a sentence.
 #
@@ -79,6 +82,7 @@ ROLE_ORDER: tuple[DiscoveryRole, ...] = (
     "fees",
     "processing_times",
     "general_entry",
+    "travel_authorisation",
 )
 
 

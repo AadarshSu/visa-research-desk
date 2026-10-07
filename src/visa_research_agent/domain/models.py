@@ -275,6 +275,7 @@ GuidanceTopic = Literal[
     "fees",
     "processing_times",
     "general_entry",
+    "travel_authorisation",
 ]
 
 
@@ -804,6 +805,31 @@ class ApplicationLocationDraft(StrictModel):
     in_person: InPerson | None
 
 
+class TravelAuthorisationDraft(StrictModel):
+    """Model-facing: a pre-travel authorisation that is not a visa, which this traveller must hold.
+
+    A name and the pages it rests on, never a URL: the application links the first cited page, so
+    the traveller is only ever sent to a page this run read (entry 275).
+    """
+
+    name: str = Field(min_length=1, max_length=120)
+    source_ids: list[str] = Field(min_length=1)
+
+
+class TravelAuthorisation(StrictModel):
+    """A pre-travel authorisation that is not a visa — the UK's ETA, the US ESTA — which a page
+    chosen for `travel_authorisation` states this traveller must hold (entry 275).
+
+    Only on a plan stating that no visa is required. Its absence means none was found, never that
+    none is needed: most travellers need none, and nothing may be shown in its place.
+    """
+
+    name: str = Field(min_length=1, max_length=120)
+    url: AnyHttpUrl
+    """The first cited page, set by the application, never by the model."""
+    source_ids: list[str] = Field(min_length=1)
+
+
 class ApplicationStep(StrictModel):
     """One evidence-backed action in the traveller's ordered application timeline."""
 
@@ -922,6 +948,7 @@ class VisaPlanDraft(StrictModel):
     explanation: str = Field(min_length=1)
     decision_source_ids: list[str] = Field(min_length=1)
     where_to_apply: ApplicationLocationDraft | None
+    travel_authorisation: TravelAuthorisationDraft | None = None
     requirements: list[VisaRequirement]
     application_steps: list[ApplicationStep] = Field(max_length=8)
     unresolved_questions: list[str]
@@ -952,6 +979,8 @@ class VisaPlan(StrictModel):
     explanation: str = Field(min_length=1)
     decision_source_ids: list[str] = Field(min_length=1)
     where_to_apply: ApplicationLocation | None
+    travel_authorisation: TravelAuthorisation | None = None
+    """See `TravelAuthorisation`. Only where `visa_required` is false."""
     requirements: list[VisaRequirement]
     application_document_source_ids: list[str]
     """May be empty: some authorities publish no checklist. See `validate_absent_checklist`."""
@@ -1125,6 +1154,10 @@ class VisaPlan(StrictModel):
         )
         if self.where_to_apply is not None:
             cited_source_ids.update(self.where_to_apply.source_ids)
+        if self.travel_authorisation is not None:
+            if self.visa_required is not False:
+                raise ValueError("a travel authorisation is named only on a plan needing no visa")
+            cited_source_ids.update(self.travel_authorisation.source_ids)
 
         if self.where_to_apply is None and any(
             step.link_target == "application_route" for step in self.application_steps

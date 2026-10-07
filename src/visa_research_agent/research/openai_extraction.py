@@ -32,6 +32,9 @@ from visa_research_agent.domain.models import (
     InteractiveTool,
     RetrievalReport,
     SourceFailure,
+    SourceReference,
+    TravelAuthorisation,
+    TravelAuthorisationDraft,
     TravellerProfile,
     VisaPlan,
     VisaPlanDraft,
@@ -82,6 +85,16 @@ def describe_country(code: str) -> str:
     return f"{country.name} ({code})" if country is not None else code
 
 
+def travel_authorisation_source_ids(destination: DestinationConfig) -> list[str]:
+    """The sources discovery chose for `travel_authorisation`, in the destination's order."""
+
+    return [
+        source.source_id
+        for source in destination.sources
+        if source.selection is not None and "travel_authorisation" in source.selection.roles
+    ]
+
+
 def build_research_packet(
     destination: DestinationConfig,
     traveller_profile: TravellerProfile,
@@ -95,6 +108,9 @@ def build_research_packet(
             "display_name": destination.display_name,
             "route_type": destination.route_type,
             "application_document_source_ids": destination.application_document_source_ids,
+            # The pages discovery chose for a pre-travel authorisation that is not a visa: the only
+            # pages a plan's travel_authorisation may cite (entry 275).
+            "travel_authorisation_source_ids": travel_authorisation_source_ids(destination),
             "decision_is_unverified": destination.decision_is_unverified,
             # Named, never quoted: these are pages this program was not permitted to read, so the
             # model is being told where the guidance lives, not what it says.
@@ -474,6 +490,12 @@ class OpenAIVisaPlanExtractor:
             where_to_apply, application_steps = without_a_questionnaire_as_route(
                 where_to_apply, written.application_steps, destination.official_tools
             )
+            travel_authorisation = authorisation_from_role_pages(
+                written.travel_authorisation,
+                entry_only=entry_only,
+                role_source_ids=travel_authorisation_source_ids(destination),
+                references=references,
+            )
             plan = VisaPlan(
                 destination=draft.destination,
                 visa_required=visa_required,
@@ -482,6 +504,7 @@ class OpenAIVisaPlanExtractor:
                 explanation=written.explanation,
                 decision_source_ids=draft.decision_source_ids,
                 where_to_apply=where_to_apply,
+                travel_authorisation=travel_authorisation,
                 requirements=requirements,
                 # Emptied for an entry plan, because a designated checklist source with nothing
                 # under it would have the interface announce a checklist that does not exist. The
@@ -522,6 +545,36 @@ class OpenAIVisaPlanExtractor:
         if key is not None and reused is None:
             self._keep_draft(key, draft)
         return plan
+
+
+def authorisation_from_role_pages(
+    draft: TravelAuthorisationDraft | None,
+    *,
+    entry_only: bool,
+    role_source_ids: list[str],
+    references: list[SourceReference],
+) -> TravelAuthorisation | None:
+    """The travel authorisation a plan names, or `None` — the owner's decision, entry 275.
+
+    Kept only on a plan stating that no visa is required, and only where every page it cites was
+    chosen for `travel_authorisation` and read this run. Anything else is dropped rather than
+    refused: an empty authorisation says only that none was found, which is true of a plan whose
+    draft named one the pages chosen for it do not support. The link is the first cited page, so
+    the traveller is never sent anywhere this run did not read.
+    """
+
+    if draft is None or not entry_only:
+        return None
+    urls = {reference.source_id: reference.url for reference in references}
+    if not all(
+        source_id in role_source_ids and source_id in urls for source_id in draft.source_ids
+    ):
+        return None
+    return TravelAuthorisation(
+        name=draft.name.strip(),
+        url=urls[draft.source_ids[0]],
+        source_ids=list(dict.fromkeys(draft.source_ids)),
+    )
 
 
 def _same_page(left: str, right: str) -> bool:

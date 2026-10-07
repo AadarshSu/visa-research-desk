@@ -147,6 +147,14 @@ class LexiconTerm(StrictModel):
 
 class RoleTerms(StrictModel):
     terms: list[LexiconTerm] = Field(default_factory=list)
+    whole_words: bool = False
+    """Match each phrase only as whole words. "eta" is a word in "gov.uk/eta" and "(ETA)", and a
+    substring of "details" and "Beta"."""
+    title_and_address_only: bool = False
+    """Score from a page's title, link text and address, never its body, and leave the role out of
+    the breadth count (entry 275). Every GOV.UK visa page carries the ETA notice, so a body match
+    credited 100 pages and the ETA's own page still never reached the selector; a page *named* for
+    the authorisation is the page about it."""
 
 
 class PurposeTerms(StrictModel):

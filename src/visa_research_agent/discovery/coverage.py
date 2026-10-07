@@ -118,8 +118,10 @@ class KnownAnswer:
     missing: dict[str, tuple[str, ...]] = field(default_factory=dict)
     """Role to the URLs the oracle named for it, where the corpus holds none of them."""
 
-    roles: int = len(ROLE_ORDER)
-    """Every role a corridor has, so `answerable` has a denominator that does not move."""
+    roles: int = len([role for role in ROLE_ORDER if role != "travel_authorisation"])
+    """Every role the oracle curates, so `answerable` has a denominator that does not move. Not
+    `travel_authorisation` (entry 275): no oracle row names one, and most corridors have none to
+    find, so counting it would read as an open role everywhere."""
 
     @property
     def traveller(self) -> str:

@@ -1141,9 +1141,16 @@ html {
   text-transform: uppercase;
 }
 
-.verdict-authorisation strong {
+.verdict-authorisation-link {
+  color: var(--ink);
   font-size: 18px;
+  font-weight: 800;
   line-height: 1.35;
+}
+
+.verdict-authorisation-link:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
 }
 
 

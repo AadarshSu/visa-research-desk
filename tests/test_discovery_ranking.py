@@ -12,8 +12,10 @@ out of sample, and failed it. Both cases below are taken from the real pages:
     roles came from missions on the wrong continent.
 """
 
+import re
+
 from visa_research_agent.discovery.lexicon import get_country_registry, get_lexicon
-from visa_research_agent.discovery.models import Corridor, DiscoveryRole, PageLink
+from visa_research_agent.discovery.models import Corridor, DiscoveryRole, PageLink, RoleScores
 from visa_research_agent.discovery.scoring import (
     POST_SPECIFIC_ROLES,
     _matches_country,
@@ -831,12 +833,19 @@ def test_no_new_overlapping_lexicon_terms() -> None:
         ("fees", "fees", "visa fees"),
         ("processing_times", "processing time", "processing times"),
     }
+    # A whole-word role matches "eta" in "gov.uk/eta" and never inside "nzeta", so for it only a
+    # term that is a whole word of another overlaps (entry 275).
     found = {
         (role, inner.phrase, outer.phrase)
         for role, terms in get_lexicon().roles.items()
         for inner in terms.terms
         for outer in terms.terms
-        if inner.phrase != outer.phrase and inner.phrase in outer.phrase
+        if inner.phrase != outer.phrase
+        and (
+            re.search(rf"\b{re.escape(inner.phrase)}\b", outer.phrase)
+            if terms.whole_words
+            else inner.phrase in outer.phrase
+        )
     }
     assert found == known, f"new overlaps: {found - known}; resolved: {known - found}"
 
@@ -928,3 +937,74 @@ def test_a_destinations_own_name_is_not_read_as_a_translation() -> None:
     own_name = reasons("Thailand Revises Visa Policy for 65 Countries & Territories")
     assert not any(reason.startswith("translation:") for reason in own_name)
     assert any(reason.startswith("translation:thai") for reason in reasons("Visa policy (Thai)"))
+
+
+def authorisation_body(text: str, title: str, url: str) -> RoleScores:
+    registry = get_country_registry()
+    return score_body(
+        text,
+        title,
+        corridor(),
+        get_lexicon(),
+        registry.require("US"),
+        url=url,
+        residence=registry.require("US"),
+    )
+
+
+def test_a_page_is_about_an_authorisation_only_when_its_title_or_address_names_one() -> None:
+    """Entry 275: every GOV.UK visa page carries the ETA notice, so a body match credited 100
+    pages and the ETA's own page never reached the selector."""
+
+    notice = "You must have an electronic travel authorisation (ETA) or a visa to travel to the UK."
+    visit = authorisation_body(
+        notice, "Visit the UK as a Standard Visitor", "https://www.gov.uk/standard-visitor"
+    )
+    eta = authorisation_body(
+        notice, "Get an electronic travel authorisation (ETA)", "https://www.gov.uk/eta"
+    )
+    by_address = authorisation_body("Apply here.", "Apply", "https://www.gov.uk/eta/apply")
+
+    assert visit.score_for("travel_authorisation") == 0
+    assert eta.score_for("travel_authorisation") > 0
+    assert by_address.score_for("travel_authorisation") > 0
+
+
+def test_an_authorisation_term_matches_whole_words_only() -> None:
+    """ "eta" sits inside "details" and "Beta"; only the word counts."""
+
+    registry = get_country_registry()
+    details = score_link(
+        link_at("https://www.gov.uk/visa-details", "Beta service: visa details"),
+        corridor(),
+        get_lexicon(),
+        registry.require("IN"),
+        registry.require("GB"),
+    )
+    named = score_link(
+        link_at("https://www.gov.uk/eta", "Apply for an ETA"),
+        corridor(),
+        get_lexicon(),
+        registry.require("IN"),
+        registry.require("GB"),
+    )
+
+    assert details.score_for("travel_authorisation") == 0
+    assert named.score_for("travel_authorisation") > 0
+
+
+def test_naming_an_authorisation_does_not_count_toward_breadth() -> None:
+    """A title signal says what the page is, not that it is a directory, so it neither widens the
+    breadth count nor is dampened by it."""
+
+    text = (
+        "How to apply online. The fee is 16 pounds. You will usually get a decision within 3 "
+        "working days. Check if you need a visa."
+    )
+    plain = authorisation_body(text, "Visiting the UK", "https://www.gov.uk/visiting")
+    named = authorisation_body(text, "Get an ETA to visit the UK", "https://www.gov.uk/eta")
+
+    for role in ("visa_decision", "application_route", "processing_times"):
+        assert named.score_for(role) == plain.score_for(role)
+    assert any(signal.startswith("breadth") for signal in plain.signals["visa_decision"])
+    assert not any(signal.startswith("breadth") for signal in named.signals["travel_authorisation"])

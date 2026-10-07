@@ -373,19 +373,20 @@ def score_role_vocabulary(link: PageLink, lexicon: Lexicon) -> RoleScores:
         role_terms = lexicon.roles.get(role_name)
         if role_terms is None:
             continue
+        contains = _contains_word if role_terms.whole_words else _contains_phrase
         total = 0.0
         reasons: list[str] = []
         for term in role_terms.terms:
-            if _contains_phrase(url_text, term.phrase):
+            if contains(url_text, term.phrase):
                 total += term.weight
                 reasons.append(f"url:{term.phrase}+{term.weight:g}")
-            if label and _contains_phrase(label, term.phrase):
+            if label and contains(label, term.phrase):
                 weighted = term.weight * lexicon.link_text_weight
                 total += weighted
                 reasons.append(f"text:{term.phrase}+{weighted:g}")
             # A heading describes the section, not this link, so it counts for less. Without
             # this every form under "Visa Application Documents" reads as a checklist.
-            elif heading and _contains_phrase(heading, term.phrase):
+            elif heading and contains(heading, term.phrase):
                 weighted = term.weight * lexicon.heading_weight
                 total += weighted
                 reasons.append(f"heading:{term.phrase}+{weighted:g}")
@@ -664,6 +665,7 @@ def score_body(
 
     post_aware = residence is not None
     haystack = f"{title}\n{text}".lower()
+    named_as = f"{title}\n{searchable_url(url)}".lower()
     scores: dict[str, float] = {}
     signals: dict[str, list[str]] = {}
 
@@ -671,13 +673,15 @@ def score_body(
         role_terms = lexicon.roles.get(role_name)
         if role_terms is None:
             continue
+        contains = _contains_word if role_terms.whole_words else _contains_phrase
+        read = named_as if role_terms.title_and_address_only else haystack
         # The strongest single phrase, not the sum of every synonym for it. "documents required",
         # "required documents", "application documents" and "necessary documents" all assert the
         # same one thing, and summing them let a page earn 86 points for saying it four ways —
         # which is precisely how a generic "how to apply" page outscored a real checklist. This is
         # the rule the off-scope penalty already follows: what matters is that the signal is
         # present, not how many ways the page phrases it.
-        matched = [term for term in role_terms.terms if _contains_phrase(haystack, term.phrase)]
+        matched = [term for term in role_terms.terms if contains(read, term.phrase)]
         if matched:
             strongest = max(matched, key=lambda term: term.weight)
             scores[role_name] = strongest.weight
@@ -745,11 +749,13 @@ def score_body(
     # A page that scores on many roles is usually a directory, not an answer, so breadth is
     # dampened. The exception is a page written for this nationality: Singapore's per-nationality
     # page genuinely covers the decision, the documents, the fee and the timing, and penalising it
-    # for being comprehensive hands the checklist role to a narrower, wrong page.
-    breadth = len([role for role, value in scores.items() if value > 0])
+    # for being comprehensive hands the checklist role to a narrower, wrong page. A role scored from
+    # what the page is named rather than what it says is no sign of a directory (entry 275).
+    named_only = {role for role, terms in lexicon.roles.items() if terms.title_and_address_only}
+    breadth = len([role for role, value in scores.items() if value > 0 and role not in named_only])
     if breadth > lexicon.breadth_threshold and not written_for_nationality:
         factor = (lexicon.breadth_threshold / breadth) ** 0.5
-        for scored_role in list(scores):
+        for scored_role in [role for role in scores if role not in named_only]:
             scores[scored_role] *= factor
             signals[scored_role].append(f"breadth:{breadth}x{factor:.2f}")
 

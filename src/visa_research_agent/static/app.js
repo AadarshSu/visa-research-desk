@@ -194,6 +194,7 @@ const TOOL_TOPICS = {
   fees: ["works out the fee through a questionnaire", "the fee for your own application"],
   processing_times: ["works out the processing time through a questionnaire", "how long your own application should take"],
   general_entry: ["sets out entry requirements through a questionnaire", "the entry requirements for your own trip"],
+  travel_authorisation: ["works out whether you need a travel authorisation through a questionnaire", "whether you need one for your own trip"],
 };
 
 function toolsFor(plan, topic) {
@@ -218,6 +219,7 @@ const DELEGATE_TOPICS = {
   fees: "what it costs",
   processing_times: "how long it takes",
   general_entry: "the entry requirements for your trip",
+  travel_authorisation: "the travel authorisation for your trip",
 };
 
 function delegatesFor(plan, topic) {
@@ -629,7 +631,7 @@ function renderReliability(plan) {
   // Fees, processing times and entry conditions have no panel of their own — they live inside the
   // steps — so a questionnaire holding one is offered here rather than dropped.
   const shown = new Set();
-  ["fees", "processing_times", "general_entry"].forEach((topic) => {
+  ["fees", "processing_times", "general_entry", "travel_authorisation"].forEach((topic) => {
     appendTools(container, plan, topic, shown);
     appendDelegates(container, plan, topic, shown);
   });
@@ -816,7 +818,7 @@ function decisionRoute(plan) {
 function glanceApply(plan, applyShown) {
   const location = plan.where_to_apply;
   if (!location) {
-    // "Nowhere" is about the visa only: an ETA or arrival card may still be due, and is on the band.
+    // "Nowhere" is about the visa only: an ETA or arrival card may still be due, on the band or below.
     if (needsNoVisa(plan)) {
       return { value: "No visa application", note: plan.application_steps.length ? "What to do instead is listed below" : "" };
     }
@@ -858,15 +860,17 @@ function glanceDocuments(plan) {
 const VERDICT_STAMPS = { visa: "Visa required", "no-visa": "Visa free", uncertain: "Unconfirmed" };
 
 // A traveller who needs no visa may still need an ETA, ESTA or NZeTA before they fly. That is as
-// much a condition of entry as a visa, so a no-visa plan with somewhere to apply names it on the band
-// under "No visa required", and never as a visa (rule 8e, entry 263). The entry steps themselves are
-// left to the section below, which is where the page wants the traveller to read on (entry 273).
+// much a condition of entry as a visa, so a no-visa plan naming one shows it on the band under "No
+// visa required", linked, and never as a visa (entries 263, 275). Nothing is shown without one, and
+// nothing beside an open decision: an empty field means none was found, never that none is needed.
+// The entry steps are left to the section below (entry 273).
 function travelAuthorisation(plan) {
-  if (!needsNoVisa(plan) || !plan.where_to_apply) return null;
+  const authorisation = plan.travel_authorisation;
+  if (!needsNoVisa(plan) || !authorisation) return null;
   const box = element("span", "verdict-authorisation");
   box.append(
     element("span", "verdict-authorisation-label", "Travel authorisation required — not a visa"),
-    element("strong", "", plan.where_to_apply.application_method || plan.where_to_apply.authority),
+    externalLink(`${authorisation.name} ↗`, authorisation.url, "verdict-authorisation-link"),
   );
   return box;
 }
@@ -910,9 +914,11 @@ function renderGlance(plan, documentsShown, applyShown) {
   const decision = glanceDecision(plan);
   const conditional = Boolean(plan.decision_condition) && decision.tone !== "uncertain";
   const { route } = decision;
+  const authorisation = travelAuthorisation(plan);
   // A band carrying a link out cannot itself be a link, so it links down only through its "Why" line.
-  const band = element(route ? "div" : "a", `verdict verdict--${decision.tone}${conditional ? " verdict--conditional" : ""}`);
-  if (!route) band.href = "#plan-decision";
+  const linksOut = Boolean(route || authorisation);
+  const band = element(linksOut ? "div" : "a", `verdict verdict--${decision.tone}${conditional ? " verdict--conditional" : ""}`);
+  if (!linksOut) band.href = "#plan-decision";
   const kicker = [
     optionLabel(destinationSelect, destinationSelect.value),
     `${optionLabel(nationalitySelect, nationalitySelect.value)} passport`,
@@ -920,12 +926,15 @@ function renderGlance(plan, documentsShown, applyShown) {
   ].join(" · ");
   const text = element("span", "verdict-text");
   text.append(element("span", "verdict-kicker", kicker), element("strong", "verdict-headline", decision.value));
-  const authorisation = travelAuthorisation(plan);
   if (authorisation) text.append(authorisation);
   if (decision.note) text.append(element("span", conditional ? "verdict-condition" : "verdict-note", decision.note));
   if (route) {
     text.append(externalLink(`${route.action} ↗`, route.url, "verdict-action"));
     const more = element("a", "verdict-more", "Why we could not say, with sources ↓");
+    more.href = "#plan-decision";
+    text.append(more);
+  } else if (linksOut) {
+    const more = element("a", "verdict-more", "Why, with sources ↓");
     more.href = "#plan-decision";
     text.append(more);
   } else {

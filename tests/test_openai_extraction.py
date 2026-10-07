@@ -14,6 +14,7 @@ from visa_research_agent.discovery.adjudication import UsageRecorder
 from visa_research_agent.discovery.recall_log import ModelCall
 from visa_research_agent.domain.models import (
     DestinationConfig,
+    TravelAuthorisationDraft,
     VisaPlan,
     VisaPlanDraft,
 )
@@ -1134,3 +1135,141 @@ def test_a_bracket_of_the_models_own_words_is_left_alone() -> None:
     shown = without_inline_source_ids(draft, set())
 
     assert shown.explanation == "Stay up to 30 days [extendable] and see [unknown_page]."
+
+
+AUTHORISATION_PAGE = "sg_ica_visa_requirement_overview"
+
+
+def authorisation_chosen(destination: DestinationConfig) -> DestinationConfig:
+    """Singapore with one page chosen for `travel_authorisation`, as discovery would mark it."""
+
+    payload = destination.model_dump(mode="json")
+    for source in payload["sources"]:
+        if source["source_id"] == AUTHORISATION_PAGE:
+            source["selection"] = {
+                "roles": ["travel_authorisation"],
+                "decided_by": "model",
+                "score": 25.0,
+                "signals": ["url:eta+25"],
+            }
+    return DestinationConfig.model_validate(payload)
+
+
+def entry_draft(**update: Any) -> VisaPlanDraft:
+    golden = load_golden_draft()
+    return golden.model_copy(
+        update={
+            "visa_required": False,
+            "visa_type": None,
+            "where_to_apply": None,
+            "requirements": [],
+            "unresolved_questions": [],
+            "application_steps": [
+                step for step in golden.application_steps if step.link_target != "application_route"
+            ][:3],
+            **update,
+        }
+    )
+
+
+async def plan_from(draft: VisaPlanDraft, destination: DestinationConfig) -> VisaPlan:
+    fetched_sources = await FixtureSourceFetcher().fetch(destination)
+    return await OpenAIVisaPlanExtractor(
+        FakeStructuredPlanGenerator(draft), maximum_input_characters=80_000
+    ).extract(destination, DEFAULT_TRAVELLER_PROFILE, fetched_sources)
+
+
+@pytest.mark.anyio
+async def test_a_no_visa_plan_names_the_authorisation_its_role_pages_state() -> None:
+    """Entry 275: named, and linked to the first page cited, which this run read."""
+
+    destination = authorisation_chosen(singapore_config())
+    plan = await plan_from(
+        entry_draft(
+            travel_authorisation=TravelAuthorisationDraft(
+                name="Electronic Travel Authorisation (ETA)", source_ids=[AUTHORISATION_PAGE]
+            )
+        ),
+        destination,
+    )
+
+    assert plan.travel_authorisation is not None
+    assert plan.travel_authorisation.name == "Electronic Travel Authorisation (ETA)"
+    page = next(s for s in destination.sources if s.source_id == AUTHORISATION_PAGE)
+    assert str(plan.travel_authorisation.url) == str(page.url)
+
+
+@pytest.mark.anyio
+async def test_an_authorisation_resting_on_a_page_not_chosen_for_it_is_dropped() -> None:
+    """Only pages discovery chose for the role may carry it; an empty one says none was found."""
+
+    plan = await plan_from(
+        entry_draft(
+            travel_authorisation=TravelAuthorisationDraft(
+                name="ETA", source_ids=[AUTHORISATION_PAGE, "sg_ica_india_visa_details"]
+            )
+        ),
+        authorisation_chosen(singapore_config()),
+    )
+
+    assert plan.travel_authorisation is None
+
+
+@pytest.mark.anyio
+async def test_no_authorisation_is_named_beside_a_required_or_open_decision() -> None:
+    """The owner, entry 275: only on a "no visa" plan. A traveller needing a visa needs no ETA, and
+    beside an open decision it could read as the answer."""
+
+    authorisation = TravelAuthorisationDraft(name="ETA", source_ids=[AUTHORISATION_PAGE])
+    destination = authorisation_chosen(singapore_config())
+
+    required = await plan_from(
+        load_golden_draft().model_copy(
+            update={"requirements": [], "travel_authorisation": authorisation}
+        ),
+        destination,
+    )
+    assert required.visa_required is True
+    assert required.travel_authorisation is None
+
+    still_open = await plan_from(
+        load_golden_draft().model_copy(
+            update={
+                "visa_required": None,
+                "visa_type": None,
+                "requirements": [],
+                "unresolved_questions": ["Whether a visa is needed was not stated."],
+                "travel_authorisation": authorisation,
+            }
+        ),
+        destination,
+    )
+    assert still_open.visa_required is None
+    assert still_open.travel_authorisation is None
+
+    named = {"name": "ETA", "url": "https://www.ica.gov.sg/eta", "source_ids": [AUTHORISATION_PAGE]}
+    with pytest.raises(ValidationError, match="only on a plan needing no visa"):
+        VisaPlan.model_validate({**required.model_dump(mode="json"), "travel_authorisation": named})
+
+
+@pytest.mark.anyio
+async def test_the_model_is_told_which_pages_were_chosen_for_an_authorisation() -> None:
+    generator = FakeStructuredPlanGenerator(entry_draft())
+    destination = authorisation_chosen(singapore_config())
+    fetched_sources = await FixtureSourceFetcher().fetch(destination)
+
+    await OpenAIVisaPlanExtractor(generator, maximum_input_characters=80_000).extract(
+        destination, DEFAULT_TRAVELLER_PROFILE, fetched_sources
+    )
+
+    assert generator.research_packet is not None
+    packet = json.loads(generator.research_packet)
+    assert packet["destination"]["travel_authorisation_source_ids"] == [AUTHORISATION_PAGE]
+
+
+def test_the_plan_puts_an_authorisation_in_its_own_field_never_where_to_apply() -> None:
+    prompt = load_extraction_prompt()
+
+    assert "8m. travel_authorisation" in prompt
+    assert "never in\n     where_to_apply" in prompt
+    assert "where_to_apply is never null" not in prompt

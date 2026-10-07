@@ -225,6 +225,23 @@ roles:
       - {phrase: border control, weight: 15}
       - {phrase: return ticket, weight: 12}
 
+  travel_authorisation:
+    # A pre-travel authorisation that is not a visa — the UK's ETA, the US ESTA, Canada's eTA, New
+    # Zealand's NZeTA, Korea's K-ETA (entry 275). **Scored from the title, link text and address
+    # only**: every GOV.UK visa page carries the ETA notice, so a body match credited 100 pages and
+    # `gov.uk/eta` still never reached the selector. Whole words, because "eta" sits inside
+    # "details". "Travel authority" is left out: Australia's ETA is a visa (subclass 601, rule 8g),
+    # and the roles prompt keeps it out of this role whatever scores it.
+    whole_words: true
+    title_and_address_only: true
+    terms:
+      - {phrase: travel authorisation, weight: 25}
+      - {phrase: travel authorization, weight: 25}
+      - {phrase: eta, weight: 25}
+      - {phrase: esta, weight: 25}
+      - {phrase: nzeta, weight: 25}
+      - {phrase: etias, weight: 25}
+
 # Purpose words. A page matching the traveller's purpose gains; a page matching a different
 # purpose is penalised hard, because that is the wrong-checklist failure mode.
 purposes:

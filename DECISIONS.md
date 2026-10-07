@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [275](#275-a-seventh-role-travel_authorisation-looks-for-a-pre-travel-authorisation-on-every-corridor) | **A seventh role, `travel_authorisation`, looks for a pre-travel authorisation on every corridor** — scored from a page's title and address only; not load-bearing; the plan names it on a "no visa" plan only, from the role's pages; found on 8 of 8 corridors that have one and 0 of 8 that do not, shown on the plan 5 of 8; the GB always-read entries, the old rule 7e and 8e's where-to-apply bullet are gone; +3% model cost |
 | [274](#274-a-pre-travel-authorisation-fills-where-to-apply-not-the-visa-decision) | **A pre-travel authorisation fills where to apply, not the visa decision** — roles rule 7e; GB reads `gov.uk/eta` in place of the ETA eligibility list; United Kingdom `US/US` 5 of 5 "no visa" from the visa national list, 4 of 5 with the ETA on the band |
 | [273](#273-the-band-no-longer-lists-a-no-visa-plans-entry-steps) | **The band no longer lists a no-visa plan's entry steps** — the owner wants travellers to scroll to the section that sets them out; the travel-authorisation box stays (part-reverses 263's display) |
 | [272](#272-a-questionnaire-for-another-question-is-never-where-to-apply) | **A questionnaire for another question is never where to apply** — United Kingdom `US/US` filed GOV.UK's visa checker as the route on some runs; the location is dropped in code and the prompt no longer invites it |
@@ -316,7 +317,126 @@ s more pressing |
 
 ---
 
+## 275. A seventh role, `travel_authorisation`, looks for a pre-travel authorisation on every corridor
+
+**2026-10-07. Confirmed by the owner the same day**, with three choices: the band shows the
+authorisation only on a "no visa" plan, never beside an open decision; the GB corridors are measured
+with **both** always-read entries out, and the visa national list goes back only if "no visa" falls
+below entry 274's 5 of 5; and the plan call decides whether this traveller must hold it, from pages
+chosen for the role only.
+
+**The owner asked** for a role that looks for a pre-travel authorisation that is not a visa (the
+UK's ETA, the US ESTA, Canada's eTA, New Zealand's NZeTA) on every corridor, in place of entry 272's
+and 274's GB-only fixes. Those work, but they are hand-curated pages and two prompt rules written
+for one corridor. The root cause is that no role asks for an authorisation page, so ranking and
+selection never surface one: the 160-page pool on every United Kingdom `US/US` run held none of the
+GB store's ETA pages.
+
+**Measured offline first** (no network, no model): the logged candidates of the oracle corridors and
+of the corridors below, re-ranked through the shipped `fusion_order` and 120 + 40 cut with a seventh
+role added (`var/` probe scripts named in the build entry).
+
+- **A body vocabulary does not find it.** Scored on "travel authorisation" anywhere in the text,
+  100 GOV.UK pages qualify, because every visa page now carries the ETA notice. `gov.uk/eta` ranked
+  below 40th for the new role and the eligibility list was not pooled. Still 0 of 17 shown.
+- **The title or the address does.** Scored only where the page's title or path names the
+  authorisation (whole words: "travel authorisation/authorization", ETA, ESTA, eTA, NZeTA, K-ETA),
+  the same rule nationality follows since entry 245, the GB store has 18 such pages, every one an
+  ETA page. Shown to the selector:
+
+  | corridor | name an authorisation | shown today | shown with the role |
+  | --- | --- | --- | --- |
+  | United Kingdom `US/US` | 17 | 0 | **17**, `gov.uk/eta` and the eligibility list among them |
+  | New Zealand `US/US` | 28 | 11 | 27 |
+  | Canada `GB/GB` | 124 | 18 | 61 |
+  | South Korea `US/US` | 350 | 6 | 47 |
+  | Japan `GB/GB` | 4 | 0 | 4 — Japan's pages about *other* countries' ETA and ESTA |
+  | Australia `US/US` | 2 | 0 | 2 |
+
+- **It costs no existing answer:** 118 of 123 oracle roles answered in the shown set in both arms.
+
+**The design proposed.**
+1. **The role.** `travel_authorisation` joins `GuidanceTopic` and `ROLE_ORDER`. It is **not**
+   load-bearing and **not** reported: an empty role never refuses a corridor and never moves an exit
+   code. It is not post-specific.
+2. **Scoring.** The link and stored-text scorers credit it only from a page's title, link text or
+   address, never its body, and it is left out of the breadth count, as the nationality signal is.
+3. **Selection and roles prompts** define it: a page stating that a traveller with this passport,
+   for this purpose, must hold a pre-travel authorisation that the authority does not call a visa.
+   Not an authorisation for travel to another country (Japan's pages above). Not one waived for this
+   passport (South Korea's K-ETA for US citizens). Not one announced and not yet in force. A
+   document the authority calls a visa is a visa and never fills it (Australia's ETA, subclass 601;
+   rule 8g). It is never the visa decision — that part of rule 7e moves into the role's definition.
+4. **The plan** gets a `travel_authorisation` field — its name, its page and the sources it rests
+   on, citing only pages chosen for the role. The plan call sets it only where those pages state
+   this traveller must hold it; `None` otherwise, and always `None` where a visa is required.
+5. **The page** shows "Travel authorisation required — not a visa: <name> ↗" on the verdict band
+   when the field is set, linking its page, and nothing when it is empty. No copy says "none needed":
+   empty means we did not find one.
+6. **Where to apply** goes back to entry 96's shape on a visa-free plan: `None` when there is no
+   visa to apply for. The authorisation lives in its own field, so 8e's "where_to_apply is never null"
+   bullet is removed.
+7. **Unchanged:** trust, the EU tier's confinement to the visa decision (ETIAS cannot fill the role
+   without a decision entry), and rule 8g's line between a visa and an authorisation.
+
+**Built.** The role is in `GuidanceTopic` and `ROLE_ORDER`, in neither `LOAD_BEARING_ROLES` nor
+`REPORTED_ROLES`. Its vocabulary (`discovery_lexicon.yaml`) is "travel authorisation/authorization",
+ETA, ESTA, NZeTA and ETIAS, flagged `whole_words` and `title_and_address_only`, which the link and
+stored-text scorers honour. Roles rule 7e is now the role's definition: what fills it, the four
+things that never do, and that it is not the visa decision unless nothing answers that more
+directly. Plan rule 8m sets `travel_authorisation`, and 8e's "where_to_apply is never null" bullet is
+gone. `authorisation_from_role_pages` drops a draft's authorisation on a plan that is not "no visa",
+or one citing any page not chosen for the role. The packet names the role's pages in
+`travel_authorisation_source_ids`. The band links the name; with the field empty, or the decision
+open, nothing is shown. `coverage` keeps six roles in its denominator, as the oracle curates no
+authorisation. **Both GB always-read entries are removed.**
+
+**Offline, with the shipped scorer** (`var/travel-auth-2026-10-07/probe_ranking.py`): United Kingdom
+`US/US` shows the selector all 18 pages naming the ETA, against 0; the oracle keeps 118 of 123 in
+both arms. Across all 55 stores 22 countries have a page naming an authorisation. The false
+positives are few (two Portuguese "esta" addresses, two "travel authorization for minors" pages), and
+ETIAS is the exposure: France holds 35 pages naming it.
+
+**Live, twice each** (`var/purposes-2026-10-03/travel-auth-2026-10-07/`, GB always-read entries
+removed):
+
+| corridor | role filled | on the plan | decision |
+| --- | --- | --- | --- |
+| United Kingdom `US/US` | 2 of 2, the ETA National List | **2 of 2**, ETA | "no visa", `verified`, 2 of 2 |
+| New Zealand `US/US` | 2 of 2 | **2 of 2**, NZeTA | "no visa" 2 of 2 |
+| United States `GB/GB` | 2 of 2, `esta.cbp.dhs.gov` | 1 of 2, ESTA | "no visa", `partial` (known problem 45) |
+| Canada `GB/GB` | 2 of 2 | **0 of 2** | "no visa" 2 of 2 |
+| Japan `GB/GB`, South Korea `US/US` | 0 of 4 | 0 of 4 | "no visa" |
+| France `US/US` | 0 of 2 — "ETIAS is not currently operational" | 0 of 2 | "no visa" |
+| Australia `US/US` | 0 of 2 — "expressly a subclass 601 visa" | — | "visa required, ETA (601)" 2 of 2 |
+
+- **Discovery is fixed:** the role found an authorisation on 8 of 8 corridors that have one, and none
+  on the 8 that should not, with no hand-named page.
+- **The misses are the plan's.** Canada left the eTA as an unresolved question both times: Canada
+  requires it only to *fly* in, and names "British citizen" among several British statuses, and the
+  profile records neither the way of travel nor the status. The United States run without it read
+  the ESTA page as saying only that UK citizens are *eligible*. Canada still names the eTA in a step;
+  that United States run names ESTA only in an unresolved question. Reading
+  "an ordinary trip flies in, on an ordinary passport" as 8k does (entry 264) would change what a
+  plan may conclude, so it is left for the owner.
+- **United Kingdom `US/US` decided from `gov.uk/eta` and the ETA National List**, not the visa
+  national list, which no longer reaches the pool. "No visa" held 2 of 2 and `verified`, against
+  entry 274's 5 of 5 with the list named, so the list stays out. Two runs is the owner's bar here,
+  not five.
+
+**Cost, priced on two runs a corridor over seven corridors, each corridor weighted equally** (list
+prices, entry 165): $0.197 → $0.202 of model calls a corridor (+3%), and 26.0s → 27.1s of model
+time, inside the ~40% swing between identical runs (entry 144). The roles and plan packets grew
+about 11%, one more page read.
+
+**Regressions** (the plan packet gained a field; `travel-auth-regress-2026-10-07/`): Japan `IN/GB`
+"visa required", `verified`, 3 of 3, and Singapore `PH/PH` "no visa", `verified`, 3 of 3 — as before, and
+neither names an authorisation.
+
 ## 274. A pre-travel authorisation fills where to apply, not the visa decision
+
+**Superseded by entry 275 the same day:** the authorisation has its own role and plan field, rule 7e
+is the role's definition, and GB's always-read entries are gone.
 
 **2026-10-07. The owner asked** that the open decision on 1 United Kingdom `US/US` run in 5 be fixed
 (entry 272).
