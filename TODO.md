@@ -45,6 +45,7 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 | | | |
 | --- | --- | --- |
 | **Now** | 80. A travel-readiness app for one traveller — next, the news panel | `explore`, with the owner |
+|  | 81. Explore new layouts and UI workflows for the site | `explore`, its own session |
 |  | 63. Make most corridors return accurate and useful information | `ongoing` |
 |  | 55. Take the traveller from Ofself's shared identity, through one adapter | `soon` |
 |  | 79. Score pages fetched live with the post-aware stored-text fixes | `soon` |
@@ -56,6 +57,30 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 ---
 
 ## Now — this phase's work
+
+### 81. Explore new layouts and UI workflows for the site — `explore`, **its own session, with the owner**
+
+**The owner, 2026-10-07:** open-ended design exploration, in a session of its own — different
+website layouts and different ways through the page, not a fix to the current one. Kept broad on
+purpose: what to try is the owner's to direct in that session.
+
+**Where it starts from:**
+- **On `main`:** the current design (entry 270) — a verdict band, the boarding pass as the result's
+  header, and advice and weather in a sidebar.
+- **On the local branch `design-bold`** (`b53d421`, not pushed): one bolder direction — a
+  question-at-a-time check-in, a departure screen while the plan is researched, and the plan as an
+  itinerary of folded stops.
+- **What any layout has to carry:** the trip form with Ofself prefill, progress while a plan is
+  researched, the decision with its condition and any travel authorisation, where to apply,
+  documents, the cited plan, the travel advice and weather panels, and the problem report. News will
+  join them (item 80). Free plans without sign-in (entry 262) are part of the flow.
+
+**What it must not change:** what a plan says. The rules under "What a plan may say" in CLAUDE.md
+hold whatever the layout. A fold-away or hidden section never hides the decision or what qualifies
+it (entries 6, 250).
+
+**How:** experiment on a branch, preview against real plans, and record what is chosen in a
+decision entry when it lands on `main`.
 
 ### 80. A travel-readiness app for one traveller, built around their dates — `explore`, **with the owner; dates, advice, weather and the redesign built, news next**
 

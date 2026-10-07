@@ -41,6 +41,10 @@ followed on 2026-10-06: MET Norway's forecast within about nine days, NOAA stati
 for a city picked in the panel — also not deployed. Neither panel is ever an input to the visa
 answer.
 
+**Design exploration has its own item (TODO 81) and belongs in a session of its own:** different
+layouts and UI workflows for the site, starting from the current design (entry 270) and the parked
+`design-bold` branch.
+
 **What 2026-10-06 changed** (entries 262–270), all on `main` and pushed to GitHub, **none of it on
 the deployed server yet**:
 - **Plans no longer need sign-in** (entry 262). A visitor gets ten free plans per address, counted
