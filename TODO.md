@@ -44,9 +44,11 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 
 | | | |
 | --- | --- | --- |
-| **Now** | 80. A travel-readiness app for one traveller — next, the news panel | `explore`, with the owner |
+| **Now** | 85. Thailand `IN/IN` tourism refuses 2 runs in 4 — **immediately next** | `next` |
+|  | 80. A travel-readiness app for one traveller — next, the news panel | `explore`, with the owner |
 |  | 81. Explore new layouts and UI workflows for the site | `explore`, its own session |
 |  | 82. Decide how to cache only results that are likely right | `decide`, with the owner |
+|  | 84. Build the news panel from Ofself's Assimilation destination briefing | `soon`, part of 80 |
 |  | 63. Make most corridors return accurate and useful information | `ongoing` |
 |  | 55. Take the traveller from Ofself's shared identity, through one adapter | `soon` |
 |  | 79. Score pages fetched live with the post-aware stored-text fixes | `soon` |
@@ -100,6 +102,67 @@ leakage.
 **Measure first:** over this session's runs (`var/purposes-2026-10-03/`), how many faulty results
 each candidate rule would have kept, and how many good ones it would have thrown away, in seconds
 and dollars of re-running.
+
+### 85. Thailand `IN/IN` tourism refuses 2 runs in 4 — `next`, **immediately**
+
+**The owner, 2026-10-08:** Thailand / India / India for a stay under 30 days answered "No official
+answer found — Thailand's official sources were searched, but no page could be confirmed as the
+visa decision" on 2 of 4 runs.
+
+**What today's runs show** (`var/purposes-2026-10-03/ofself-passport-2026-10-07/thailand_IN_IN_tourism/`,
+two runs): both read Thailand's July announcement that India gets visa-free entry for tourism for
+up to 30 days and that India's visa on arrival goes — "to take effect 15 days after Royal Gazette
+publication". **Neither read a page saying the change is in force.** Run 1 credited the
+announcement and left the decision open; run 2 refused, reading the May summary (India on visa on
+arrival) against the July announcement with nothing to say which holds. Replayed earlier the same
+day, the plan call on run 1's packet gave 1 "no visa" and 5 open.
+
+**This is entries 220–222's shape again:** a decision resting on an announcement and a later notice
+that it took effect, read together (roles rule 7a, selection rule 11, plan rules 8h/8i). Those fixed
+Thailand when the notice was in the pool. **First find out** whether an in-force notice exists in
+`var/pagetext/TH.sqlite3` and the corpus, and whether it reached the 160-page pool and the
+selection on these runs — `visa-discover contention --destination thailand --nationality IN --from
+IN --role visa_decision`. Then: a ranking miss (fix the ranking, or an always-read entry as a stopgap
+naming the miss, entry 267), a missing page (`corpus-add`), or no such page published (then rule 8h
+governs: a "no visa" stated both before and after the change, or the answer stays open and says
+why). Re-run 4+ times either way; Thailand's decision has been fragile before.
+
+### 84. Build the news panel from Ofself's Assimilation destination briefing — `soon`, **part of 80**
+
+**The owner, 2026-10-08,** gave the integration steps:
+1. **Sign-in and grant:** the app is registered with Paradigm and its sign-in works (item 55). The
+   DLR must also request `plugins:execute`, ideally scoped to Assimilation's plugin id
+   `912d0476-5ea8-4ae0-991f-2a242979ea16`. Widening the DLR asks every signed-in traveller to
+   re-consent; entry 181's note says a re-approval does not restart the grant's expiry (feedback
+   9.8).
+2. **Call through the Paradigm SDK** with the app's own credentials and the signed-in traveller's
+   user id; Paradigm signs the request to Assimilation. `api/ofself.py` uses `httpx` directly today
+   — decide whether the SDK replaces it or sits beside it for plugin calls only.
+3. **Mode `destination-briefing`:** a destination, the trip dates and optionally the passport
+   country; it combines news, stories, holidays, events, advisories and entry requirements. Fare
+   searches are a separate mode, not wanted here.
+4. **Answers:** `PluginNotEnabled` → show its `setup_url`; `ConsentRequired` → show its
+   `consent_url`; otherwise decode `execution.message` as JSON and check whether the execution
+   failed before showing anything.
+
+**The owner's answers, 2026-10-08:**
+- **Show everything the briefing returns for now** — news, stories, holidays, events, advisories
+  and entry requirements — and decide from real output what to keep. Its entry requirements and
+  advisories are another app's claims (entry 181, rule 2) that have passed none of this project's
+  trust checks, so label every part as Assimilation's and keep the panel visibly apart from the
+  plan; whether they stay is decided once seen.
+- **Send the passport country the traveller entered on the form**, with the destination and the
+  dates. Nothing from `shared_details`.
+- **Whether it writes into the traveller's account:** not a concern for now.
+
+**Bounds — each moves only by a decision entry:**
+- **Never an input to the visa answer** (entry 251), and shown apart from it, like the advice and
+  weather panels.
+- **Signed-in travellers only:** the call needs their user id. The anonymous page shows no panel.
+- Log anything the platform does unexpectedly in `OFSELF_FEEDBACK.md`.
+
+**Measure:** how long a briefing takes (the plan already takes ~55s; the panel must not hold it up
+— load it beside the plan, as advice and weather are), and what a failure looks like.
 
 ### 81. Explore new layouts and UI workflows for the site — `explore`, **its own session, with the owner**
 
@@ -178,10 +241,9 @@ input to the visa answer; the visa form gets no harder. Mockup with example data
 `https://claude.ai/artifact/D7yXirsNX4jTBSA4LD71s4`.
 - **Travel advice** from the traveller's own government (US State Department JSON API, GOV.UK
   content API — both checked; India publishes none found), in the government's words.
-- **News** from Ofself's Assimilation news plugin (switched off; the owner is asking for it). Ask
-  for its manifest first: can it take a country and a date window rather than the person's
-  interests, must it save articles into the traveller's account, can an app trigger it, how fast it
-  answers, which sources.
+- **News** from Ofself's Assimilation plugin — **now item 84**, with the integration steps the owner
+  gave on 2026-10-08. Its `destination-briefing` mode takes a destination and dates, which answers
+  this list's old question of whether it can work from a country and a window.
 - **Weather** — built (entry 261): MET Norway's forecast, NOAA's averages, a city picker in the
   panel.
 

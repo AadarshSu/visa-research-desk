@@ -91,8 +91,9 @@ the deployed server yet**:
 - **Every prompt change was measured** by replaying the plan call on captured packets, the current
   prompt against the candidate, with controls. The tooling is under *Where things are*.
 
-**This phase's queue** is TODO's *Now*: 80, 82 (cache only results that are likely right, the
-owner's to decide), then **63** (accurate answers, ongoing), **55** (what is
+**This phase's queue** is TODO's *Now*: **85 first** (Thailand `IN/IN` refusing 2 runs in 4), then
+80 with its news panel (84, Ofself's Assimilation briefing), 82 (cache only results that are likely
+right, the owner's to decide), then **63** (accurate answers, ongoing), **55** (what is
 left of the Ofself adapter), **79** (a small scoring consistency fix), **4** (the client-side
 retrieval decision) and **20** (durable stores).
 
