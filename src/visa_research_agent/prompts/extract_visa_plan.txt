@@ -93,8 +93,12 @@ Follow these rules:
    - A permission the border grants by itself, with no application or fee there, does not stop
      this rule even where a page calls it a visa (rule 8g).
    - Set where_to_apply to null when there is nothing to apply for. If the sources say a visa-free
-     traveller must still hold a pre-travel authorisation that is not a visa, and give the official
-     page for it, that page is where_to_apply and the step opening it may use link_target
+     traveller must still hold a pre-travel authorisation that is not a visa (an ETA, ESTA, eTA or
+     NZeTA), where_to_apply is never null: it names that authorisation in application_method, and
+     its application_url is the supplied page where it is applied for, or, where none was supplied,
+     the supplied page stating that this traveller needs or can get it, such as a list of the
+     nationalities eligible for it. A plan with a step telling the traveller to obtain such an
+     authorisation has where_to_apply set. The step opening it may use link_target
      "application_route". Never suppress such a requirement because the visa answer was no: it is
      the one thing that will stop them at the gate.
    - Only use this shape where a page states the answer. If destination.decision_is_unverified is

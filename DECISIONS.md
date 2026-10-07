@@ -387,6 +387,19 @@ list go in `always_read.yaml` for GB, tourism and business (entry 267). Five mor
   **run 1's band says "No visa required" with no ETA at the top**, and the ETA appears only in
   "Before you travel" below.
 
+**Then, the owner's choice of the two fixes offered:** rule 8e's visa-free shape now says that
+`where_to_apply` is never null where the sources state a pre-travel authorisation such as an ETA,
+ESTA, eTA or NZeTA. Its address is the page where it is applied for, or, where none was supplied,
+the page stating the traveller needs or can get it. The other option, a band line guessed from step
+titles, was declined. Five more runs plus controls (`var/purposes-2026-10-03/uk-eta-route-2026-10-07/`):
+- **United Kingdom `US/US`:** 4 of 5 state "no visa", and **all four name the ETA in where to
+  apply**, so the band shows "Travel authorisation required — not a visa". Run 3 left the decision
+  open, saying the pages do not state whether a US tourist needs a visa. With no checker named, its
+  band reads "Could not be confirmed". That is the same 1 in 5 as before.
+- **Controls, two runs each:** South Korea `US/US`, where the K-ETA is waived, and Japan `GB/GB`
+  both left where to apply empty. The wording invented no authorisation.
+- The ETA link is still the eligibility list: `gov.uk/eta/apply` is not among the pages read.
+
 ## 271. An open decision leads with where to settle it, and the strip under it shows only what the plan shows
 
 **2026-10-07. The owner:** an American going to the United Kingdom saw "Could not be confirmed", an
