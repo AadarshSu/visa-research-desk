@@ -384,9 +384,11 @@ function renderApplicationLocation(plan, ctx) {
     appendUnreadVisaPages(container, plan);
     appendTools(container, plan, "application_route");
     appendDelegates(container, plan, "application_route");
-    // A traveller who needs no visa has the answer in the verdict ("Nowhere"); a panel saying only
-    // that again is dropped. One with a page, a tool or a contractor to name is kept.
-    if (needsNoVisa(plan) && container.children.length === 2) return null;
+    // A panel saying only that there is nowhere to apply, or that we did not find where, is dropped:
+    // the verdict already says it ("No visa application", "Not confirmed", "Depend on the
+    // decision"), and a heading over one sentence about a gap only repeated it. One with a page, a
+    // tool or a contractor to name is kept.
+    if (container.children.length === 2) return null;
     return container;
   }
   appendUnreadVisaPages(container, plan);
@@ -811,13 +813,15 @@ function decisionRoute(plan) {
   return null;
 }
 
-function glanceApply(plan) {
+function glanceApply(plan, applyShown) {
   const location = plan.where_to_apply;
   if (!location) {
     // "Nowhere" is about the visa only: an ETA or arrival card may still be due, and is on the band.
-    return needsNoVisa(plan)
-      ? { value: "No visa application", note: plan.application_steps.length ? "What to do instead is listed above" : "" }
-      : { value: "Not confirmed", note: "See what we found" };
+    if (needsNoVisa(plan)) {
+      return { value: "No visa application", note: plan.application_steps.length ? "What to do instead is listed above" : "" };
+    }
+    // With no section below, there is nothing further to see, and the note says why instead.
+    return { value: "Not confirmed", note: applyShown ? "See what we found" : "Not on the official pages we could read" };
   }
   // The authority leads because it is the shortest true thing a plan holds: the location and method
   // are the model's sentences, often a full address, and are clipped here and given in full below.
@@ -895,7 +899,7 @@ function glanceFacts(plan, documentsShown, applyShown) {
   if (plan.visa_required === null) {
     const cells = [];
     if (plan.where_to_apply) {
-      cells.push(["Where to apply, if you need a visa", glanceApply(plan), applyShown ? "plan-apply" : null, "⌂"]);
+      cells.push(["Where to apply, if you need a visa", glanceApply(plan, applyShown), applyShown ? "plan-apply" : null, "⌂"]);
     }
     if (documentsShown) {
       cells.push(["Documents, if you need a visa", glanceDocuments(plan), "plan-documents", "☰"]);
@@ -913,7 +917,7 @@ function glanceFacts(plan, documentsShown, applyShown) {
     ]];
   }
   return [
-    ["Where to apply", glanceApply(plan), applyShown ? "plan-apply" : null, "⌂"],
+    ["Where to apply", glanceApply(plan, applyShown), applyShown ? "plan-apply" : null, "⌂"],
     // With no visa there are no documents to gather; what to do instead is on the band above.
     needsNoVisa(plan) || !documentsShown ? null : ["Documents", glanceDocuments(plan), "plan-documents", "☰"],
   ].filter(Boolean);

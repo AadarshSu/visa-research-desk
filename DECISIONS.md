@@ -365,6 +365,13 @@ checklist, they show it under "… if you need a visa". Otherwise one line reads
 decision". On every plan, a **documents cell appears only over a documents section**. Before this,
 "No checklist found" sat at the top of plans that had no documents section below it.
 
+**Later the same day, the owner:** the "Where to apply" section is dropped whenever it would say
+only "The application location remains unresolved." Before this, it was dropped only on a no-visa
+plan. The verdict already says it, and the page renders no unresolved questions, so the section
+added a heading over a gap. It stays when it names an unread page, a questionnaire or a contractor.
+With no section below, the "Not confirmed" cell links nowhere and reads "Not on the official pages
+we could read".
+
 **Not done here:** the US→UK checker reaches `official_tools` on some runs and not others. On one
 owner run it was "where to apply" and on another "not confirmed". The band can only lead with what
 the plan names, so that comes next (TODO).
