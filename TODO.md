@@ -46,6 +46,7 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 | --- | --- | --- |
 | **Now** | 80. A travel-readiness app for one traveller — next, the news panel | `explore`, with the owner |
 |  | 81. Explore new layouts and UI workflows for the site | `explore`, its own session |
+|  | 82. Decide how to cache only results that are likely right | `decide`, with the owner |
 |  | 63. Make most corridors return accurate and useful information | `ongoing` |
 |  | 55. Take the traveller from Ofself's shared identity, through one adapter | `soon` |
 |  | 79. Score pages fetched live with the post-aware stored-text fixes | `soon` |
@@ -57,6 +58,45 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 ---
 
 ## Now — this phase's work
+
+### 82. Decide how to cache only results that are likely right — `decide`, **with the owner**
+
+**The owner, 2026-10-07.** A cache should keep only answers that are correct. Today it keeps
+whatever resolved. In this session's runs about 1 in 5 or 6 was faulty in a way the owner had ruled
+on — United Kingdom `US/US` stating "no visa" without the ETA (entries 272, 274), Canada's eTA left
+off the plan (entry 275) — and nothing in the system knew. Cached, that one run becomes the answer
+for everyone who asks next, until it expires.
+
+**What is cached today:**
+- **A resolved corridor** — which pages fill which roles — for a week, shared by every traveller on
+  that corridor (entry 258). A refusal is never stored, so a refused corridor is retried until one
+  run resolves (entry 151). That is the asymmetry this item is about: a failure gets another try,
+  a plausible wrong answer does not.
+- **A plan draft**, for 24 hours, for byte-identical inputs (entry 178); pruned past that since
+  entry 276.
+- **Page text**, by HTTP freshness — evidence, not answers, and not in scope here.
+
+**Where it is heading — the owner.** As plans tailor to one traveller (entry 276) and later to
+their trip dates, plan reuse becomes mostly one traveller asking again, so they are not given two
+different plans for one trip. The corridor store stays shared between travellers, so a wrong
+resolution there still spreads.
+
+**Questions to decide before any code:**
+- **What may be kept.** Candidates, none measured: only `verified` plans; only a resolution two
+  independent runs agree on (entry 151's third option); only one passing deterministic checks that
+  catch known faulty shapes — a `travel_authorisation` role filled while the plan names none, a "no
+  visa" plan with an authorisation in its steps and not on the band; a shorter life for anything
+  `partial`.
+- **What un-keeps it.** A traveller's problem report (entry 233) could evict the corridor it names.
+- **Which layer.** A wrong corridor (wrong pages) and a wrong plan (right pages, wrong reading) are
+  different faults and may need different rules.
+- **The bound.** A check that grades whether an answer is *right* is the truth set the owner has
+  ruled out without asking (entries 68, 147; known problem 26). Shape checks on what a plan must
+  contain are not that, but the line should be drawn explicitly.
+
+**Measure first:** over this session's runs (`var/purposes-2026-10-03/`), how many faulty results
+each candidate rule would have kept, and how many good ones it would have thrown away, in seconds
+and dollars of re-running.
 
 ### 81. Explore new layouts and UI workflows for the site — `explore`, **its own session, with the owner**
 
@@ -321,8 +361,9 @@ each item as it last stood is in this file's history before that date.
 - **7. What was never run on the server (entry 231).** A few corridors from the instance, compared
   with local runs — a cloud address may be challenged or blocked more — and a cold request timed
   there. **The owner's open decision (entry 151):** a refusal is never stored and a resolution is
-  kept three weeks, so a refused request is retried by the next traveller until one run resolves;
-  keep it, store refusals briefly, or require two agreeing runs. There is no per-user rate limit.
+  kept a week (entry 258), so a refused request is retried by the next traveller until one run
+  resolves; keep it, store refusals briefly, or require two agreeing runs — now part of item 82.
+  There is no per-user rate limit.
 
 ### Retrieval and blocks
 
