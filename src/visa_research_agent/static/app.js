@@ -110,6 +110,38 @@ function renderEvidence(sourceIds, ctx, section) {
   return group;
 }
 
+// The three lists a plan shows the traveller instead of its open questions, which are kept for us
+// (entry 278): each item is the plan's own sentence followed by the pages it cites.
+function citedList(className, heading, intro, items, plan, render) {
+  if (!items || !items.length) return null;
+  const sources = new Map((plan.sources || []).map((source) => [source.source_id, source]));
+  const block = element("div", `cited-list ${className}`);
+  block.append(element("h3", "cited-list-heading", heading));
+  if (intro) block.append(element("p", "cited-list-intro", intro));
+  const list = element("ul", "cited-list-items");
+  items.forEach((item) => {
+    const entry = element("li");
+    entry.append(render(item));
+    const cited = [...new Set(item.source_ids)].map((id) => sources.get(id)).filter(Boolean);
+    if (cited.length) {
+      const links = element("span", "cited-list-sources");
+      cited.forEach((source, index) => {
+        if (index) links.append(document.createTextNode(" · "));
+        links.append(externalLink(`${source.title} ↗`, source.url));
+      });
+      entry.append(links);
+    }
+    list.append(entry);
+  });
+  block.append(list);
+  return block;
+}
+
+// A lead-in the page joins to more text with " — " or ": " ends without its own punctuation.
+function trimEnd(text) {
+  return String(text ?? "").trim().replace(/[\s,.;:—-]+$/, "");
+}
+
 function appendIfFilled(container, group) {
   if (group.childElementCount) container.append(group);
 }
@@ -340,6 +372,19 @@ function renderDecision(plan, ctx) {
       ? plan.explanation
       : `${sentenceCase(plan.visa_type)}. ${plan.explanation}`;
   container.append(richText("p", "lead", lead));
+  const exceptions = citedList(
+    "cited-list--exceptions",
+    "If this applies to you",
+    "The official pages say these change the plan above. Check whether any is true for you.",
+    plan.exceptions,
+    plan,
+    (item) => {
+      const text = element("p");
+      text.append(richText("strong", "", trimEnd(item.condition)), document.createTextNode(" — "), richText("span", "", item.consequence));
+      return text;
+    },
+  );
+  if (exceptions) container.append(exceptions);
   appendTools(container, plan, "visa_decision");
   appendDelegates(container, plan, "visa_decision");
   appendIfFilled(container, renderEvidence(plan.decision_source_ids, ctx, "decision"));
@@ -644,6 +689,33 @@ function renderReliability(plan) {
   const before = container.childElementCount;
   const banner = renderEvidenceBanner(plan);
   if (banner) container.append(banner);
+  // Pages that disagree are named, never resolved: what each says, and both links (entry 278).
+  const disagreements = citedList(
+    "cited-list--disagreements",
+    "The official pages disagree",
+    "We could not tell which is right. Check with the authority.",
+    plan.disagreements,
+    plan,
+    (item) => {
+      const text = element("p");
+      text.append(element("strong", "", `${trimEnd(item.topic)}: `), richText("span", "", item.summary));
+      return text;
+    },
+  );
+  if (disagreements) container.append(disagreements);
+  const gaps = citedList(
+    "cited-list--gaps",
+    "Not found on the pages we read",
+    null,
+    plan.gaps,
+    plan,
+    (item) => {
+      const text = element("p");
+      text.append(element("strong", "", `${trimEnd(item.missing)}. `), richText("span", "", item.next_step));
+      return text;
+    },
+  );
+  if (gaps) container.append(gaps);
 
   // Fees, processing times and entry conditions have no panel of their own — they live inside the
   // steps — so a questionnaire holding one is offered here rather than dropped.

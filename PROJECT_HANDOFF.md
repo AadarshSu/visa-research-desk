@@ -8,7 +8,7 @@ stands, what to do next, and what is known to be broken. The history of how it g
 | --- | --- |
 | **Repository** | `github.com/AadarshSu/visa-research-agent` |
 | **Last updated** | 2026-10-07 — update this line when you touch the handoff |
-| **Tests** | 1,124 on the owner's machine, with `var/` present: 1,123 passing and 1 skipped (the opt-in browser test), run 2026-10-07; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
+| **Tests** | 1,127 on the owner's machine, with `var/` present: 1,126 passing and 1 skipped (the opt-in browser test), run 2026-10-07; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
 
 | Question | File |
 | --- | --- |
@@ -388,9 +388,10 @@ numbers. Each says what is true now; how it was learned is in the DECISIONS entr
 
 48. **A plan's open questions are not shown to the traveller — the owner, 2026-10-07, kept on
     purpose.** `unresolved_questions` is validated and stored but nothing in `app.js` renders it; the
-    owner wants it for us, not surfaced. So a condition rule 10a files there "where it bears on the
-    whole plan" reaches no traveller; one that must be seen belongs in a step, the explanation or
-    `decision_condition`. Read a plan's questions in `var/plans/` drafts or a run's `plan.json`.
+    owner wants it for us. What a traveller must see from it now has its own fields (entry 278):
+    `exceptions` ("If this applies to you"), `disagreements` ("The official pages disagree") and
+    `gaps` ("Not found on the pages we read"), and rules 5, 8g, 8j, 8k and 10a write to them. Read a
+    plan's questions in `var/plans/` drafts or a run's `plan.json`.
 
 **Retired numbers**, kept so the numbering keeps its meaning: **44** (entry 263), **1** (entry 58), **3** (entries 34,
 38), **4** (entries 56, 57), **7** (entry 152), **18** (entry 42), **21** and **22** (entry 157),

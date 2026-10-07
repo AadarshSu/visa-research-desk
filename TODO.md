@@ -397,9 +397,10 @@ each item as it last stood is in this file's history before that date.
 
 - **12. Watch where the two deciders disagree.** `decided_by` and the heuristic's score sit beside
   the model's choice. Do not tune the lexicon to agree with the model.
-- **13. Conflict detection, with claim scope.** Entry 30 deleted `conflicts`. If it returns: record
-  the population each claim applies to, compare same-scope claims only, leave the visa decision out.
-  Read entry 6 first.
+- **13. Conflict detection, with claim scope.** Entry 30 deleted `conflicts`; entry 278 brought back
+  `disagreements`, written by the plan call within these bounds — same travellers only, the visa
+  decision left out. What is still parked: recording each claim's population so a check, not a
+  model, can tell a real disagreement from two pages about different travellers. Read entry 6 first.
 - **14. Detect drift in configured sources.** On a content-hash change, **mark** the source; never
   auto-rediscover and swap a role-bearing one. Item 20 makes this the corpus-rot check.
 

@@ -14,9 +14,12 @@ from visa_research_agent.discovery.adjudication import UsageRecorder
 from visa_research_agent.discovery.recall_log import ModelCall
 from visa_research_agent.domain.models import (
     DestinationConfig,
+    PlanException,
+    PlanGap,
     SharedDetails,
     SharedDocument,
     SharedStay,
+    SourceDisagreement,
     TravelAuthorisationDraft,
     TravellerProfile,
     VisaPlan,
@@ -1387,3 +1390,67 @@ def test_whole_months_count_only_completed_months() -> None:
     assert whole_months_between(date(2026, 10, 7), date(2027, 2, 6)) == 3
     assert whole_months_between(date(2026, 10, 7), date(2026, 10, 30)) == 0
     assert whole_months_between(date(2026, 10, 7), date(2026, 8, 7)) == -2
+
+
+@pytest.mark.anyio
+async def test_exceptions_disagreements_and_gaps_reach_the_plan_the_traveller_sees() -> None:
+    """Entry 278: what open questions used to hold, shown, each citing the pages it rests on."""
+
+    draft = load_golden_draft().model_copy(
+        update={
+            "requirements": [],
+            "exceptions": [
+                PlanException(
+                    condition="If you hold a Singapore residence permit",
+                    consequence="you do not need this visa.",
+                    source_ids=["sg_ica_india_visa_details"],
+                )
+            ],
+            "disagreements": [
+                SourceDisagreement(
+                    topic="Passport validity",
+                    summary="One page counts six months from entry; the other from departure.",
+                    source_ids=["sg_ica_india_visa_details", "sg_ica_visa_requirement_overview"],
+                )
+            ],
+            "gaps": [
+                PlanGap(
+                    missing="The processing time",
+                    next_step="Ask ICA, which the overview page names.",
+                    source_ids=["sg_ica_visa_requirement_overview"],
+                )
+            ],
+        }
+    )
+    plan = await plan_from(draft, singapore_config())
+
+    assert plan.exceptions[0].condition == "If you hold a Singapore residence permit"
+    assert plan.disagreements[0].topic == "Passport validity"
+    assert plan.gaps[0].next_step == "Ask ICA, which the overview page names."
+
+
+@pytest.mark.anyio
+async def test_a_disagreement_needs_two_pages_and_every_item_a_page_that_was_read() -> None:
+    plan = await plan_from(
+        load_golden_draft().model_copy(update={"requirements": []}), singapore_config()
+    )
+    one_page = {
+        "topic": "Passport validity",
+        "summary": "Six months.",
+        "source_ids": ["sg_ica_india_visa_details", "sg_ica_india_visa_details"],
+    }
+    invented = {"missing": "The fee", "next_step": "Ask.", "source_ids": ["not_read"]}
+
+    with pytest.raises(ValidationError, match="two different sources"):
+        VisaPlan.model_validate({**plan.model_dump(mode="json"), "disagreements": [one_page]})
+    with pytest.raises(ValidationError, match="unknown source IDs"):
+        VisaPlan.model_validate({**plan.model_dump(mode="json"), "gaps": [invented]})
+
+
+def test_what_the_traveller_must_see_never_goes_only_to_the_open_questions() -> None:
+    prompt = " ".join(load_extraction_prompt().split())
+
+    assert "16. unresolved_questions is kept for the people who maintain this service" in prompt
+    assert "Record the set-aside option and its condition in exceptions (rule 16)" in prompt
+    assert "Never say which page is right" in prompt
+    assert "Never one about whether this traveller needs a visa" in prompt

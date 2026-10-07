@@ -12,8 +12,9 @@ Follow these rules:
    authority's visa-required list that leaves the traveller's country out (rule 8e), and an
    authority's visa-exemption list that leaves it out (rule 8f). Those rules say when. A decision
    that holds on a fact about the trip the profile does not record is rule 8k's.
-5. If official sources disagree, record the disagreement as an unresolved question, naming what each
-   says. Do not silently select a preferred version, and do not assert one is correct.
+5. If official sources disagree, record the disagreement in disagreements (rule 16) and as an
+   unresolved question, naming what each says. Do not silently select a preferred version, and do
+   not assert one is correct.
 6. Use only source_id values present in the research packet. Cite the visa decision, application
    location and every application step with supporting source IDs.
 7. Do not list the application documents. Where destination.application_document_source_ids names a
@@ -166,7 +167,7 @@ Follow these rules:
      nationality's page.
    - Cite the sources stating the routes, say in the explanation which route applies on which
      condition, and record the condition the profile does not settle — whether the traveller holds
-     the qualifying residence permit, for example — as an unresolved question.
+     the qualifying residence permit, for example — in exceptions (rule 16).
 
 
 8h. An announced change whose start date is not established does not hold back a "no visa" that
@@ -217,8 +218,8 @@ Follow these rules:
      visa_required to true, leave decision_condition null, and say in the explanation and steps
      which visa applies to whom.
    - A disqualification an ordinary traveller does not have — a criminal conviction, an earlier
-     refusal or overstay, a health condition — is never decision_condition. Say in the explanation
-     or a step what such a traveller must do instead.
+     refusal or overstay, a health condition — is never decision_condition. Put what such a
+     traveller must do instead in exceptions (rule 16).
    - The side stated must be stated by a source, and no source may contradict it. Where sources
      disagree about one side only, the other side may still be stated, and the disagreement is an
      unresolved question under rule 5.
@@ -250,8 +251,8 @@ Follow these rules:
      this traveller.
    - Set aside an option for another purpose, and one limited by a condition beside it — "must hold
      ETA passport", "must hold eligible passport" — when no source shows this traveller meets that
-     condition. Record the set-aside option and its condition as an unresolved question, so a
-     traveller who does meet it can check.
+     condition. Record the set-aside option and its condition in exceptions (rule 16), so a
+     traveller who does meet it can see it.
    - If two or more options for this purpose remain after that, leave visa_type null and record
      an unresolved question naming them.
    - Never write a visa name a source does not print, and never use visa_type to decide
@@ -295,7 +296,7 @@ Follow these rules:
 10a. Where a source limits anything the plan tells the traveller to a condition — a way of
    travelling, a status of their passport, their age, the length of their stay, a document they
    already hold — say so where it is stated: in the step it applies to, or, where it bears on the
-   whole plan, in unresolved_questions. Never drop a duty because it applies only under a condition
+   whole plan, in exceptions (rule 16). Never drop a duty because it applies only under a condition
    the profile does not settle, and never state a condition no source gives.
 11. Use link_target "application_route" when the step should open where_to_apply.application_url;
    use "source" with link_source_id for another supplied official page, and list that same ID in the
@@ -361,3 +362,25 @@ Follow these rules:
      for that period, and never claim it meets the rule.
    - Write each sentence that applies a shared detail between double asterisks, **like this**, so
      the page shows it in bold. Use them nowhere else.
+16. unresolved_questions is kept for the people who maintain this service and is not shown to the
+   traveller. Three lists are shown, each written only from the sources, citing them, one short
+   sentence per part, and empty when the sources give nothing for it:
+   - exceptions, at most four: a condition a source states that would change something in this
+     plan for a traveller who meets it, which the profile does not settle — the status their
+     passport records, a residence permit, a conviction or earlier refusal, the passport's
+     features, the length of their stay. condition starts "If" and says who, in the source's terms
+     ("If your UK passport does not say British Citizen"); consequence says what then differs
+     ("you cannot use the eVisitor and need the Visitor visa (subclass 600)"). Never the ordinary
+     traveller's own case, never a condition already in decision_condition or
+     travel_authorisation.condition, and never one no source states.
+   - disagreements, at most three: supplied pages that say different things about the same
+     question for the same travellers — a passport validity counted from entry on one page and
+     from departure on another. topic names the question; summary says what each page says, and
+     cites every one of them. Never say which page is right. Pages that differ because they are
+     about different travellers, purposes or visas do not disagree. Never one about whether this
+     traveller needs a visa: rule 5 leaves that decision null.
+   - gaps, at most four: something this plan could not establish from the pages read — a fee, a
+     processing time, which post serves them, the operational detail a contractor handles — with
+     next_step saying where a source says to find it ("Ask the Korean mission for your state, which
+     the embassy's page names"), citing that source. Leave a gap out when no source names
+     anywhere to look.

@@ -890,6 +890,45 @@ class ApplicationLocationDraft(StrictModel):
     in_person: InPerson | None
 
 
+class PlanException(StrictModel):
+    """A condition a source states that would change this plan for a traveller who meets it, and
+    the profile does not settle — shown under "If this applies to you" (entry 278).
+
+    Rule 8j and entry 268 used to send these to `unresolved_questions`, which the page never shows,
+    so a traveller who was the exception got a confident plan that was wrong for them.
+    """
+
+    condition: str = Field(min_length=3, max_length=200)
+    """Who it applies to, in the source's terms, starting "If"."""
+    consequence: str = Field(min_length=3, max_length=240)
+    """What then differs for them."""
+    source_ids: list[str] = Field(min_length=1)
+
+
+class SourceDisagreement(StrictModel):
+    """Supplied pages that say different things about one question for the same travellers (entry
+    278). Named, never resolved, and never about whether a visa is needed — rule 5 leaves that
+    decision null instead.
+
+    `conflicts` was deleted in entry 30 because a wrong disagreement alarms. This returns on the
+    owner's decision within parked item 13's bounds: the same travellers only, the decision left
+    out, and only what each page says, never which is right.
+    """
+
+    topic: str = Field(min_length=3, max_length=80)
+    summary: str = Field(min_length=3, max_length=320)
+    source_ids: list[str] = Field(min_length=2)
+
+
+class PlanGap(StrictModel):
+    """Something this plan could not establish from the pages read, and where a source says to
+    find it — shown under "Not found here" (entry 278)."""
+
+    missing: str = Field(min_length=3, max_length=120)
+    next_step: str = Field(min_length=3, max_length=240)
+    source_ids: list[str] = Field(min_length=1)
+
+
 class TravelAuthorisationDraft(StrictModel):
     """Model-facing: a pre-travel authorisation that is not a visa, which this traveller must hold.
 
@@ -1039,6 +1078,9 @@ class VisaPlanDraft(StrictModel):
     decision_source_ids: list[str] = Field(min_length=1)
     where_to_apply: ApplicationLocationDraft | None
     travel_authorisation: TravelAuthorisationDraft | None = None
+    exceptions: list[PlanException] = Field(default_factory=list, max_length=4)
+    disagreements: list[SourceDisagreement] = Field(default_factory=list, max_length=3)
+    gaps: list[PlanGap] = Field(default_factory=list, max_length=4)
     requirements: list[VisaRequirement]
     application_steps: list[ApplicationStep] = Field(max_length=8)
     unresolved_questions: list[str]
@@ -1071,6 +1113,9 @@ class VisaPlan(StrictModel):
     where_to_apply: ApplicationLocation | None
     travel_authorisation: TravelAuthorisation | None = None
     """See `TravelAuthorisation`. Only where `visa_required` is false."""
+    exceptions: list[PlanException] = Field(default_factory=list, max_length=4)
+    disagreements: list[SourceDisagreement] = Field(default_factory=list, max_length=3)
+    gaps: list[PlanGap] = Field(default_factory=list, max_length=4)
     requirements: list[VisaRequirement]
     application_document_source_ids: list[str]
     """May be empty: some authorities publish no checklist. See `validate_absent_checklist`."""
@@ -1079,16 +1124,17 @@ class VisaPlan(StrictModel):
 
     sources: list[SourceReference]
     unresolved_questions: list[str]
-    """Also where a disagreement between official sources goes.
+    """What this plan could not settle, kept for us and not shown to the traveller (the owner,
+    2026-10-07; known problem 48). What a traveller must see is in `exceptions`, `disagreements` and
+    `gaps` (entry 278).
 
     There was a `conflicts` field beside this one, and it was deleted rather than improved. Entry 6
     built a *deterministic* conflict detector, found a real discrepancy with it, and deleted it
     anyway, because nothing recorded who a claim applied to: a page listing visa-free nationalities
-    and a nationality-specific page requiring a visa compared as a contradiction. The lesson it
-    recorded — a feature whose wrong answers are alarming needs a near-zero false-positive rate or
-    it should not ship — condemns unverified model prose more strongly than the checked version it
-    replaced. So a disagreement is reported here, as something we could not resolve, which is what
-    it honestly is. See DECISIONS entry 30, and entry 6 before rebuilding it.
+    and a nationality-specific page requiring a visa compared as a contradiction. `disagreements`
+    returns on the owner's decision, bounded as item 13 said it must be — the same travellers only,
+    never the visa decision, never which page is right. Read entries 6, 30 and 278 before widening
+    it.
     """
 
     last_checked: datetime
@@ -1248,6 +1294,11 @@ class VisaPlan(StrictModel):
             if self.visa_required is not False:
                 raise ValueError("a travel authorisation is named only on a plan needing no visa")
             cited_source_ids.update(self.travel_authorisation.source_ids)
+        for listed in (self.exceptions, self.disagreements, self.gaps):
+            for item in listed:
+                cited_source_ids.update(item.source_ids)
+        if any(len(set(item.source_ids)) < 2 for item in self.disagreements):
+            raise ValueError("a disagreement must cite at least two different sources")
 
         if self.where_to_apply is None and any(
             step.link_target == "application_route" for step in self.application_steps

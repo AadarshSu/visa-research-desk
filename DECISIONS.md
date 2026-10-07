@@ -291,6 +291,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [278](#278-what-a-traveller-must-see-leaves-the-open-questions-exceptions-disagreements-and-gaps) | **What a traveller must see leaves the open questions** — `exceptions`, `disagreements` and `gaps` are shown, `unresolved_questions` kept for us; `disagreements` returns entry 30's field within item 13's bounds |
 | [277](#277-a-corridor-resolved-under-other-discovery-rules-is-resolved-again) | **A corridor resolved under other discovery rules is resolved again** — a stored corridor records a digest of the roles, prompts, vocabulary and always-read pages; New Zealand `US/US` had been served from one resolved before the authorisation role existed |
 | [276](#276-the-plan-is-written-for-the-specific-traveller-what-they-share-through-ofself-reaches-the-plan-call) | **The plan is written for the specific traveller** — what a signed-in traveller shares through Ofself (documents, stays, applications) reaches the plan call, which names a detail beside a rule it bears on and never decides from it; typed-in values never confirm a rule; decisions identical with and without, over five replayed travellers |
 | [275](#275-a-seventh-role-travel_authorisation-looks-for-a-pre-travel-authorisation-on-every-corridor) | **A seventh role, `travel_authorisation`, looks for a pre-travel authorisation on every corridor** — scored from a page's title and address only; not load-bearing; the plan names it on a "no visa" plan only, from the role's pages; found on 8 of 8 corridors that have one and 0 of 8 that do not, shown on the plan 5 of 8; the GB always-read entries, the old rule 7e and 8e's where-to-apply bullet are gone; +3% model cost |
@@ -318,6 +319,48 @@ s more pressing |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
 
 ---
+
+## 278. What a traveller must see leaves the open questions: exceptions, disagreements and gaps
+
+**2026-10-07. The owner:** keep `unresolved_questions` for us and do not show it; then, shown what
+that hides (429 distinct questions over 235 plans), add three fields that are shown.
+
+**What the hidden questions held.** About half was noise or repeated what the page shows. Three
+kinds mattered, and two were routed there by design on the assumption a traveller would read them:
+- **Conditions that change the plan for a traveller who meets them** — rule 8j's set-aside visas,
+  entry 268's disqualifications, 8g's conditions: "Does your ordinary UK passport identify you as a
+  British Citizen?" (Australia), "Do you have permission to reside in the UK?" (Japan's eVISA).
+- **Pages that disagree** — rule 5 and entry 30 put them there; hidden, they appeared nowhere.
+- **Where to look for what was not found** — a fee "updated annually", which mission serves a state.
+
+**Built.**
+- **`VisaPlan.exceptions`** (at most four): `condition` starting "If", `consequence`, `source_ids`.
+  Shown in the decision panel under "If this applies to you".
+- **`VisaPlan.disagreements`** (at most three): `topic`, `summary` of what each page says, and two
+  or more distinct `source_ids` (enforced). Shown under "The official pages disagree", "We could not
+  tell which is right." **This returns entry 30's deleted field on the owner's decision**, within
+  parked item 13's bounds, which rule 16 states: pages about the same travellers only, never whether
+  a visa is needed (rule 5 leaves that null), never which page is right.
+- **`VisaPlan.gaps`** (at most four): `missing`, `next_step` where a source says to look,
+  `source_ids`. Shown under "Not found on the pages we read"; left out when no source names anywhere.
+- Every item cites pages read this run, enforced with the plan's other citations.
+- **Rule 16** defines the three and says `unresolved_questions` is not shown. Rules 5, 8g, 8j, 8k
+  and 10a now write to them; the questions stay as our record.
+
+**Replayed** on nine packets, two runs each (`var/plan-lists-2026-10-07/`):
+- **Exceptions** where the hidden questions held them: Australia `GB/GB` 3 ("If your United Kingdom
+  passport does not say British Citizen — you cannot apply for the eVisitor (subclass 651)", a
+  conviction, a failed health requirement), Japan `IN/GB` the eVISA's UK-residence condition,
+  United States `GB/GB` the e-passport requirement, New Zealand `US/US` 3 (a stay over three
+  months, character, a sponsor).
+- **Gaps** with a sourced next step: South Africa's fee and VFS centre, Singapore's authorised
+  agents, Japan's hotline for applicants who are not eVISA-eligible, Korea study's checklist.
+- **Disagreements: none in 18 runs.** Australia `US/US`'s two decision rules stay out by design.
+- **Controls** Singapore `PH/PH` and United Kingdom `US/US` filled none. **Every decision matched
+  its earlier runs.**
+
+Seen in the browser on the Australia replay's plan, with one disagreement added by hand to check
+its rendering.
 
 ## 277. A corridor resolved under other discovery rules is resolved again
 

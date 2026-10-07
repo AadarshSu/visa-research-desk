@@ -192,8 +192,11 @@ defect.
   words say it is this trip's (entry 213). With no designated checklist, nothing may be listed
   (`validate_absent_checklist`'s first clause).
 - **Never show a traveller an unverified claim that would alarm them if wrong (entry 6).** The
-  `conflicts` field was deleted (entry 30) — **do not add it back.** A disagreement between pages is
-  an unresolved question.
+  `conflicts` field was deleted (entry 30). `disagreements` returned on the owner's decision (entry
+  278), bounded as item 13 required: pages about the same travellers only, never the visa decision
+  (that is rule 5's null), and never which page is right. **Do not widen it without a decision
+  entry.** `unresolved_questions` is kept for us and not shown; what a traveller must see goes in a
+  step, the explanation, `exceptions`, `disagreements` or `gaps` (entry 278).
 - **Never** add application submission, appointment booking, form filling, or any claim that approval
   is guaranteed.
 

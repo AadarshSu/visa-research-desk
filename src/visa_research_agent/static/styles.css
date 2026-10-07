@@ -2379,3 +2379,42 @@ footer p {
 .shared-detail {
   font-weight: 700;
 }
+
+/* What the plan shows instead of its open questions (entry 278): exceptions, disagreements, gaps. */
+.cited-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.cited-list-heading {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cited-list-intro {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.cited-list-items {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.cited-list-items p {
+  margin: 0;
+}
+
+.cited-list-sources {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}

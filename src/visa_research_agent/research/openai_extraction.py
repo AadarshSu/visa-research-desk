@@ -549,6 +549,9 @@ class OpenAIVisaPlanExtractor:
                 decision_source_ids=draft.decision_source_ids,
                 where_to_apply=where_to_apply,
                 travel_authorisation=travel_authorisation,
+                exceptions=written.exceptions,
+                disagreements=written.disagreements,
+                gaps=written.gaps,
                 requirements=requirements,
                 # Emptied for an entry plan, because a designated checklist source with nothing
                 # under it would have the interface announce a checklist that does not exist. The
