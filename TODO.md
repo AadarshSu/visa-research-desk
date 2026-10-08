@@ -44,8 +44,7 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 
 | | | |
 | --- | --- | --- |
-| **Now** | 85. Thailand `IN/IN` tourism refuses 2 runs in 4 — **immediately next** | `next` |
-|  | 80. A travel-readiness app for one traveller — next, the news panel | `explore`, with the owner |
+| **Now** | 80. A travel-readiness app for one traveller — next, the news panel | `explore`, with the owner |
 |  | 81. Explore new layouts and UI workflows for the site | `explore`, its own session |
 |  | 82. Decide how to cache only results that are likely right | `decide`, with the owner |
 |  | 84. Build the news panel from Ofself's Assimilation destination briefing | `soon`, part of 80 |
@@ -55,7 +54,7 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 |  | 4. Decide the client-side retrieval question | `soon` |
 |  | 20. Make the stores substrate-swappable and durable | `soon` |
 | **Parked** | Expansion: 64, 2 · Speed and cost: 58, 59, 61 · Hosting: 7's leftovers | until required |
-|  | Retrieval and blocks: 46, 11, 27, 10, 69 · Corpus coverage: 49, 35, 47 · Deciders and drift: 12, 13, 14 | until required |
+|  | Retrieval and blocks: 46, 11, 27, 10, 69 · Corpus coverage: 49, 35, 47 · Ranking: 86 · Deciders and drift: 12, 13, 14 | until required |
 
 ---
 
@@ -102,30 +101,6 @@ leakage.
 **Measure first:** over this session's runs (`var/purposes-2026-10-03/`), how many faulty results
 each candidate rule would have kept, and how many good ones it would have thrown away, in seconds
 and dollars of re-running.
-
-### 85. Thailand `IN/IN` tourism refuses 2 runs in 4 — `next`, **immediately**
-
-**The owner, 2026-10-08:** Thailand / India / India for a stay under 30 days answered "No official
-answer found — Thailand's official sources were searched, but no page could be confirmed as the
-visa decision" on 2 of 4 runs.
-
-**What today's runs show** (`var/purposes-2026-10-03/ofself-passport-2026-10-07/thailand_IN_IN_tourism/`,
-two runs): both read Thailand's July announcement that India gets visa-free entry for tourism for
-up to 30 days and that India's visa on arrival goes — "to take effect 15 days after Royal Gazette
-publication". **Neither read a page saying the change is in force.** Run 1 credited the
-announcement and left the decision open; run 2 refused, reading the May summary (India on visa on
-arrival) against the July announcement with nothing to say which holds. Replayed earlier the same
-day, the plan call on run 1's packet gave 1 "no visa" and 5 open.
-
-**This is entries 220–222's shape again:** a decision resting on an announcement and a later notice
-that it took effect, read together (roles rule 7a, selection rule 11, plan rules 8h/8i). Those fixed
-Thailand when the notice was in the pool. **First find out** whether an in-force notice exists in
-`var/pagetext/TH.sqlite3` and the corpus, and whether it reached the 160-page pool and the
-selection on these runs — `visa-discover contention --destination thailand --nationality IN --from
-IN --role visa_decision`. Then: a ranking miss (fix the ranking, or an always-read entry as a stopgap
-naming the miss, entry 267), a missing page (`corpus-add`), or no such page published (then rule 8h
-governs: a "no visa" stated both before and after the change, or the answer stays open and says
-why). Re-run 4+ times either way; Thailand's decision has been fragile before.
 
 ### 84. Build the news panel from Ofself's Assimilation destination briefing — `soon`, **part of 80**
 
@@ -458,6 +433,20 @@ each item as it last stood is in this file's history before that date.
 - **47. How much of the world the family detector cannot see.** `country_family_keys` matches the
   URL only; the blind spot is mostly English aliases and dependent territories (entries 124, 126).
 
+### Ranking
+
+- **86. Investigate why a notice that a visa change is in force ranks near the bottom of what the
+  selector is shown** (entry 281). Thailand's 4 September notice names no country and no purpose,
+  so since entry 245 nothing lifts its decision score. Two pieces of 2024 news naming India outrank
+  it for an Indian traveller, and the seven-role round-robin turns two decision places into about
+  seven overall: 111th–118th of 120 for US and GB, just past 120 for India. Search-found pages
+  merged into the corpus move it a few places either way. `always_read.yaml` holds it in for
+  Thailand tourism until this is understood; take that entry out once the ranking finds it unaided.
+  **First** count, across the 55 stores, how many pages say a revision took effect, and where each
+  ranks for its own country's corridors. Then decide whether "in force" wording should credit
+  `visa_decision`, or whether outdated news naming the traveller's country should rank lower.
+  Check that neither change pulls ordinary news into the 120.
+
 ### Deciders and drift
 
 - **12. Watch where the two deciders disagree.** `decided_by` and the heuristic's score sit beside
@@ -501,6 +490,7 @@ The reasoning is in the DECISIONS entry; this is the index. Code comments cite s
 
 | Was | Done | Entry | What building it found |
 | --- | --- | --- | --- |
+| 85. Thailand `IN/IN` tourism refuses 2 runs in 4 | 10-08 | 281 | Entry 245's purpose rule had pushed September's in-force notice from 77th offered to withheld. Named in `always_read.yaml`, five live runs gave 4 `verified` "no visa"; the fifth was a roles-call refusal the packet does not reproduce (10 of 10 on replay) |
 | — A seventh role, `travel_authorisation` | 10-07 | 275 | A body vocabulary could not find the page — every GOV.UK visa page carries the ETA notice; title and address could. Discovery 8 of 8, the plan 5 of 8; GB always-read entries removed |
 | — Pages a country's corridors read on every run | 10-06 | 265–267 | Australia's ETA page ranked 55th after two scoring fixes; named in `config/always_read.yaml`, `US/US` went to 3 of 3 "visa required, ETA (601)" and `IN/IN` stayed on the subclass 600 |
 | — A travel authorisation is never called a visa; 8k states the ordinary side, and never a which-visa fact | 10-06 | 263, 264, 268 | Each a prompt change measured by replaying captured packets. Two wordings of 268 were rejected for costing Japan study and New Zealand transit |

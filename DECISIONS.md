@@ -111,6 +111,7 @@ not — and stored text ranks, it never speaks).
 ### Finding the right page: ranking, recall, judgement
 | | |
 | --- | --- |
+| [281](#281-thailand-reads-septembers-in-force-notice-on-every-tourism-corridor-because-entry-245-priced-it-out-of-the-pool) | **Thailand reads September's in-force notice on every tourism corridor** — entry 245's purpose rule moved it from 77th offered to withheld; named in `always_read.yaml`, `IN/IN` 4 of 5 `verified` "no visa", the fifth a rare roles-call refusal (10 of 10 on replay); US and GB already read it unaided, China does not need it |
 | [246](#246-live-the-boosted-60--40-shortlist-gives-the-same-decisions-and-loses-frances-processing-time-for-one-traveller) | **Measured live: the boosted 60 + 40 shortlist gives the same decisions and checklists, and loses France's Filipino processing time** — ten corridors, three runs an arm: decisions 30 of 30 and checklists 26 of 30 in both, 159 roles against 163, on 44% less selector input; `selection_boost_searched` is in the code and off; **the owner kept 120 + 40** |
 | [245](#245-the-stored-text-score-credits-the-travellers-own-post-and-a-60--40-shortlist-becomes-level) | **Shipped: the stored-text score credits the traveller's own post** — the nationality bonus stops reading a URL's host, the post serving the traveller is credited and another post penalised, and a decision stops earning the tourism bonus; at today's cut the selector finds every decision and checklist in every run (127.0 of 131 against 126.6), and with the search boost a 60 + 40 shortlist is level (125.8) on 45% less input |
 | [244](#244-recording-every-page-search-returned-makes-the-boost-strong-offline-and-the-selector-still-loses-two-roles-a-run) | **Measured: recording every page search returned makes the boost strong offline, and the selector still loses two roles a run** — `CandidatePage.searched` added; the boost keeps 129 of 131 answers at a 40 cut (today 109, embeddings 128), but the selector scores 124.2–124.4 against 126.6 on 45–60% less input; and the misses trace to the stored-text bonuses, not missing keywords |
@@ -321,6 +322,75 @@ s more pressing |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
 
 ---
+
+## 281. Thailand reads September's in-force notice on every tourism corridor, because entry 245 priced it out of the pool
+
+**2026-10-08 · the owner: Thailand `IN/IN` tourism refused 2 runs in 4** ("no page could be
+confirmed as the visa decision"), TODO item 85.
+
+**Found.**
+- **Both of 10-07's runs read the 15 July announcement naming India and neither read the 4
+  September notice** that the revision takes effect on 15 September 2026
+  (`thailand.prd.go.th/.../iid/538547`). Without the notice, roles rule 7a has nothing to pair the
+  announcement with: run 1 left the decision open, run 2 refused.
+- **The notice is in the corpus and the page-text store** (stored 2026-09-25), and was in the
+  candidate pool on both runs. The 120 + 40 cut withheld it (`withheld_from_selection` in the
+  recall log).
+- **It was offered 77th of 160 on 09-25, when entries 220–222 fixed Thailand.** Replaying the cut
+  on today's stores at earlier commits puts the change at `716b57e`, entry 245: once the traveller's
+  post is known, the purpose bonus stops reaching `visa_decision`. The notice says "for tourism
+  purposes" and names no country, so its stored-text decision score fell from 34.3 to 18.0 and its
+  fused decision rank from 16th to 29th. That is below the depth the round-robin reaches within 120.
+- **Not the seventh role** (entry 275): six roles or seven, the cut withholds it.
+- **Entry 245's rule is right** for what it was built for: a country table never names a purpose.
+  An in-force notice names neither the traveller nor the purpose by its nature, so nothing in the
+  body score can lift it without lifting every news item that mentions a visa.
+
+**Built.** `config/always_read.yaml` names the notice for Thailand's tourism corridors (entry 267's
+mechanism). It is read live and judged by the roles call, and its `why` names this miss. It is
+relevant to every nationality: the revision changed every exemption scheme. Business is left out
+because no business corridor was run.
+
+**What the pages say, in order.** On 19 May the cabinet approved a revision: 30-day exemption for
+54 countries, a 15-day one for three, visa on arrival for four, India among them. The foreign
+ministry's 22 May summary table lists the same. On 15 July a *further* revision moved India (with
+five others) into the 30-day list and off visa on arrival. The 4 September notice cites the 19 May
+approval, but the version it says took effect has a 15-day scheme for two and visa on arrival for
+three. Those are July's numbers, not May's, so pairing it with the July announcement is right.
+
+**Measured live, five runs** (`var/purposes-2026-10-03/th85-2026-10-08/`): **4 `verified` "no visa"**,
+each crediting the announcement with the notice as `in_force_source_id`. **One refused.** It read
+both pages, and the roles call rejected the pair because "the September in-force notice has
+different timing". The notice citing May's approval rather than July's is a fair reason to look
+twice. Its numbers settle it.
+
+**Replayed on that run's own packet, the committed prompt paired the two 10 of 10**, and 5 of 5 on
+run 1's packet. So the miss is rare, not a shape the packet reproduces. A rule 7a bullet on working
+out the date was drafted and **not adopted**, since there is no measured rate for it to move. A
+refusal is what that miss costs, never a wrong answer.
+
+**Other nationalities, two runs each with the entry and two without** (`th85-others-2026-10-08/`,
+`th85-control-2026-10-08/`). **The entry changes nothing for them.**
+- **United States and United Kingdom:** without the entry the selector was offered the notice and
+  chose it in all four runs. The decision rested on the 22 May table naming them, with the notice
+  as its in-force page, `verified` 4 of 4. With the entry: the same pages, 3 of 4. United Kingdom's
+  second run left the decision open on the plan call, because the table counts 54 countries and the
+  notice 60. Both arms read the same pages, so the entry did not cause it.
+- **China:** "no visa" under its bilateral agreement 2 of 2, from pages that do not need the
+  notice.
+- **Why India and not the others.** The notice scores the same on every corridor. Comparing the
+  pages above it for the decision, India's list has exactly two more: 2024 news about India's
+  since-expired exemption ("Thailand extends 30-day visa exemption for Indian and Taiwanese
+  tourists until 11 November 2024", "Thailand attracts more Indian tourists…"). The 120 places are
+  dealt round-robin across seven roles, so two decision places cost about seven overall: 111th–118th
+  for US and GB in the live runs, just past 120 for India.
+- **It is on the edge for everyone.** Search-found pages are merged into the corpus, and the 29
+  merged by today's runs moved India's notice back inside, to 118th, in an offline replay. The
+  entry therefore also protects US and GB, who hold the page by a few places. The ranking question
+  is parked as TODO item 86.
+
+**Comes out when** the decision ranking finds an in-force notice by itself, or once the
+announcement and the notice are superseded by a page listing the current schemes.
 
 ## 280. A fact the traveller gave may decide the plan: exact dates, a rough span wholly on one side, a detail read off a document
 

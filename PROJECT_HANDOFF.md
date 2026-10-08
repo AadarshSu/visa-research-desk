@@ -7,8 +7,8 @@ stands, what to do next, and what is known to be broken. The history of how it g
 | | |
 | --- | --- |
 | **Repository** | `github.com/AadarshSu/visa-research-agent` |
-| **Last updated** | 2026-10-07 — update this line when you touch the handoff |
-| **Tests** | 1,139 on the owner's machine, with `var/` present: 1,138 passing and 1 skipped (the opt-in browser test), run 2026-10-07; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
+| **Last updated** | 2026-10-08 — update this line when you touch the handoff |
+| **Tests** | 1,139 on the owner's machine, with `var/` present: 1,138 passing and 1 skipped (the opt-in browser test), run 2026-10-08; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
 
 | Question | File |
 | --- | --- |
@@ -91,8 +91,9 @@ the deployed server yet**:
 - **Every prompt change was measured** by replaying the plan call on captured packets, the current
   prompt against the candidate, with controls. The tooling is under *Where things are*.
 
-**This phase's queue** is TODO's *Now*: **85 first** (Thailand `IN/IN` refusing 2 runs in 4), then
-80 with its news panel (84, Ofself's Assimilation briefing), 82 (cache only results that are likely
+**Thailand `IN/IN` tourism (item 85) is done** (entry 281): September's in-force notice, priced out
+of the pool by entry 245, is now read on every Thai tourism corridor; 4 of 5 live runs `verified`
+"no visa". **This phase's queue** is TODO's *Now*: 80 with its news panel (84, Ofself's Assimilation briefing), 82 (cache only results that are likely
 right, the owner's to decide), then **63** (accurate answers, ongoing), **55** (what is
 left of the Ofself adapter), **79** (a small scoring consistency fix), **4** (the client-side
 retrieval decision) and **20** (durable stores).
@@ -397,6 +398,14 @@ numbers. Each says what is true now; how it was learned is in the DECISIONS entr
     `exceptions` ("If this applies to you"), `disagreements` ("The official pages disagree") and
     `gaps` ("Not found on the pages we read"), and rules 5, 8g, 8j, 8k and 10a write to them. Read a
     plan's questions in `var/plans/` drafts or a run's `plan.json`.
+
+49. **Thailand's in-force notice is read only because `always_read.yaml` names it** (entry 281).
+    Since entry 245 it ranks 29th for the decision on Thailand `IN/IN` and is withheld at the 120
+    cut: two pieces of 2024 news naming India outrank it. United States and United Kingdom
+    corridors are offered it at 111th–118th of 120, inside by a few places. That entry should come
+    out once the ranking finds an in-force notice unaided (TODO item 86, parked). One live run in five still refused: the notice cites May's approval, not July's, and
+    the roles call doubted the pair. Its numbers match July's. Replayed 10 times on that packet,
+    the doubt never came back.
 
 **Retired numbers**, kept so the numbering keeps its meaning: **44** (entry 263), **1** (entry 58), **3** (entries 34,
 38), **4** (entries 56, 57), **7** (entry 152), **18** (entry 42), **21** and **22** (entry 157),

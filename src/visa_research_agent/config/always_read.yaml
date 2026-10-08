@@ -19,3 +19,15 @@ countries:
       corpus-add on 2026-10-06, it ranks 55th by stored text for visa_decision on australia/US/US
       against about twenty places a role, held down by the breadth penalty (entries 265, 266;
       known problem 46).
+- code: TH
+  pages:
+  - url: https://thailand.prd.go.th/en/content/category/detail/id/48/iid/538547
+    title: Revision of Thailand’s Visa Exemption and Visa on Arrival Schemes
+    purposes: [tourism]
+    why: >-
+      The public relations department's 4 September 2026 notice that the revised exemption and
+      visa-on-arrival schemes take effect from 15 September 2026. It names no country, so it is
+      read with the 15 July announcement listing who is covered (roles rule 7a, plan rule 8i).
+      Offered 77th of 160 before entry 245's post-aware stored-text score; since then the tourism
+      bonus no longer reaches visa_decision, it ranks 29th for the decision on thailand/IN/IN and
+      is withheld, and two runs in four refused (TODO item 85).
