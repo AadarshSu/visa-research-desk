@@ -147,6 +147,7 @@ not — and stored text ranks, it never speaks).
 ### The stores: corpus, corridors, freshness
 | | |
 | --- | --- |
+| [282](#282-a-travellers-report-evicts-the-research-it-names-and-nothing-else-decides-what-is-cached) | **A traveller's report evicts the research it names; nothing else decides what is cached** — measured on 108 runs: 17 of 19 wrong plans were `verified`, two agreeing runs halve it at best, and per-traveller plans leave only a wrong-pages corridor to spread; a report deletes the stored corridor and its plan drafts, and keeps a copy |
 | [178](#178-a-plan-the-model-wrote-is-reused-for-identical-inputs-within-the-page-ttl--the-owners-decision-amending-entry-44) | **A plan the model wrote is reused for identical inputs within the page TTL** — the owner's decision, amending entry 44: the draft is kept, never the plan, keyed on everything the model is shown; every request still validates and grades it; a refusal is never kept; the key is stable on real requests; not yet timed live, the account ran out of credits |
 | [177](#177-where-a-requests-seconds-go-fast-mode-takes-43-off-the-plan-call-and-the-two-cheaper-shortcuts-broke-a-decision) | **Where a request's seconds go, and what moves them** — the plan and roles calls are generation (R² 0.99, 0.98); Fast mode takes the plan call −43% at 2× its price and selection −23%, roles −13%; reasoning `none` and `gpt-5.6-luna` each broke Japan's decision; nothing shipped, item 60 |
 | [175](#175-trims-2-and-3-ship-one-short-quote-a-claim-a-few-words-where-nothing-conditions-a-document--about-a-second-and-a-half) | **Trims 2 and 3 ship, at the owner's choice** — decisions held in every call and nothing refused; the plan says 5–13% less but hidden reasoning did not shrink, so the call is ~150 output tokens and ~1.5s shorter; entry 174's quote-heading claim withdrawn |
@@ -320,6 +321,58 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 282. A traveller's report evicts the research it names, and nothing else decides what is cached
+
+**2026-10-08 · TODO item 82, the owner's decisions after the measurement.** Changes
+`api/reports.py`, `api/routes.py`, `discovery/corridor_store.py`, `research/plan_store.py` and
+`research/openai_extraction.py`.
+
+**Measured first** (`var/item82-2026-10-08/`, no network, no model): 108 runs from 2026-10-06 to
+10-08, labelled only by the owner's rulings — 19 wrong (an authorisation left off the band on a
+"no visa" plan, entries 272 and 275; the NZeTA counted as a visa, entry 263), 88 good, 10 open.
+- **Keeping only `verified` works backwards:** 17 of the 19 wrong plans were `verified`, and 26 of
+  the 88 good ones `partial`. A shorter life for `partial` fails the same way.
+- **Two agreeing runs halve it at best,** because these faults repeat (United Kingdom `US/US`
+  wrong 4 runs of 5 in a row), for a second full run on every first request.
+- **Shape checks catch only faults already diagnosed,** and a diagnosed fault is fixed in a prompt,
+  which already misses both caches: the draft key holds the prompt (`plan_key`), the corridor key
+  the discovery fingerprint (entry 277).
+- **The wrong results the corridor store kept were all plan-reading faults on the right pages.**
+  United Kingdom `US/US`, the case the item opened with, was never stored (CORRECTIONS).
+
+**The owner, on what remains:** with plans written for one traveller (entries 276, 279, 280), a
+wrong *plan* mostly reaches only that traveller asking again. The corridor store is still shared for
+a week, and a corridor that chose the wrong pages — entry 258's New Delhi page, entry 277's New
+Zealand corridor — is the fault no fresh plan call recovers from.
+
+**Decided.**
+1. **A report evicts what it names** (yes). `POST /reports` deletes the stored corridor
+   (`FileCorridorStore.evict`) and every plan draft written for it (`FilePlanStore.evict_corridor`),
+   for a plan report and a refusal alike. The drafts go too: the next request would otherwise
+   re-choose the same pages, build a byte-identical packet and be served the reported draft. Each
+   draft now records its corridor's key (`StoredPlanDraft.corridor_key`, the four codes only, entry
+   279); a draft kept before this has none and lasts its 24 hours.
+2. **The report keeps a copy of the evicted corridor** (`evicted.corridor`), since the eviction
+   removes the only record of which pages were served, and the number of drafts removed. A store that
+   cannot be read or written sets `evicted.failed` and never costs the report.
+3. **A page unanswered on every run keeps blocking storage** (no). Storing a corridor built while a
+   chosen page was unread would serve that gap for a week (entry 258). United Kingdom `US/US` and
+   `IN/IN`, Australia `US/US`, Turkey, South Africa and Malaysia `IN/IN` are researched afresh on
+   every request: a cost, parked with speed and cost.
+4. **Not adopted:** `verified`-only, a shorter life for `partial`, two agreeing runs, and shape
+   checks as a cache gate.
+
+**Bounds.** A report evicts only the corridor its own request names, and only research — nothing a
+traveller shared is in either store. Any signed-in traveller can now force a corridor to be
+researched again, about a minute and $0.31 (entry 258); sign-in is the only limit, as for plans.
+
+**Tested** without network or model: a report evicts its corridor and keeps what it held, leaves
+another passport's corridor alone, evicts its corridor's drafts and no other's, evicts nothing for
+an unknown destination, and is kept when the store is unreadable; an evicted draft makes the next
+identical request ask the model again. Not run against a live corridor.
 
 ---
 

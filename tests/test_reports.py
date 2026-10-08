@@ -3,11 +3,13 @@
 import json
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
+from importlib.resources import files
 from pathlib import Path
 from typing import Any
 
 import httpx
 import pytest
+import yaml
 
 from visa_research_agent.api.app import create_app
 from visa_research_agent.api.reports import (
@@ -17,8 +19,11 @@ from visa_research_agent.api.reports import (
 )
 from visa_research_agent.config.settings import settings
 from visa_research_agent.discovery.cli import main
+from visa_research_agent.discovery.corridor_store import FileCorridorStore
 from visa_research_agent.discovery.models import Corridor
 from visa_research_agent.discovery.recall_log import FileRecallLog
+from visa_research_agent.domain.models import VisaPlanDraft
+from visa_research_agent.research.plan_store import FilePlanStore
 
 pytestmark = pytest.mark.anyio
 
@@ -55,6 +60,9 @@ async def client(
     monkeypatch.setattr(settings, "require_sign_in", False)
     monkeypatch.setattr(settings, "report_directory", tmp_path / "reports")
     monkeypatch.setattr(settings, "recall_log_directory", tmp_path / "recall")
+    # A report evicts what it names (entry 282), so the stores are this test's, never `var/`.
+    monkeypatch.setattr(settings, "corridor_directory", tmp_path / "corridors")
+    monkeypatch.setattr(settings, "plan_directory", tmp_path / "plans")
     transport = httpx.ASGITransport(app=create_app())
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as test_client:
         yield test_client
@@ -109,6 +117,85 @@ async def test_the_log_is_a_copy_so_a_later_run_cannot_change_the_report(
     [report] = FileReportStore(tmp_path / "reports").load_all()
     assert report.recall_log is not None
     assert report.recall_log["cause"] == "decision_not_found"
+
+
+def store_corridor(directory: Path, corridor: Corridor) -> Path:
+    """A stored corridor as the store names it; its content is opaque to the eviction."""
+
+    path = FileCorridorStore(directory)._path(corridor)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"resolved": {"roles": {"visa_decision": "france_wizard"}}}))
+    return path
+
+
+def plan_draft_files(directory: Path) -> list[str]:
+    return sorted(path.name for path in directory.glob("*.json"))
+
+
+async def test_a_report_evicts_the_stored_corridor_and_keeps_what_it_served(
+    client: httpx.AsyncClient, tmp_path: Path
+) -> None:
+    """Entry 282: the store is shared for a week, and a corridor that chose the wrong pages is the
+    one fault a fresh plan call cannot recover from."""
+
+    stored = store_corridor(tmp_path / "corridors", FRANCE_IN_GB)
+    other = store_corridor(
+        tmp_path / "corridors",
+        FRANCE_IN_GB.model_copy(update={"passport_nationality": "US"}),
+    )
+
+    await client.post("/reports", json=REPORT)
+
+    assert not stored.exists()
+    assert other.exists()
+    [report] = FileReportStore(tmp_path / "reports").load_all()
+    assert report.evicted is not None
+    assert report.evicted.corridor == {"resolved": {"roles": {"visa_decision": "france_wizard"}}}
+    assert not report.evicted.failed
+
+
+async def test_a_report_evicts_the_corridors_plan_drafts_and_no_others(
+    client: httpx.AsyncClient, tmp_path: Path
+) -> None:
+    plans = FilePlanStore(tmp_path / "plans")
+    now = datetime.now(UTC)
+    draft = load_singapore_draft()
+    plans.store("a" * 64, draft, now=now, corridor_key=FRANCE_IN_GB.key)
+    plans.store("b" * 64, draft, now=now, corridor_key="france/US/US/tourism")
+
+    await client.post("/reports", json={**REPORT, "outcome": "plan", "message": "No ETIAS."})
+
+    assert plan_draft_files(tmp_path / "plans") == [f"{'b' * 64}.json"]
+    [report] = FileReportStore(tmp_path / "reports").load_all()
+    assert report.evicted is not None
+    assert report.evicted.plan_drafts == 1
+    assert report.evicted.corridor is None
+
+
+async def test_a_destination_with_no_corridor_evicts_nothing(
+    client: httpx.AsyncClient, tmp_path: Path
+) -> None:
+    stored = store_corridor(tmp_path / "corridors", FRANCE_IN_GB)
+    unknown = {**REPORT, "request": {**REPORT["request"], "destination": "atlantis"}}
+
+    await client.post("/reports", json=unknown)
+
+    assert stored.exists()
+    [report] = FileReportStore(tmp_path / "reports").load_all()
+    assert report.evicted is None
+
+
+async def test_a_store_that_cannot_be_evicted_never_costs_the_report(
+    client: httpx.AsyncClient, tmp_path: Path
+) -> None:
+    store_corridor(tmp_path / "corridors", FRANCE_IN_GB).write_bytes(b"\xff not json")
+
+    response = await client.post("/reports", json=REPORT)
+
+    assert response.status_code == 201
+    [report] = FileReportStore(tmp_path / "reports").load_all()
+    assert report.evicted is not None
+    assert report.evicted.failed
 
 
 async def test_a_corridor_with_no_run_is_reported_without_a_log(
@@ -241,3 +328,8 @@ async def test_a_message_longer_than_the_box_allows_is_refused(client: httpx.Asy
     response = await client.post("/reports", json={**REPORT, "message": "x" * 2001})
 
     assert response.status_code == 422
+
+
+def load_singapore_draft() -> VisaPlanDraft:
+    resource = files("visa_research_agent.fixtures.singapore").joinpath("plan.yaml")
+    return VisaPlanDraft.model_validate(yaml.safe_load(resource.read_text(encoding="utf-8")))

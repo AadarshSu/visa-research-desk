@@ -49,6 +49,10 @@ class StoredPlanDraft(StrictModel):
     schema_version: Literal[1] = 1
     draft: VisaPlanDraft
     stored_at: datetime
+    corridor_key: str = ""
+    """The corridor the draft was written for, e.g. "japan/IN/GB/tourism", so a traveller's report
+    can evict every draft of the corridor it names (entry 282). Empty on a draft written before it
+    was recorded, which then lasts only its reuse window."""
 
     @field_validator("stored_at")
     @classmethod
@@ -114,9 +118,11 @@ class FilePlanStore:
             return None
         return stored.draft
 
-    def store(self, key: str, draft: VisaPlanDraft, *, now: datetime) -> None:
+    def store(
+        self, key: str, draft: VisaPlanDraft, *, now: datetime, corridor_key: str = ""
+    ) -> None:
         path = self._path(key)
-        entry = StoredPlanDraft(draft=draft, stored_at=now)
+        entry = StoredPlanDraft(draft=draft, stored_at=now, corridor_key=corridor_key)
         try:
             path.parent.mkdir(parents=True, exist_ok=True)
             # Written to a neighbouring temporary file and moved, so a crash mid-write cannot leave
@@ -152,6 +158,34 @@ class FilePlanStore:
                 except OSError as exc:
                     raise PlanStoreError("The plan store could not be pruned") from exc
                 removed += 1
+        return removed
+
+    def evict_corridor(self, corridor_key: str) -> int:
+        """Delete every draft written for one corridor; return how many (entry 282).
+
+        A reported plan is evicted with its corridor. Without this the next request re-chooses the
+        same pages, builds a byte-identical packet and is served the reported draft again.
+        """
+
+        if not corridor_key:
+            return 0
+        removed = 0
+        for path in self.directory.glob("*.json"):
+            if not _KEY_PATTERN.match(path.stem):
+                continue
+            try:
+                stored = StoredPlanDraft.model_validate_json(path.read_text(encoding="utf-8"))
+            except (OSError, ValidationError):
+                continue
+            if stored.corridor_key != corridor_key:
+                continue
+            try:
+                path.unlink()
+            except FileNotFoundError:
+                continue
+            except OSError as exc:
+                raise PlanStoreError("The plan store could not be evicted") from exc
+            removed += 1
         return removed
 
 

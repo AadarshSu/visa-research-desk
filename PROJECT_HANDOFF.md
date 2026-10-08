@@ -8,7 +8,7 @@ stands, what to do next, and what is known to be broken. The history of how it g
 | --- | --- |
 | **Repository** | `github.com/AadarshSu/visa-research-agent` |
 | **Last updated** | 2026-10-08 — update this line when you touch the handoff |
-| **Tests** | 1,139 on the owner's machine, with `var/` present: 1,138 passing and 1 skipped (the opt-in browser test), run 2026-10-08; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
+| **Tests** | 1,145 on the owner's machine, with `var/` present: 1,144 passing and 1 skipped (the opt-in browser test), run 2026-10-08; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
 
 | Question | File |
 | --- | --- |
@@ -93,8 +93,7 @@ the deployed server yet**:
 
 **Thailand `IN/IN` tourism (item 85) is done** (entry 281): September's in-force notice, priced out
 of the pool by entry 245, is now read on every Thai tourism corridor; 4 of 5 live runs `verified`
-"no visa". **This phase's queue** is TODO's *Now*: 80 with its news panel (84, Ofself's Assimilation briefing), 82 (cache only results that are likely
-right, the owner's to decide), then **63** (accurate answers, ongoing), **55** (what is
+"no visa". **This phase's queue** is TODO's *Now*: 80 with its news panel (84, Ofself's Assimilation briefing), then **63** (accurate answers, ongoing), **55** (what is
 left of the Ofself adapter), **79** (a small scoring consistency fix), **4** (the client-side
 retrieval decision) and **20** (durable stores).
 

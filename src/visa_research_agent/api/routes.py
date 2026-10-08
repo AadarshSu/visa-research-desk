@@ -61,6 +61,7 @@ from visa_research_agent.discovery.automatic import (
     AutomaticDestinationService,
     AutomaticDiscoveryError,
 )
+from visa_research_agent.discovery.corridor_store import FileCorridorStore
 from visa_research_agent.discovery.lexicon import get_country_registry
 from visa_research_agent.discovery.models import Corridor
 from visa_research_agent.discovery.registry import get_authority_registry
@@ -78,6 +79,7 @@ from visa_research_agent.research.errors import (
     VisaResearchError,
 )
 from visa_research_agent.research.personas import PersonasError
+from visa_research_agent.research.plan_store import FilePlanStore
 from visa_research_agent.research.robots import RobotsCache
 from visa_research_agent.research.service import VisaPlanService
 from visa_research_agent.research.tls import build_ssl_context
@@ -599,6 +601,8 @@ async def report_problem(http_request: Request) -> dict[str, str]:
         static_asset_version=static_asset_version(),
         now=datetime.now(UTC),
         commit=current_commit(),
+        corridors=FileCorridorStore(settings.corridor_directory),
+        plans=FilePlanStore(settings.plan_directory),
     )
     try:
         FileReportStore(settings.report_directory).store(report)

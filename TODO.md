@@ -46,61 +46,18 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 | --- | --- | --- |
 | **Now** | 80. A travel-readiness app for one traveller — next, the news panel | `explore`, with the owner |
 |  | 81. Explore new layouts and UI workflows for the site | `explore`, its own session |
-|  | 82. Decide how to cache only results that are likely right | `decide`, with the owner |
 |  | 84. Build the news panel from Ofself's Assimilation destination briefing | `soon`, part of 80 |
 |  | 63. Make most corridors return accurate and useful information | `ongoing` |
 |  | 55. Take the traveller from Ofself's shared identity, through one adapter | `soon` |
 |  | 79. Score pages fetched live with the post-aware stored-text fixes | `soon` |
 |  | 4. Decide the client-side retrieval question | `soon` |
 |  | 20. Make the stores substrate-swappable and durable | `soon` |
-| **Parked** | Expansion: 64, 2 · Speed and cost: 58, 59, 61 · Hosting: 7's leftovers | until required |
+| **Parked** | Expansion: 64, 2 · Speed and cost: 58, 59, 61, 87 · Hosting: 7's leftovers | until required |
 |  | Retrieval and blocks: 46, 11, 27, 10, 69 · Corpus coverage: 49, 35, 47 · Ranking: 86 · Deciders and drift: 12, 13, 14 | until required |
 
 ---
 
 ## Now — this phase's work
-
-### 82. Decide how to cache only results that are likely right — `decide`, **with the owner**
-
-**The owner, 2026-10-07.** A cache should keep only answers that are correct. Today it keeps
-whatever resolved. In this session's runs about 1 in 5 or 6 was faulty in a way the owner had ruled
-on — United Kingdom `US/US` stating "no visa" without the ETA (entries 272, 274), Canada's eTA left
-off the plan (entry 275) — and nothing in the system knew. Cached, that one run becomes the answer
-for everyone who asks next, until it expires.
-
-**What is cached today:**
-- **A resolved corridor** — which pages fill which roles — for a week, shared by every traveller on
-  that corridor (entry 258). A refusal is never stored, so a refused corridor is retried until one
-  run resolves (entry 151). That is the asymmetry this item is about: a failure gets another try,
-  a plausible wrong answer does not.
-- **A plan draft**, for 24 hours, for byte-identical inputs (entry 178); pruned past that since
-  entry 276.
-- **Page text**, by HTTP freshness — evidence, not answers, and not in scope here.
-
-**Where it is heading — the owner.** As plans tailor to one traveller (entry 276) and later to
-their trip dates, plan reuse becomes mostly one traveller asking again, so they are not given two
-different plans for one trip. The corridor store stays shared between travellers, so a wrong
-resolution there still spreads. **Checked 2026-10-07 (entry 279):** the corridor store holds
-nothing about one traveller, and a draft is reused only for byte-identical inputs — region, shared
-details and trip dates included — both frozen in tests. What is left here is *correctness*, not
-leakage.
-
-**Questions to decide before any code:**
-- **What may be kept.** Candidates, none measured: only `verified` plans; only a resolution two
-  independent runs agree on (entry 151's third option); only one passing deterministic checks that
-  catch known faulty shapes — a `travel_authorisation` role filled while the plan names none, a "no
-  visa" plan with an authorisation in its steps and not on the band; a shorter life for anything
-  `partial`.
-- **What un-keeps it.** A traveller's problem report (entry 233) could evict the corridor it names.
-- **Which layer.** A wrong corridor (wrong pages) and a wrong plan (right pages, wrong reading) are
-  different faults and may need different rules.
-- **The bound.** A check that grades whether an answer is *right* is the truth set the owner has
-  ruled out without asking (entries 68, 147; known problem 26). Shape checks on what a plan must
-  contain are not that, but the line should be drawn explicitly.
-
-**Measure first:** over this session's runs (`var/purposes-2026-10-03/`), how many faulty results
-each candidate rule would have kept, and how many good ones it would have thrown away, in seconds
-and dollars of re-running.
 
 ### 84. Build the news panel from Ofself's Assimilation destination briefing — `soon`, **part of 80**
 
@@ -381,6 +338,11 @@ each item as it last stood is in this file's history before that date.
 
 ### Speed and cost
 
+- **87. Corridors that are never stored (entry 282).** A page chosen on every run that never answers
+  blocks storage (entry 258), so United Kingdom `US/US` and `IN/IN` (the Home Office's
+  processing-times pages), Australia `US/US` (`eta.homeaffairs.gov.au`), Turkey, South Africa and
+  Malaysia `IN/IN` are researched afresh on every request, about a minute and $0.31 each. Storing
+  them anyway was declined by the owner; what is left is not choosing a page that never answers.
 - **58. What is left of model-call cost and research latency.** ~55s a fresh request (entry 171).
   Untried: a cheaper model for selection only, graded with entry 170's A/B; trimming the roles
   call's packet; overlapping search with the fetches; finding out what `fetch` is made of; entry
@@ -402,7 +364,7 @@ each item as it last stood is in this file's history before that date.
   with local runs — a cloud address may be challenged or blocked more — and a cold request timed
   there. **The owner's open decision (entry 151):** a refusal is never stored and a resolution is
   kept a week (entry 258), so a refused request is retried by the next traveller until one run
-  resolves; keep it, store refusals briefly, or require two agreeing runs — now part of item 82.
+  resolves; keep it, store refusals briefly, or require two agreeing runs. Two agreeing runs was measured and not adopted (entry 282).
   There is no per-user rate limit.
 
 ### Retrieval and blocks
@@ -490,6 +452,7 @@ The reasoning is in the DECISIONS entry; this is the index. Code comments cite s
 
 | Was | Done | Entry | What building it found |
 | --- | --- | --- | --- |
+| 82. Decide how to cache only results that are likely right | 10-08 | 282 | Measured on 108 runs: 17 of 19 wrong plans were `verified`, two agreeing runs halve it at best, and the wrong results the corridor store kept were plan-reading faults on the right pages. A report now evicts the corridor it names and its plan drafts; United Kingdom `US/US` was never stored at all |
 | 85. Thailand `IN/IN` tourism refuses 2 runs in 4 | 10-08 | 281 | Entry 245's purpose rule had pushed September's in-force notice from 77th offered to withheld. Named in `always_read.yaml`, five live runs gave 4 `verified` "no visa"; the fifth was a roles-call refusal the packet does not reproduce (10 of 10 on replay) |
 | — A seventh role, `travel_authorisation` | 10-07 | 275 | A body vocabulary could not find the page — every GOV.UK visa page carries the ETA notice; title and address could. Discovery 8 of 8, the plan 5 of 8; GB always-read entries removed |
 | — Pages a country's corridors read on every run | 10-06 | 265–267 | Australia's ETA page ranked 55th after two scoring fixes; named in `config/always_read.yaml`, `US/US` went to 3 of 3 "visa required, ETA (601)" and `IN/IN` stayed on the subclass 600 |

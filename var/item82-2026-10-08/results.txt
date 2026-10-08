@@ -1,0 +1,61 @@
+labels: Counter({'good': 88, 'WRONG: authorisation off the band': 13, 'open': 10, 'WRONG: NZeTA read as a visa': 5, 'refused': 2, 'WRONG: authorisation off the band, nowhere': 1})
+today, plan draft (every answered plan)              wrong kept 19/19   good kept 88/88  (thrown  0)   open kept 10/10
+today, corridor store (as actually stored)           wrong kept 10/19   good kept 65/88  (thrown 23)   open kept 5/10
+R1 only verified                                     wrong kept 17/19   good kept 62/88  (thrown 26)   open kept 0/10
+R3a shape: role filled, plan names none              wrong kept 16/19   good kept 88/88  (thrown  0)   open kept 10/10
+R3b shape: authorisation below, not on band          wrong kept  6/19   good kept 87/88  (thrown  1)   open kept 10/10
+R3 both shape checks                                 wrong kept  6/19   good kept 87/88  (thrown  1)   open kept 10/10
+R1 + R3                                              wrong kept  5/19   good kept 61/88  (thrown 27)   open kept 0/10
+R2 two agree (plan: decision + authorisation on band): wrong kept 26/52 pairs = 50%;  good kept 114/143 = 80%
+R2 two agree (plan: decision only): wrong kept 40/52 pairs = 77%;  good kept 128/143 = 90%
+partial among wrong: 2 / 19  partial among good: 26 / 88
+median seconds a run: 38.4
+
+wrong runs:
+  8k-2026-10-06              new-zealand_US_US_tourism      1 verified stored=1 WRONG: authorisation off the band
+  nzeta-2026-10-06           new-zealand_US_US_tourism      3 verified stored=1 WRONG: NZeTA read as a visa
+  nzeta-2026-10-06-after     new-zealand_US_US_tourism      1 verified stored=1 WRONG: NZeTA read as a visa
+  nzeta-2026-10-06-after     new-zealand_US_US_tourism      2 verified stored=1 WRONG: NZeTA read as a visa
+  nzeta-2026-10-06-after     new-zealand_US_US_tourism      3 verified stored=1 WRONG: NZeTA read as a visa
+  nzeta-2026-10-06-d         new-zealand_US_US_tourism      2 partial  stored=1 WRONG: NZeTA read as a visa
+  nzeta-2026-10-06-d         new-zealand_US_US_tourism      3 verified stored=1 WRONG: authorisation off the band
+  travel-auth-2026-10-07     canada_GB_GB_tourism           1 verified stored=1 WRONG: authorisation off the band
+  travel-auth-2026-10-07     canada_GB_GB_tourism           2 verified stored=1 WRONG: authorisation off the band
+  travel-auth-2026-10-07     united-states_GB_GB_tourism    1 partial  stored=1 WRONG: authorisation off the band
+  uk-always-read-2026-10-07  united-kingdom_US_US_tourism   1 verified stored=0 WRONG: authorisation off the band
+  uk-checker-2026-10-07      united-kingdom_US_US_tourism   2 verified stored=0 WRONG: authorisation off the band, nowhere
+  uk-checker-2026-10-07      united-kingdom_US_US_tourism   3 verified stored=0 WRONG: authorisation off the band
+  uk-checker-2026-10-07      united-kingdom_US_US_tourism   5 verified stored=0 WRONG: authorisation off the band
+  uk-eta-overview-2026-10-07 united-kingdom_US_US_tourism   1 verified stored=0 WRONG: authorisation off the band
+  uk-roles-7e-2026-10-07     united-kingdom_US_US_tourism   1 verified stored=0 WRONG: authorisation off the band
+  uk-roles-7e-2026-10-07     united-kingdom_US_US_tourism   2 verified stored=0 WRONG: authorisation off the band
+  uk-roles-7e-2026-10-07     united-kingdom_US_US_tourism   3 verified stored=0 WRONG: authorisation off the band
+  uk-roles-7e-2026-10-07     united-kingdom_US_US_tourism   4 verified stored=0 WRONG: authorisation off the band
+
+good thrown by R1:
+  8k-2026-10-06              united-states_GB_GB_tourism    1
+  8k-2026-10-06              united-states_GB_GB_tourism    2
+  8k-f-2026-10-06            australia_GB_GB_tourism        1
+  8k-f-2026-10-06            australia_GB_GB_tourism        2
+  8k-f-2026-10-06            australia_GB_GB_tourism        3
+  8k-i-2026-10-06            australia_GB_GB_tourism        1
+  8k-i-2026-10-06            australia_GB_GB_tourism        2
+  always-read-2026-10-06     australia_US_US_tourism        1
+  always-read-2026-10-06     australia_US_US_tourism        2
+  always-read-2026-10-06     australia_US_US_tourism        3
+  au-faq-2026-10-06          australia_US_US_tourism        1
+  au-faq-2026-10-06          australia_US_US_tourism        3
+  au-immi-2026-10-06         australia_US_US_tourism        1
+  au-immi-2026-10-06         australia_US_US_tourism        3
+  nzeta-2026-10-06           new-zealand_US_US_tourism      2
+  nzeta-2026-10-06           united-states_GB_GB_tourism    1
+  ofself-passport-b-2026-10- malaysia_IN_IN_tourism         1
+  ofself-passport-b-2026-10- united-arab-emirates_IN_IN_tourism 1
+  travel-auth-2026-10-07     united-states_GB_GB_tourism    2
+  uk-always-read-2026-10-07  united-kingdom_US_US_tourism   4
+  uk-eta-route-2026-10-07    japan_GB_GB_tourism            1
+  uk-eta-route-2026-10-07    south-korea_US_US_tourism      1
+  uk-eta-route-2026-10-07    united-kingdom_US_US_tourism   1
+  uk-roles-7e-2026-10-07     australia_US_US_tourism        1
+  uk-roles-7e-2026-10-07     australia_US_US_tourism        2
+  uk-roles-7e-2026-10-07     japan_GB_GB_tourism            1

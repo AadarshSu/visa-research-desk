@@ -143,3 +143,21 @@ class FileCorridorStore:
         except OSError as exc:
             raise CorridorStoreError("The corridor store could not be written") from exc
         return entry
+
+    def evict(self, corridor: Corridor) -> str | None:
+        """Delete a stored corridor; return what it held, or `None` when there was none.
+
+        A traveller's report evicts the corridor it names (entry 282): the store is shared for a
+        week, and a resolution that chose the wrong pages is the one fault no plan call recovers
+        from. The text is returned so the report keeps what was served.
+        """
+
+        path = self._path(corridor)
+        try:
+            raw = path.read_text(encoding="utf-8")
+            path.unlink()
+        except FileNotFoundError:
+            return None
+        except OSError as exc:
+            raise CorridorStoreError("The corridor store could not be evicted") from exc
+        return raw

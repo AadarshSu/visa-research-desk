@@ -374,11 +374,7 @@ class OpenAIVisaPlanExtractor:
         finally:
             if self.usage_log is not None:
                 record = ModelCallRecord(
-                    corridor_key=(
-                        f"{destination.slug}/{traveller_profile.passport_nationality}/"
-                        f"{traveller_profile.country_of_residence}/"
-                        f"{traveller_profile.travel_purpose}"
-                    ),
+                    corridor_key=corridor_key_of(destination, traveller_profile),
                     recorded_at=self.now(),
                     call=ModelCall(
                         call="plan",
@@ -412,11 +408,11 @@ class OpenAIVisaPlanExtractor:
         except PlanStoreError:
             return None
 
-    def _keep_draft(self, key: str, draft: VisaPlanDraft) -> None:
+    def _keep_draft(self, key: str, draft: VisaPlanDraft, corridor_key: str) -> None:
         if self.reuse is None:
             return
         with suppress(PlanStoreError):
-            self.reuse.store.store(key, draft, now=self.now())
+            self.reuse.store.store(key, draft, now=self.now(), corridor_key=corridor_key)
             self.reuse.store.prune(now=self.now(), maximum_age_hours=self.reuse.maximum_age_hours)
 
     async def extract(
@@ -637,8 +633,17 @@ class OpenAIVisaPlanExtractor:
         # Kept only once it has become a plan, so a refusal is never reused: the next request asks
         # the model again, as a refused request always has (entry 151).
         if key is not None and reused is None:
-            self._keep_draft(key, draft)
+            self._keep_draft(key, draft, corridor_key_of(destination, traveller_profile))
         return plan
+
+
+def corridor_key_of(destination: DestinationConfig, traveller_profile: TravellerProfile) -> str:
+    """The corridor's key as `Corridor.key` writes it, e.g. "japan/IN/GB/tourism"."""
+
+    return (
+        f"{destination.slug}/{traveller_profile.passport_nationality}/"
+        f"{traveller_profile.country_of_residence}/{traveller_profile.travel_purpose}"
+    )
 
 
 def authorisation_from_role_pages(

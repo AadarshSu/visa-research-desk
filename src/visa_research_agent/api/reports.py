@@ -1,4 +1,8 @@
-"""A traveller's report of a corridor that did not work, kept for diagnosis only (entry 44)."""
+"""A traveller's report of a corridor that did not work, kept for diagnosis only (entry 44).
+
+A report also evicts the research it names (entry 282): the stored corridor, shared between
+travellers for a week, and every plan draft written for it. The next request researches afresh.
+"""
 
 import json
 from datetime import UTC, datetime
@@ -11,10 +15,12 @@ from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 from visa_research_agent.api.schemas import VisaPlanRequest
 from visa_research_agent.config.traveller import DEFAULT_TRAVELLER_PROFILE
 from visa_research_agent.discovery.automatic import find_country
+from visa_research_agent.discovery.corridor_store import CorridorStoreError, FileCorridorStore
 from visa_research_agent.discovery.lexicon import get_country_registry
 from visa_research_agent.discovery.models import Corridor
 from visa_research_agent.discovery.recall_log import FileRecallLog
 from visa_research_agent.research.errors import VisaResearchError
+from visa_research_agent.research.plan_store import FilePlanStore, PlanStoreError
 
 MAXIMUM_REPORT_BYTES = 512_000
 """A plan is about 10 KB as JSON; this is fifty of them. Anything larger is not a page's output."""
@@ -55,6 +61,17 @@ class ReportBuild(BaseModel):
     static_asset_version: str
 
 
+class EvictedResearch(BaseModel):
+    """What the report took out of the shared stores, so the next request researches afresh."""
+
+    corridor: dict[str, Any] | None
+    """The stored corridor as it was served — which pages filled which roles — or `None` when none
+    was stored. Kept because the eviction removes the only other copy."""
+    plan_drafts: int
+    failed: bool = False
+    """A store could not be read or written; the report is kept anyway."""
+
+
 class ProblemReport(BaseModel):
     schema_version: Literal[1] = 1
     report_id: str
@@ -69,6 +86,8 @@ class ProblemReport(BaseModel):
     recall_log: dict[str, Any] | None
     # The corridor's last recorded run; a stored corridor writes none, so check its `recorded_at`.
     build: ReportBuild
+    evicted: EvictedResearch | None = None
+    """`None` for a destination with no corridor key, and on reports kept before entry 282."""
 
     def rerun_command(self) -> str | None:
         """The `visa-discover corridor` line that re-runs this corridor, cold."""
@@ -121,6 +140,28 @@ def copy_of_recall_log(directory: Path, corridor: Corridor | None) -> dict[str, 
     return loaded if isinstance(loaded, dict) else None
 
 
+def evict_reported_research(
+    corridor: Corridor | None, corridors: FileCorridorStore, plans: FilePlanStore
+) -> EvictedResearch | None:
+    """Take the reported corridor and its plan drafts out of the shared stores (entry 282).
+
+    A failing store costs the eviction, never the report: the traveller has said something is
+    wrong, and that is kept whatever else happens.
+    """
+
+    if corridor is None:
+        return None
+    try:
+        raw = corridors.evict(corridor)
+        stored = json.loads(raw) if raw is not None else None
+        drafts = plans.evict_corridor(corridor.key)
+    except (CorridorStoreError, PlanStoreError, ValueError):
+        return EvictedResearch(corridor=None, plan_drafts=0, failed=True)
+    return EvictedResearch(
+        corridor=stored if isinstance(stored, dict) else None, plan_drafts=drafts
+    )
+
+
 def current_commit(root: Path = REPOSITORY_ROOT) -> str | None:
     """The checked-out commit, read from `.git` rather than by running git. None when unknown."""
 
@@ -147,6 +188,8 @@ def build_report(
     static_asset_version: str,
     now: datetime,
     commit: str | None,
+    corridors: FileCorridorStore,
+    plans: FilePlanStore,
 ) -> ProblemReport:
     corridor, keyed = reported_corridor(received.request)
     cause = received.shown.get("cause") if received.outcome == "refusal" else None
@@ -161,6 +204,7 @@ def build_report(
         message=(received.message or "").strip() or None,
         recall_log=copy_of_recall_log(recall_directory, keyed),
         build=ReportBuild(commit=commit, static_asset_version=static_asset_version),
+        evicted=evict_reported_research(keyed, corridors, plans),
     )
 
 

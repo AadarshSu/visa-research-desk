@@ -23,7 +23,8 @@ Most findings come from inspecting a corridor directly.
   numbers are always cold (entry 61), and it does not write back to the corpus.
 - **Start from a traveller's report when there is one.** `visa-discover reports` on the server lists
   them with their cause and the line that re-runs each; `--show <id>` prints what the traveller saw
-  and a copy of the run's recall log (entry 233).
+  and a copy of the run's recall log (entry 233). The report already evicted the stored corridor
+  and its plan drafts; `evicted.corridor` is the resolution the traveller was served (entry 282).
 - **`visa-discover audit var/recall/`** counts why travellers go unanswered, in two halves never added
   together: reachability from `authority_domains.yaml`, and the typed cause of every recorded run.
 - **`visa-discover bootstrap --destination-name "United States"`** prints proposed domains with their

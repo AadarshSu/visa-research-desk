@@ -321,6 +321,43 @@ def test_drafts_past_their_window_and_unreadable_ones_are_deleted(tmp_path: Path
 
 
 @pytest.mark.anyio
+async def test_a_reported_corridor_loses_its_drafts_so_the_next_request_asks_again(
+    tmp_path: Path,
+) -> None:
+    """Entry 282: a report evicts the corridor's drafts. The next request re-chooses the same pages,
+    builds a byte-identical packet, and would otherwise be served the reported draft."""
+
+    generator = CountingGenerator(golden_draft())
+    plans = extractor(generator, tmp_path / "plans")
+    report = await singapore_report()
+    await plans.extract(singapore(), DEFAULT_TRAVELLER_PROFILE, report)
+    store = FilePlanStore(tmp_path / "plans")
+    store.store("d" * 64, golden_draft(), now=NOW, corridor_key="japan/IN/GB/tourism")
+    corridor = (
+        f"singapore/{DEFAULT_TRAVELLER_PROFILE.passport_nationality}/"
+        f"{DEFAULT_TRAVELLER_PROFILE.country_of_residence}/"
+        f"{DEFAULT_TRAVELLER_PROFILE.travel_purpose}"
+    )
+
+    assert store.evict_corridor(corridor) == 1
+    await plans.extract(singapore(), DEFAULT_TRAVELLER_PROFILE, report)
+
+    assert generator.calls == 2
+    assert (tmp_path / "plans" / f"{'d' * 64}.json").exists()
+
+
+def test_a_draft_kept_before_its_corridor_was_recorded_is_not_evicted(tmp_path: Path) -> None:
+    """It still lasts only its reuse window, and an empty key never matches every draft."""
+
+    store = FilePlanStore(tmp_path)
+    store.store("a" * 64, golden_draft(), now=NOW)
+
+    assert store.evict_corridor("") == 0
+    assert store.evict_corridor("singapore/IN/IN/tourism") == 0
+    assert (tmp_path / f"{'a' * 64}.json").exists()
+
+
+@pytest.mark.anyio
 async def test_keeping_a_draft_prunes_the_expired_ones(tmp_path: Path) -> None:
     report = await singapore_report()
     await extractor(CountingGenerator(golden_draft()), tmp_path / "plans").extract(

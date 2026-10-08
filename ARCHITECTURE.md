@@ -249,7 +249,8 @@ whole corridor; a refusal is never stored (entry 151), and neither is a resoluti
 search (entry 74) or while a page it chose to read failed for a reason that says only "not now" (entry
 258). The corridor is keyed on the country slug, so
 "USA" and "United States" are one corridor (entry 168). `visa-discover corridor` bypasses the store
-both ways.
+both ways. A traveller's report evicts the corridor it names and every plan draft written for it,
+keeping a copy of the corridor in the report (entry 282).
 
 ### The stages of `_resolve`
 
@@ -383,8 +384,8 @@ stays off — no country passes `DEFAULT_TEXT_COVERAGE_BAR` (entries 80, 81).
 | Page text | country | additive, replaced per URL | **Yes** — the selector reads it | `var/pagetext/`, `discovery/page_text.py` |
 | EU store | union | refreshed by `eu-store` | **Yes** — Schengen visa decisions | `var/corpus/EU.json` |
 | Source snapshot | URL | TTL 24h, refused past 2,160h (90 days, entry 249) | **Yes** — it is the evidence | `var/cache/`, `research/source_cache.py` |
-| Corridor resolution | full corridor | 1 week (`corridor_maximum_age_hours`); refusals never stored | **Yes** — what a warm request serves | `var/corridors/`, `discovery/corridor_store.py` |
-| Plan draft | everything the model is shown | `plan_reuse_hours` (24), never past the page TTL | No — a reused draft is still validated and graded (entry 178) | `var/plans/`, `research/plan_store.py` |
+| Corridor resolution | full corridor | 1 week (`corridor_maximum_age_hours`); refusals never stored; a report evicts it (entry 282) | **Yes** — what a warm request serves | `var/corridors/`, `discovery/corridor_store.py` |
+| Plan draft | everything the model is shown | `plan_reuse_hours` (24), never past the page TTL; a report on its corridor evicts it (entry 282) | No — a reused draft is still validated and graded (entry 178) | `var/plans/`, `research/plan_store.py` |
 | Recall log | corridor | overwritten each run | No | `var/recall/` |
 | Model usage log | UTC day | appended | No | `var/usage/`, `research/model_usage.py` |
 | Free-plan counts | keyed hash of the client address | never reset; deleting it hands every address its plans back | **Yes** — an unreadable count refuses a plan (entry 262) | `var/allowance/`, `api/allowance.py` |
