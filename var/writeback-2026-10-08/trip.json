@@ -1,0 +1,88 @@
+{
+  "category": "experience",
+  "created_at": "2026-07-04T02:15:52.521512+00:00",
+  "created_by": "System",
+  "created_by_third_party_id": null,
+  "deleted_at": null,
+  "description": "A journey or holiday \u2014 destination, dates, itinerary, memories.",
+  "encrypted_fields": [],
+  "extends": null,
+  "formerly_encrypted_fields": [],
+  "group_id": null,
+  "id": "1c619eda-8447-484a-89d3-9b9d8b610447",
+  "is_active": true,
+  "is_promoted": false,
+  "is_relationship": false,
+  "is_system": true,
+  "json_schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "accommodation": {
+        "title": "Accommodation",
+        "type": "string"
+      },
+      "budget": {
+        "title": "Budget",
+        "type": "number"
+      },
+      "companions": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Travel Companions",
+        "type": "array"
+      },
+      "currency": {
+        "default": "USD",
+        "title": "Currency",
+        "type": "string"
+      },
+      "destination": {
+        "title": "Destination",
+        "type": "string"
+      },
+      "end_date": {
+        "format": "date",
+        "title": "End Date",
+        "type": "string"
+      },
+      "highlights": {
+        "title": "Highlights",
+        "type": "string"
+      },
+      "purpose": {
+        "enum": [
+          "leisure",
+          "business",
+          "family",
+          "education",
+          "other"
+        ],
+        "title": "Purpose",
+        "type": "string"
+      },
+      "start_date": {
+        "format": "date",
+        "title": "Start Date",
+        "type": "string"
+      }
+    },
+    "required": [
+      "destination"
+    ],
+    "type": "object"
+  },
+  "node_ref_fields": [],
+  "owner_id": null,
+  "private_to": null,
+  "recommended_by_developer": false,
+  "schema_metadata": {
+    "deprecated": true,
+    "icon": "plane",
+    "sunset_message": "Sunsetted. Use raw:event instead."
+  },
+  "schema_name": "trip",
+  "scope": "public",
+  "updated_at": "2026-07-04T02:15:52.521516+00:00",
+  "version": 1
+}

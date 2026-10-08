@@ -25,7 +25,11 @@ belongs to the anonymous form alone (rule 4).
   unrecognised. It is not matched loosely, and it is not dropped silently.
 - **Decrypt.** The app holds no keypair (entry 180). A value that arrives encrypted is counted and
   never read as a country.
-- **Store.** Nothing read here is written anywhere, and nothing is ever written back to Paradigm.
+- **Store.** Nothing read here is written anywhere.
+- **Write back anything concluded.** The one write is the trip a traveller chooses to save, on their
+  click (DECISIONS entry 283): a `travel-plan` they are considering, and the `place` of kind
+  `country` its destination must point at when they hold none. Never the visa decision, a
+  checklist, a fee, a deadline or a passport.
 - **Retry.** A refused or lost authorisation is the user's decision, and is reported as such.
 """
 
@@ -33,7 +37,7 @@ import asyncio
 import logging
 import uuid
 from datetime import date
-from typing import cast, get_args
+from typing import Literal, cast, get_args
 
 import httpx
 from pydantic import Field
@@ -47,6 +51,7 @@ from visa_research_agent.domain.models import (
     SharedStay,
     StrictModel,
     TravelPurpose,
+    TripDates,
 )
 from visa_research_agent.research.errors import VisaResearchError
 from visa_research_agent.research.live_sources import transport_failure_reason
@@ -115,6 +120,11 @@ class OfselfAuthorizationLost(OfselfError):
     def __init__(self, code: str, message: str) -> None:
         super().__init__(message)
         self.code = code
+
+
+class OfselfWriteRefused(OfselfError):
+    """Paradigm would not let this app write to the user's account: the grant has no `create` for
+    the schema. Until the traveller re-approves the app's access, nothing can be saved."""
 
 
 class OfselfSignInRejected(OfselfError):
@@ -231,6 +241,29 @@ class TravellerDefaults(StrictModel):
     encrypted_values: int = 0
 
 
+class TripToSave(StrictModel):
+    """The trip a traveller chose to save to their Ofself account, as the form described it."""
+
+    destination: str
+    """Alpha-2."""
+
+    purpose: TravelPurpose
+    trip: TripDates | None = None
+    """None for "not sure yet": the plan is saved with no window."""
+
+
+class SavedTrip(StrictModel):
+    """What saving did. `already_saved` wrote nothing: an open plan for this trip was there."""
+
+    status: Literal["saved", "already_saved"]
+    plan_id: str | None = None
+    place_created: bool = False
+
+
+SOURCE_SYSTEM = "visa_research_agent"
+"""How a `place` this app mints names its emitter (the schema's `source_system`)."""
+
+
 Node = tuple[str | None, dict[str, object]]
 """A node as read: its id, and its `value_json` narrowed to the fields the grant allows."""
 
@@ -279,6 +312,39 @@ class OfselfIdentity:
         # arrives, as a grain and a country code, so it is not asked for without a reason.
         places = await self._read_all(user, PLACE_SCHEMA) if plans else []
         return _defaults(citizenships, documents, plans, places, today=today)
+
+    async def save_trip(self, user_id: str, trip: TripToSave) -> SavedTrip:
+        """Write the trip into the traveller's account as a `travel-plan` (DECISIONS entry 283).
+
+        Only on the traveller's click, for the one trip they chose. Its destination must be a
+        `place` node, so their own `country` place is reused, or one is minted first. The plan
+        holds the destination, the purpose, the window and that it is being considered — nothing
+        the plan concluded. An open plan for the same trip is not written twice.
+        """
+
+        user = _user(user_id)
+        plans, places = await asyncio.gather(
+            self._read_all(user, TRAVEL_PLAN_SCHEMA), self._read_all(user, PLACE_SCHEMA)
+        )
+        existing = _same_trip(plans, _place_countries(places), trip)
+        if existing is not None:
+            return SavedTrip(status="already_saved", plan_id=existing)
+
+        country = get_country_registry().get(trip.destination)
+        name = country.name if country is not None else trip.destination
+        place_id = _country_place(places, trip.destination)
+        place_created = place_id is None
+        if place_id is None:
+            # Minted before the plan that needs it. Should the plan's write then fail, the place
+            # stays, and the next save reuses it rather than minting a second.
+            place_id = await self._create_node(
+                user, PLACE_SCHEMA, name, _new_country_place(trip.destination, name)
+            )
+        label = f"{name}, {trip.purpose}"
+        plan_id = await self._create_node(
+            user, TRAVEL_PLAN_SCHEMA, label, _new_travel_plan(trip, place_id, label)
+        )
+        return SavedTrip(status="saved", plan_id=plan_id, place_created=place_created)
 
     async def exchange_session_code(self, code: str) -> str:
         """The user a sign-in's single-use `sid_code` belongs to, asked of Paradigm itself.
@@ -394,6 +460,122 @@ class OfselfIdentity:
         if not isinstance(payload, dict) or not isinstance(payload.get("nodes"), list):
             raise OfselfUnavailable("Ofself answered without a list of nodes")
         return payload
+
+    async def _create_node(
+        self, user_id: str, schema: str, title: str, value_json: dict[str, object]
+    ) -> str:
+        """Create one node in the user's account; return its id."""
+
+        headers = {
+            "Accept": "application/json",
+            "X-API-Key": self.api_key,
+            "X-User-ID": user_id,
+        }
+        body = {"schema_name": schema, "title": title, "value_json": value_json}
+        try:
+            async with httpx.AsyncClient(
+                transport=self.transport, timeout=self.timeout_seconds, headers=headers
+            ) as client:
+                response = await client.post(f"{self.base_url}/api/v1/nodes", json=body)
+        except httpx.HTTPError as exc:
+            raise OfselfUnavailable(
+                f"Ofself could not be reached: {transport_failure_reason(exc)}"
+            ) from exc
+
+        if response.status_code not in (httpx.codes.OK, httpx.codes.CREATED):
+            code, _ = _error_of(response)
+            if response.status_code == httpx.codes.FORBIDDEN and code not in AUTHORIZATION_CODES:
+                raise OfselfWriteRefused(
+                    "Ofself did not let this app save to your account"
+                    f" ({code or 'HTTP 403'}): re-approve its access on Ofself to save trips"
+                )
+            raise _refusal(response)
+        try:
+            payload = response.json()
+        except ValueError as exc:
+            raise OfselfUnavailable("Ofself answered the write with a non-JSON body") from exc
+        # Live (2026-10-09) a write answers `201` with the node itself, `id` at the top; the guide
+        # shows it under `node`. Both are accepted, and nothing looser.
+        envelope = payload if isinstance(payload, dict) else {}
+        node = envelope.get("node")
+        identifier = _text((node if isinstance(node, dict) else envelope).get("id"))
+        if identifier is None:
+            raise OfselfUnavailable("Ofself confirmed the write without the new node's id")
+        return identifier
+
+
+def _same_trip(plans: list[Node], countries: dict[str, str], trip: TripToSave) -> str | None:
+    """The id of a plan, not abandoned, already holding this destination, purpose and window."""
+
+    earliest = trip.trip.start if trip.trip else None
+    latest = trip.trip.end if trip.trip else None
+    for identifier, plan in plans:
+        if plan.get("status") == "abandoned" or plan.get("commitment") == "abandoned":
+            continue
+        raw_window = plan.get("window")
+        window: dict[str, object] = raw_window if isinstance(raw_window, dict) else {}
+        if (_date(window.get("earliest")), _date(window.get("latest"))) != (earliest, latest):
+            continue
+        raw_candidates = plan.get("candidates")
+        for raw in raw_candidates if isinstance(raw_candidates, list) else []:
+            if (
+                isinstance(raw, dict)
+                and not _text(raw.get("ruled_out_reason"))
+                and countries.get(_text(raw.get("place_ref")) or "") == trip.destination
+                and raw.get("purpose") == trip.purpose
+            ):
+                return identifier
+    return None
+
+
+def _country_place(places: list[Node], country: str) -> str | None:
+    """The traveller's own `place` of kind `country` for this code, if they hold one."""
+
+    for identifier, place in places:
+        if not identifier or place.get("kind") != "country" or place.get("status") == "suspended":
+            continue
+        try:
+            if normalise_country(_text(place.get("country_code")) or "") == country:
+                return identifier
+        except ValueError:
+            continue
+    return None
+
+
+def _new_country_place(country: str, name: str) -> dict[str, object]:
+    return {
+        "name": name,
+        "kind": "country",
+        "country_code": country,
+        "status": "active",
+        "source_system": SOURCE_SYSTEM,
+        # Stable per country, so a retried create is recognisable as a retry (the schema's rule).
+        "source_ref": f"{SOURCE_SYSTEM}:place:country:{country.lower()}",
+    }
+
+
+def _new_travel_plan(trip: TripToSave, place_id: str, label: str) -> dict[str, object]:
+    """A plan being considered: no verdict, no `decide_by`, nothing the plan concluded."""
+
+    value: dict[str, object] = {
+        "label": label,
+        "candidates": [{"place_ref": place_id, "purpose": trip.purpose}],
+        # The traversal index sees only top-level ids, so the candidate's place is mirrored here.
+        "linked_refs": [place_id],
+        "commitment": "considering",
+        "status": "open",
+    }
+    if trip.trip is not None:
+        window: dict[str, object] = {
+            "earliest": trip.trip.start.isoformat(),
+            "latest": trip.trip.end.isoformat(),
+            # A rough span stays soft; exact dates are the traveller's, never promoted from one.
+            "flexible": trip.trip.mode == "rough",
+        }
+        if trip.trip.mode == "exact":
+            window["nights"] = (trip.trip.end - trip.trip.start).days
+        value["window"] = window
+    return value
 
 
 def _exchanged_user_id(payload: object) -> str | None:

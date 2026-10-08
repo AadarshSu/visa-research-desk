@@ -1,0 +1,5 @@
+Usage: paradigm schema show [OPTIONS] {uri_or_id}
+Try 'paradigm schema show --help' for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ Missing argument 'uri_or_id'.                                                │
+╰──────────────────────────────────────────────────────────────────────────────╯

@@ -5,6 +5,7 @@ checked against the live API with a sandbox user on 2026-09-17, where one differ
 guide: `total` is `null`, not a count.
 """
 
+import json
 from collections.abc import Callable
 from datetime import date
 
@@ -17,7 +18,11 @@ from visa_research_agent.api.ofself import (
     OfselfAuthorizationLost,
     OfselfIdentity,
     OfselfUnavailable,
+    OfselfWriteRefused,
+    SavedTrip,
+    TripToSave,
 )
+from visa_research_agent.domain.models import TripDates
 
 pytestmark = pytest.mark.anyio
 
@@ -535,3 +540,217 @@ async def test_shared_details_read_places_only_when_a_stay_needs_one() -> None:
 
     assert sorted(asked) == ["travel-document", "travel-obligation", "travel-stay"]
     assert found.is_empty()
+
+
+# --- saving the trip a traveller chose (DECISIONS entry 283) ---------------------------------
+
+
+def paradigm_with_writes(
+    written: list[dict[str, object]], **schemas: list[dict[str, object]]
+) -> Callable[[httpx.Request], httpx.Response]:
+    """`by_schema` for reads; each write is recorded and answered as Paradigm did live on
+    2026-10-09: `201` and the node itself, its `id` at the top."""
+
+    read = by_schema(**schemas)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "GET":
+            return read(request)
+        assert request.url.path == "/api/v1/nodes"
+        assert request.headers["X-User-ID"] == USER
+        body = json.loads(request.content)
+        written.append(body)
+        return httpx.Response(201, json={"id": f"new-{len(written)}", **body})
+
+    return handler
+
+
+EXACT = TripDates(mode="exact", start=date(2026, 12, 1), end=date(2026, 12, 20))
+
+
+async def test_a_trip_is_saved_as_a_plan_being_considered_with_its_country_minted() -> None:
+    written: list[dict[str, object]] = []
+
+    saved = await identity(paradigm_with_writes(written)).save_trip(
+        USER, TripToSave(destination="TH", purpose="tourism", trip=EXACT)
+    )
+
+    place, plan = written
+    assert place["schema_name"] == "place"
+    assert place["value_json"] == {
+        "name": "Thailand",
+        "kind": "country",
+        "country_code": "TH",
+        "status": "active",
+        "source_system": "visa_research_agent",
+        "source_ref": "visa_research_agent:place:country:th",
+    }
+    assert plan["schema_name"] == "travel-plan"
+    assert plan["title"] == "Thailand, tourism"
+    assert plan["value_json"] == {
+        "label": "Thailand, tourism",
+        "candidates": [{"place_ref": "new-1", "purpose": "tourism"}],
+        "linked_refs": ["new-1"],
+        "commitment": "considering",
+        "status": "open",
+        "window": {
+            "earliest": "2026-12-01",
+            "latest": "2026-12-20",
+            "flexible": False,
+            "nights": 19,
+        },
+    }
+    assert saved == SavedTrip(status="saved", plan_id="new-2", place_created=True)
+
+
+async def test_the_travellers_own_country_place_is_reused_and_a_town_is_not_a_country() -> None:
+    written: list[dict[str, object]] = []
+
+    saved = await identity(
+        paradigm_with_writes(
+            written,
+            place=[
+                {"_id": "bangkok", "kind": "town", "country_code": "TH"},
+                {
+                    "_id": "old-thailand",
+                    "kind": "country",
+                    "country_code": "THA",
+                    "status": "suspended",
+                },
+                {"_id": "thailand", "kind": "country", "country_code": "THA"},
+            ],
+        )
+    ).save_trip(USER, TripToSave(destination="TH", purpose="business"))
+
+    (plan,) = written
+    value = plan["value_json"]
+    assert isinstance(value, dict)
+    assert value["candidates"] == [{"place_ref": "thailand", "purpose": "business"}]
+    assert "window" not in value
+    assert saved.place_created is False
+
+
+async def test_a_rough_span_stays_soft() -> None:
+    written: list[dict[str, object]] = []
+    rough = TripDates(mode="rough", start=date(2027, 2, 1), end=date(2027, 3, 31))
+
+    await identity(paradigm_with_writes(written)).save_trip(
+        USER, TripToSave(destination="JP", purpose="study", trip=rough)
+    )
+
+    value = written[-1]["value_json"]
+    assert isinstance(value, dict)
+    assert value["window"] == {"earliest": "2027-02-01", "latest": "2027-03-31", "flexible": True}
+
+
+async def test_nothing_the_plan_concluded_is_written() -> None:
+    written: list[dict[str, object]] = []
+
+    await identity(paradigm_with_writes(written)).save_trip(
+        USER, TripToSave(destination="TH", purpose="tourism", trip=EXACT)
+    )
+
+    plan = written[-1]["value_json"]
+    assert isinstance(plan, dict)
+    assert not {"decide_by", "verdict_cached_at", "notes", "travellers"} & set(plan)
+    assert [body["schema_name"] for body in written] == ["place", "travel-plan"]
+
+
+async def test_the_same_trip_already_open_is_not_written_twice() -> None:
+    written: list[dict[str, object]] = []
+    window = {"earliest": "2026-12-01", "latest": "2026-12-20"}
+
+    saved = await identity(
+        paradigm_with_writes(
+            written,
+            travel_plan=[
+                {
+                    "_id": "mine",
+                    "status": "open",
+                    "window": window,
+                    "candidates": [{"place_ref": "bangkok", "purpose": "tourism"}],
+                }
+            ],
+            place=[
+                {"_id": "thailand", "kind": "country", "country_code": "TH"},
+                {"_id": "bangkok", "kind": "town", "parent_ref": "thailand"},
+            ],
+        )
+    ).save_trip(USER, TripToSave(destination="TH", purpose="tourism", trip=EXACT))
+
+    assert written == []
+    assert saved == SavedTrip(status="already_saved", plan_id="mine")
+
+
+@pytest.mark.parametrize(
+    "plan",
+    [
+        {"commitment": "abandoned"},
+        {"candidates": [{"place_ref": "thailand", "purpose": "business"}]},
+        {"window": {"earliest": "2026-12-02", "latest": "2026-12-20"}},
+        {"candidates": [{"place_ref": "thailand", "purpose": "tourism", "ruled_out_reason": "x"}]},
+    ],
+    ids=["abandoned", "another purpose", "other dates", "ruled out"],
+)
+async def test_a_plan_for_another_trip_does_not_stop_the_save(plan: dict[str, object]) -> None:
+    written: list[dict[str, object]] = []
+    existing = {
+        "status": "open",
+        "window": {"earliest": "2026-12-01", "latest": "2026-12-20"},
+        "candidates": [{"place_ref": "thailand", "purpose": "tourism"}],
+        **plan,
+    }
+
+    saved = await identity(
+        paradigm_with_writes(
+            written,
+            travel_plan=[existing],
+            place=[{"_id": "thailand", "kind": "country", "country_code": "TH"}],
+        )
+    ).save_trip(USER, TripToSave(destination="TH", purpose="tourism", trip=EXACT))
+
+    assert saved.status == "saved"
+    assert [body["schema_name"] for body in written] == ["travel-plan"]
+
+
+async def test_a_grant_without_create_is_a_refused_write() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "GET":
+            return nodes()
+        return httpx.Response(403, json={"error": {"code": "PERMISSION_DENIED", "message": "no"}})
+
+    with pytest.raises(OfselfWriteRefused, match="re-approve"):
+        await identity(handler).save_trip(USER, TripToSave(destination="TH", purpose="tourism"))
+
+
+async def test_a_lost_grant_while_saving_asks_the_traveller_to_reconnect() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "GET":
+            return nodes()
+        return httpx.Response(403, json={"error": {"code": "EP_REVOKED", "message": "no"}})
+
+    with pytest.raises(OfselfAuthorizationLost):
+        await identity(handler).save_trip(USER, TripToSave(destination="TH", purpose="tourism"))
+
+
+async def test_a_write_answered_as_the_guide_shows_it_is_read_too() -> None:
+    """The developer guide wraps the new node in `node`; live it came back bare."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "GET":
+            return nodes()
+        return httpx.Response(201, json={"node": {"id": "wrapped"}})
+
+    saved = await identity(handler).save_trip(USER, TripToSave(destination="TH", purpose="tourism"))
+
+    assert saved.plan_id == "wrapped"
+
+
+async def test_a_write_answered_without_an_id_is_not_a_save() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "GET":
+            return nodes()
+        return httpx.Response(201, json={"node": {}})
+
+    with pytest.raises(OfselfUnavailable, match="id"):
+        await identity(handler).save_trip(USER, TripToSave(destination="TH", purpose="tourism"))

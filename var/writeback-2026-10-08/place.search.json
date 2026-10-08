@@ -1,0 +1,166 @@
+{
+  "query": "place",
+  "count": 20,
+  "results": [
+    {
+      "schema_name": "reference-ask-inbox",
+      "version": 4,
+      "description": "An ask that arrived: 'this person would like you to vouch for them'. Lives in the RECIPIENT'S graph and is theirs \u2014 theirs to answer, keep or delete, and nobody else can edit it. Caliber writes it on the asker's behalf because the platform gives an app no way to make one user's node readable by another (POST /sharing and POST /follows are both JWT-only, and an app is never issued a user JWT), so the ask is COPIED rather than shared. That copy is the honest cost of the courier: once written it is the recipient's node, so the asker withdrawing marks it withdrawn rather than removing it. The claim text is duplicated from the asker's reference-request, which remains the original \u2014 request_ref points back at it so the two can be rejoined when user-to-user sharing becomes reachable, at which point this schema is replaced by a belongs_to attachment and deleted. scope is 'public' because on this platform scope governs who can see the VOCABULARY, not who can read the nodes \u2014 node data is gated by owner_id and exposure profiles either way. It cannot be 'private': a third-party app is shown a private schema only when that app created it (backend/app/routes/schemas.py::_base_schema_query), and this one is created by a developer JWT, so private would make it permanently invisible to Caliber's app key and every write would 404.",
+      "scope": "public",
+      "owner_id": "f62fbcfb-8495-4204-b1d8-e795b2fb1077",
+      "id": "3d78d2d6-79e6-42a6-b3dc-8a24056f46db"
+    },
+    {
+      "schema_name": "definition",
+      "version": 6,
+      "description": "A definition \u2014 a term and what it means \u2014 as a first-class node of the ecosystem (owner law 2026-09-18: definitions are currency, not a kind of note). The node's title is the term. Any app mints one (Ink from a selection, the dictionary from its index, a persona through a hand that ratifies), any app cites one, and the dictionary app is where they are cultivated. The definition itself is markdown and may be empty: a term seen and not yet defined is a real state, and the dictionary shows it as such. Usages are the places the term was met \u2014 each an anchor (the quote and a little of either side) into a source node in some app, so the citing words can be found again without a position ever being written into the source. Origin says whose words the definition is. Stance says whether the term is held or avoided \u2014 a person's vocabulary is what they refuse as much as what they keep \u2014 and an avoided term names, in rather, the words to use instead.",
+      "scope": "public",
+      "owner_id": "4aabe540-9693-4172-9513-6992e51297e8",
+      "id": "41c681eb-785d-46ef-a228-3a4f7d4bfd9e"
+    },
+    {
+      "schema_name": "definition",
+      "version": 5,
+      "description": "A definition \u2014 a term and what it means \u2014 as a first-class node of the ecosystem (owner law 2026-09-18: definitions are currency, not a kind of note). The node's title is the term. Any app mints one (Ink from a selection, the dictionary from its index, a persona through a hand that ratifies), any app cites one, and the dictionary app is where they are cultivated. The definition itself is markdown and may be empty: a term seen and not yet defined is a real state, and the dictionary shows it as such. Usages are the places the term was met \u2014 each an anchor (the quote and a little of either side) into a source node in some app, so the citing words can be found again without a position ever being written into the source. Origin says whose words the definition is. Stance says whether the term is held or avoided \u2014 a person's vocabulary is what they refuse as much as what they keep \u2014 and an avoided term names, in rather, the words to use instead.",
+      "scope": "public",
+      "owner_id": "4aabe540-9693-4172-9513-6992e51297e8",
+      "id": "df4f1b3e-19b8-46c3-9641-307322dd1965"
+    },
+    {
+      "schema_name": "thing",
+      "version": 2,
+      "description": "An object in a person's life that they keep a relationship with: something they own, want, have borrowed or lent, keep for someone, or have let go. It carries its story (where it came from, from whom), where it lives, and what it cost, as links to person, place, photo and transaction nodes. Its moments are thing-moment nodes and how the person feels about it are perception nodes, both pointing here. Not an insurance inventory: no serials, valuations or warranties.\n",
+      "scope": "public",
+      "owner_id": "4aabe540-9693-4172-9513-6992e51297e8",
+      "id": "7d44c6d0-b8cc-495d-b4c8-0dab92217581"
+    },
+    {
+      "schema_name": "thing",
+      "version": 1,
+      "description": "An object in a person's life that they keep a relationship with: something they own, want, have borrowed or lent, keep for someone, or have let go. It carries its story (where it came from, from whom), where it lives, and what it cost, as links to person, place, photo and transaction nodes. Its moments are thing-moment nodes and how the person feels about it are perception nodes, both pointing here. Not an insurance inventory: no serials, valuations or warranties.\n",
+      "scope": "public",
+      "owner_id": "4aabe540-9693-4172-9513-6992e51297e8",
+      "id": "18642710-f18c-4c88-9bdd-9e37bf1c0f5c"
+    },
+    {
+      "schema_name": "definition",
+      "version": 4,
+      "description": "A definition \u2014 a term and what it means \u2014 as a first-class node of the ecosystem (owner law 2026-09-18: definitions are currency, not a kind of note). The node's title is the term. Any app mints one (Ink from a selection, the dictionary from its index, a persona through a hand that ratifies), any app cites one, and the dictionary app is where they are cultivated. The definition itself is markdown and may be empty: a term seen and not yet defined is a real state, and the dictionary shows it as such. Usages are the places the term was met \u2014 each an anchor (the quote and a little of either side) into a source node in some app, so the citing words can be found again without a position ever being written into the source. Origin says whose words the definition is. Stance says whether the term is held or avoided \u2014 a person's vocabulary is what they refuse as much as what they keep \u2014 and an avoided term names, in rather, the words to use instead.",
+      "scope": "public",
+      "owner_id": "4aabe540-9693-4172-9513-6992e51297e8",
+      "id": "13590bfb-917b-4575-929b-385d756503ec"
+    },
+    {
+      "schema_name": "definition",
+      "version": 3,
+      "description": "A definition \u2014 a term and what it means \u2014 as a first-class node of the ecosystem (owner law 2026-09-18: definitions are currency, not a kind of note). The node's title is the term. Any app mints one (Ink from a selection, the dictionary from its index, a persona through a hand that ratifies), any app cites one, and the dictionary app is where they are cultivated. The definition itself is markdown and may be empty: a term seen and not yet defined is a real state, and the dictionary shows it as such. Usages are the places the term was met \u2014 each an anchor (the quote and a little of either side) into a source node in some app, so the citing words can be found again without a position ever being written into the source. Origin says whose words the definition is. Stance says whether the term is held or avoided \u2014 a person's vocabulary is what they refuse as much as what they keep \u2014 and an avoided term names, in rather, the words to use instead.",
+      "scope": "public",
+      "owner_id": "4aabe540-9693-4172-9513-6992e51297e8",
+      "id": "8d919061-9b95-4607-8b91-9270b852076f"
+    },
+    {
+      "schema_name": "account",
+      "version": 2,
+      "description": "An account the person holds: a bank account, a card, an investment or retirement account, an HSA, a CD or a pension. One schema with `kind` saying which, because the seven it replaces were the same few fields under different names \u2014 `bank-account` and `investment-account` were field-for-field identical, as were `hsa` and `retirement-account`, and all seven were written through the one entity form. `subtype` keeps each source's own finer vocabulary verbatim.",
+      "scope": "public",
+      "owner_id": "f62fbcfb-8495-4204-b1d8-e795b2fb1077",
+      "id": "17664bce-a009-42c7-a943-bfeeeda1e1a2"
+    },
+    {
+      "schema_name": "place",
+      "version": 2,
+      "description": "A place the person holds, lives in, keeps returning to or is working toward \u2014 a home, a property, a town, a region, a country, an airport, a venue, or a PART of a home or property (its roof, its workshop, a bedroom). One node per place at any grain, with `kind` saying which and `parent_ref` giving the hierarchy (Workshop \u2192 Casa in Catral \u2192 Catral \u2192 Alicante \u2192 Spain) without a second schema. Minted because the platform has no entity for a place: its `location` is a single visit whose `place_ref` points at exactly this, and every other place field on the gateway is a bare string. Cited by id from properties, goals, ends, decisions, trips, organizations, events and facts (edges: located_at, lives_at, part_of, fact_about). What is TRUE of a place \u2014 its nearest airport, its tax regime \u2014 is a `fact` node that points at it, never a field on it. Never deleted; `suspended` retires, as people are retired. v2 (2026-09-24) adds the `part` grain, `part_type`, a house's `drawing`, and declares `coords_source` / `coords_label`.",
+      "scope": "public",
+      "owner_id": "f62fbcfb-8495-4204-b1d8-e795b2fb1077",
+      "id": "e10b76a2-c8cf-4643-ab34-ac4278edfae9"
+    },
+    {
+      "schema_name": "assessment-policy",
+      "version": 4,
+      "description": "Global, admin-controlled scoring + requirements policy for skill verification. ONE singleton node (policy_key=global-default), owned by the dedicated kalibr-system identity so ONLY kalibr can write it (any other writer 403s EP_NOT_FOUND), and edited only by OfSelf Working Group admins through kalibr's gated /api/dev/assessment-weight-config endpoint. Per skill_domain it sets the REQUIREMENTS a skill must meet to count as 'verified' (required_methods + verified_min_tier) and how it scores (method_weights + level_thresholds). Replaces the former in-memory-only policy so dev-set requirements persist across restarts and live in the graph. The requirements list is an array keyed by domain (a validated id string); the live question-bank catalog is the allowlist, enforced app-side (kalibr ignores/rejects any domain not in the catalog) so a domain key can't be injected and new skills are configurable automatically. Since v2 (the broker of validation, docs/BROKER_OF_VALIDATION.md) it also carries the two knobs a seal is decided on: the PASS MARK a quiz final must reach for Caliber to validate a skill (defaults.pass_mark, a fraction in (0,1], and requirements[].pass_mark per bank) and defaults.tier_rules \u2014 what, beyond Caliber's pass, earns silver and gold (how many people, and whether each must be signed in, from a matching organisation, citing evidence). The weight, threshold and required-method fields stay so nodes written under v1 still read; nothing consults them.",
+      "scope": "public",
+      "owner_id": "f62fbcfb-8495-4204-b1d8-e795b2fb1077",
+      "id": "24f29224-4c6e-474f-abdd-5b21ce9b116e"
+    },
+    {
+      "schema_name": "travel-obligation",
+      "version": 1,
+      "description": "Something the traveller must actually DO before a journey, and the state of doing it: apply for a visa, book biometrics, renew a passport, buy insurance, get a vaccination. It exists because of a line that has to be held everywhere else in this domain \u2014 THE ELIGIBILITY VERDICT IS DERIVED AND NEVER STORED. Whether a rule is satisfied is recomputed from the requirement, the person's documents and the dates, every time it is asked, because a stored verdict goes stale the moment a passport expires or a rule changes and it goes stale silently. What cannot be recomputed is what happened: that an appointment was booked for the fourteenth, that the application was submitted on the twentieth with this reference number, that it was refused. That history has no other source, so it gets a node; the judgement that the obligation existed in the first place does not. The loop closes through `produced_document_ref`: a granted application yields a `travel-document`, which then satisfies the requirement on its own terms without anyone having to remember that this obligation was why it exists. A refusal is kept rather than deleted, because a prior refusal genuinely changes later checklists and is one of the questions a later application will ask.\n",
+      "scope": "public",
+      "owner_id": "bb0eb7d7-16cb-4fe0-8665-334d5f746887",
+      "id": "c4500cbb-0247-41a6-ace5-fc1210fd913f"
+    },
+    {
+      "schema_name": "travel-requirement",
+      "version": 1,
+      "description": "One published rule about entering one place: what a holder of a given nationality, or a resident of a given country, must have in order to arrive for a given purpose, and the conditions attached. This is the corpus of the domain and it is about NOBODY \u2014 it describes the rule, never a person, and it is the same node for every traveller it applies to. It is a CLAIM BY AN AUTHORITY, with a citation and the date it was read, of which several may disagree and the freshest from the most authoritative source wins. That framing is the whole safety model: rules change without notice, and a stale rule applied confidently is the characteristic failure of this domain \u2014 the wrong answer arrives with full confidence and is only discovered at a border. Every requirement therefore carries `source_url`, `authority` and `read_at`, and an interface that shows a verdict must be able to show how old the rule behind it is. Conditions are structured rather than prose because they are what an agent actually checks: months of passport validity required beyond departure, whether the passport must have been issued within ten years, blank pages, onward ticket, minimum funds, insurance cover. A condition expressed only as a sentence can be restated but not verified.\n",
+      "scope": "public",
+      "owner_id": "bb0eb7d7-16cb-4fe0-8665-334d5f746887",
+      "id": "40bce749-935f-41f8-8e88-e208228de132"
+    },
+    {
+      "schema_name": "travel-zone",
+      "version": 1,
+      "description": "A group of countries that share an entry rule or a common allowance \u2014 Schengen, the Common Travel Area, the EU, a customs union, a visa-waiver scheme. It is a node rather than a list repeated on every rule because zones cut ACROSS geography and cannot be derived from a place hierarchy: Ireland is in the EU but not in Schengen, and in the Common Travel Area with a country that is in neither. No parent-child arrangement of places produces that, and a country belongs to several zones at once. Zones also change as a unit and rarely \u2014 a country accedes and every rule written against the zone should follow without being rewritten. Holding membership here means a Schengen rule is authored once, and the day a member joins or leaves, one node changes rather than every requirement that mentioned it. Its most load-bearing field is `rolling_window_days`: a zone is the scope a rolling allowance is counted over, so ninety days in any one hundred and eighty is a property of Schengen and not of France. Any honest answer about remaining days has to sum `travel-stay` records across every member of the zone, which is precisely what a per-country model gets wrong.\n",
+      "scope": "public",
+      "owner_id": "bb0eb7d7-16cb-4fe0-8665-334d5f746887",
+      "id": "33451387-e932-4f98-9ec9-0d8289bf01ef"
+    },
+    {
+      "schema_name": "meal-format-constituent",
+      "version": 4,
+      "description": "One named position inside a meal format, in the person's OWN word for it \u2014 \"poriyal\", \"rasam\", \"pickle\", \"appalam\" \u2014 together with the foods that qualify to fill it, how many of it a complete meal has, and whether it is required. A node rather than a row on `meal-format` for one reason that settles it: a constituent is SHARED. The appalam that is the crunch in a South Indian meal is the same appalam in two other formats, and duplicating it per format would mean three places to edit and three ways to drift. The position's `type` is drawn from a small fixed vocabulary so that formats across different cuisines stay comparable \u2014 a base is a base whether it is rice, roti, pasta or a tortilla \u2014 while the `label` stays entirely the person's language. A constituent names foods; it never carries nutrients, and it is never a nutrient source.\n",
+      "scope": "public",
+      "owner_id": "bb0eb7d7-16cb-4fe0-8665-334d5f746887",
+      "id": "9247cf02-bd3f-4946-abf4-144d1b209383"
+    },
+    {
+      "schema_name": "food-provider",
+      "version": 3,
+      "description": "Whoever made or published a food \u2014 a restaurant chain, a manufacturer, a canteen, a person who cooks for you, or the eater themselves. One axis for what is usually split three ways and modelled badly: the chain gets a venue record, the brand gets a string on the product, and the person's mother gets nothing at all. It costs one word to fill in and is how people actually recall food, so \"everything mum makes\" becomes a query. A provider that is a physical venue points at a `place` node, and one that is a human points at a `person` node \u2014 linked, never duplicated, because those schemas already exist and own those facts. What a provider owns that nothing else does is the person's OWN COPY of what that maker publishes about its food: the nutrition table read from a chain's page, and the mapping from the person's words onto its rows, so a repeat order carries the published figures at once with no lookup. Minted on the second appearance; retired by status, never deleted.\n",
+      "scope": "public",
+      "owner_id": "bb0eb7d7-16cb-4fe0-8665-334d5f746887",
+      "id": "edd9d851-5b6a-4c08-8479-f60dd3494bdb"
+    },
+    {
+      "schema_name": "meal-format-constituent",
+      "version": 3,
+      "description": "One named position inside a meal format, in the person's OWN word for it \u2014 \"poriyal\", \"rasam\", \"pickle\", \"appalam\" \u2014 together with the foods that qualify to fill it, how many of it a complete meal has, and whether it is required. A node rather than a row on `meal-format` for one reason that settles it: a constituent is SHARED. The appalam that is the crunch in a South Indian meal is the same appalam in two other formats, and duplicating it per format would mean three places to edit and three ways to drift. The position's `type` is drawn from a small fixed vocabulary so that formats across different cuisines stay comparable \u2014 a base is a base whether it is rice, roti, pasta or a tortilla \u2014 while the `label` stays entirely the person's language. A constituent names foods; it never carries nutrients, and it is never a nutrient source.\n",
+      "scope": "public",
+      "owner_id": "bb0eb7d7-16cb-4fe0-8665-334d5f746887",
+      "id": "769a04ef-3711-470f-9728-80e003526fe0"
+    },
+    {
+      "schema_name": "food-provider",
+      "version": 2,
+      "description": "Whoever made or published a food \u2014 a restaurant chain, a manufacturer, a canteen, a person who cooks for you, or the eater themselves. One axis for what is usually split three ways and modelled badly: the chain gets a venue record, the brand gets a string on the product, and the person's mother gets nothing at all. It costs one word to fill in and is how people actually recall food, so \"everything mum makes\" becomes a query. A provider that is a physical venue points at a `place` node, and one that is a human points at a `person` node \u2014 linked, never duplicated, because those schemas already exist and own those facts. What a provider owns that nothing else does is the person's OWN COPY of what that maker publishes about its food: the nutrition table read from a chain's page, and the mapping from the person's words onto its rows, so a repeat order carries the published figures at once with no lookup. Minted on the second appearance; retired by status, never deleted.\n",
+      "scope": "public",
+      "owner_id": "bb0eb7d7-16cb-4fe0-8665-334d5f746887",
+      "id": "ec8930e1-6bee-4c76-a4cd-31bd5261917a"
+    },
+    {
+      "schema_name": "meal-format-constituent",
+      "version": 2,
+      "description": "One named position inside a meal format, in the person's OWN word for it \u2014 \"poriyal\", \"rasam\", \"pickle\", \"appalam\" \u2014 together with the foods that qualify to fill it, how many of it a complete meal has, and whether it is required. A node rather than a row on `meal-format` for one reason that settles it: a constituent is SHARED. The appalam that is the crunch in a South Indian meal is the same appalam in two other formats, and duplicating it per format would mean three places to edit and three ways to drift. The position's `type` is drawn from a small fixed vocabulary so that formats across different cuisines stay comparable \u2014 a base is a base whether it is rice, roti, pasta or a tortilla \u2014 while the `label` stays entirely the person's language. A constituent names foods; it never carries nutrients, and it is never a nutrient source.\n",
+      "scope": "public",
+      "owner_id": "bb0eb7d7-16cb-4fe0-8665-334d5f746887",
+      "id": "8378073b-bf03-4519-93c7-8865a955f9bf"
+    },
+    {
+      "schema_name": "meal-format-constituent",
+      "version": 1,
+      "description": "One named position inside a meal format, in the person's OWN word for it \u2014 \"poriyal\", \"rasam\", \"pickle\", \"appalam\" \u2014 together with the foods that qualify to fill it, how many of it a complete meal has, and whether it is required. A node rather than a row on `format` for one reason that settles it: a constituent is SHARED. The appalam that is the crunch in a South Indian meal is the same appalam in two other formats, and duplicating it per format would mean three places to edit and three ways to drift. The position's `type` is drawn from a small fixed vocabulary so that formats across different cuisines stay comparable \u2014 a base is a base whether it is rice, roti, pasta or a tortilla \u2014 while the `label` stays entirely the person's language. A constituent names foods; it never carries nutrients, and it is never a nutrient source.\n",
+      "scope": "public",
+      "owner_id": "bb0eb7d7-16cb-4fe0-8665-334d5f746887",
+      "id": "87a9b3cd-ede8-446c-b693-6a946a8e708c"
+    },
+    {
+      "schema_name": "food-provider",
+      "version": 1,
+      "description": "Whoever made or published a food \u2014 a restaurant chain, a manufacturer, a canteen, a person who cooks for you, or the eater themselves. One axis for what is usually split three ways and modelled badly: the chain gets a venue record, the brand gets a string on the product, and the person's mother gets nothing at all. It costs one word to fill in and is how people actually recall food, so \"everything mum makes\" becomes a query. A provider that is a physical venue points at a `place` node, and one that is a human points at a `person` node \u2014 linked, never duplicated, because those schemas already exist and own those facts. What a provider owns that nothing else does is the person's OWN COPY of what that maker publishes about its food: the nutrition table read from a chain's page, and the mapping from the person's words onto its rows, so a repeat order carries the published figures at once with no lookup. Minted on the second appearance; retired by status, never deleted.\n",
+      "scope": "public",
+      "owner_id": "bb0eb7d7-16cb-4fe0-8665-334d5f746887",
+      "id": "8208dfc9-3661-412c-9e6c-6430de18d87c"
+    }
+  ]
+}

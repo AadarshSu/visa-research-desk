@@ -1,0 +1,520 @@
+[
+ {
+  "method": "GET",
+  "path": "/api/v1/nodes",
+  "params": {
+   "schema_id": "place",
+   "fields": "id,value_json",
+   "limit": "100",
+   "offset": "0"
+  },
+  "sent": null,
+  "status": 200,
+  "answer": {
+   "limit": 100,
+   "nodes": [
+    {
+     "id": "a95b5ecd-80ca-445a-8a77-6b37518a5242",
+     "value_json": {
+      "country_code": "TH",
+      "kind": "country",
+      "name": "Thailand",
+      "source_ref": "visa_research_agent:place:country:th",
+      "source_system": "visa_research_agent",
+      "status": "active"
+     }
+    }
+   ],
+   "offset": 0,
+   "total": null
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/api/v1/nodes",
+  "params": {
+   "schema_id": "travel-plan",
+   "fields": "id,value_json",
+   "limit": "100",
+   "offset": "0"
+  },
+  "sent": null,
+  "status": 200,
+  "answer": {
+   "limit": 100,
+   "nodes": [
+    {
+     "id": "6b6edecc-ac79-410e-8099-e37663e2054d",
+     "value_json": {
+      "candidates": [
+       {
+        "place_ref": "a95b5ecd-80ca-445a-8a77-6b37518a5242",
+        "purpose": "tourism"
+       }
+      ],
+      "commitment": "considering",
+      "label": "Thailand, tourism",
+      "linked_refs": [
+       "a95b5ecd-80ca-445a-8a77-6b37518a5242"
+      ],
+      "status": "open",
+      "window": {
+       "earliest": "2026-12-01",
+       "flexible": false,
+       "latest": "2026-12-20",
+       "nights": 19
+      }
+     }
+    }
+   ],
+   "offset": 0,
+   "total": null
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/api/v1/nodes",
+  "params": {
+   "schema_id": "travel-plan",
+   "fields": "id,value_json",
+   "limit": "100",
+   "offset": "0"
+  },
+  "sent": null,
+  "status": 200,
+  "answer": {
+   "limit": 100,
+   "nodes": [
+    {
+     "id": "6b6edecc-ac79-410e-8099-e37663e2054d",
+     "value_json": {
+      "candidates": [
+       {
+        "place_ref": "a95b5ecd-80ca-445a-8a77-6b37518a5242",
+        "purpose": "tourism"
+       }
+      ],
+      "commitment": "considering",
+      "label": "Thailand, tourism",
+      "linked_refs": [
+       "a95b5ecd-80ca-445a-8a77-6b37518a5242"
+      ],
+      "status": "open",
+      "window": {
+       "earliest": "2026-12-01",
+       "flexible": false,
+       "latest": "2026-12-20",
+       "nights": 19
+      }
+     }
+    }
+   ],
+   "offset": 0,
+   "total": null
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/api/v1/nodes",
+  "params": {
+   "schema_id": "place",
+   "fields": "id,value_json",
+   "limit": "100",
+   "offset": "0"
+  },
+  "sent": null,
+  "status": 200,
+  "answer": {
+   "limit": 100,
+   "nodes": [
+    {
+     "id": "a95b5ecd-80ca-445a-8a77-6b37518a5242",
+     "value_json": {
+      "country_code": "TH",
+      "kind": "country",
+      "name": "Thailand",
+      "source_ref": "visa_research_agent:place:country:th",
+      "source_system": "visa_research_agent",
+      "status": "active"
+     }
+    }
+   ],
+   "offset": 0,
+   "total": null
+  }
+ },
+ {
+  "method": "POST",
+  "path": "/api/v1/nodes",
+  "params": {},
+  "sent": {
+   "schema_name": "place",
+   "title": "Japan",
+   "value_json": {
+    "name": "Japan",
+    "kind": "country",
+    "country_code": "JP",
+    "status": "active",
+    "source_system": "visa_research_agent",
+    "source_ref": "visa_research_agent:place:country:jp"
+   }
+  },
+  "status": 201,
+  "answer": {
+   "content_timestamp": null,
+   "created_at": "2026-10-08T18:31:35.533867+00:00",
+   "id": "6137d2ab-0c43-4667-94f7-401650b0c052",
+   "owner_id": "66a3241b-5130-4ca9-9ce7-baaa69f84745",
+   "schema_id": "e10b76a2-c8cf-4643-ab34-ac4278edfae9",
+   "schema_name": "place",
+   "stratum": "inferred",
+   "title": "Japan",
+   "value_json": {
+    "country_code": "JP",
+    "kind": "country",
+    "name": "Japan",
+    "source_ref": "visa_research_agent:place:country:jp",
+    "source_system": "visa_research_agent",
+    "status": "active"
+   }
+  }
+ },
+ {
+  "method": "POST",
+  "path": "/api/v1/nodes",
+  "params": {},
+  "sent": {
+   "schema_name": "travel-plan",
+   "title": "Japan, business",
+   "value_json": {
+    "label": "Japan, business",
+    "candidates": [
+     {
+      "place_ref": "6137d2ab-0c43-4667-94f7-401650b0c052",
+      "purpose": "business"
+     }
+    ],
+    "linked_refs": [
+     "6137d2ab-0c43-4667-94f7-401650b0c052"
+    ],
+    "commitment": "considering",
+    "status": "open",
+    "window": {
+     "earliest": "2027-03-01",
+     "latest": "2027-04-30",
+     "flexible": true
+    }
+   }
+  },
+  "status": 201,
+  "answer": {
+   "content_timestamp": null,
+   "created_at": "2026-10-08T18:31:36.482416+00:00",
+   "id": "70e189fe-9b34-4943-b820-593201c267dc",
+   "owner_id": "66a3241b-5130-4ca9-9ce7-baaa69f84745",
+   "schema_id": "e9d46339-1d99-425b-a0f2-882ab3024e0e",
+   "schema_name": "travel-plan",
+   "stratum": "inferred",
+   "title": "Japan, business",
+   "value_json": {
+    "candidates": [
+     {
+      "place_ref": "6137d2ab-0c43-4667-94f7-401650b0c052",
+      "purpose": "business"
+     }
+    ],
+    "commitment": "considering",
+    "label": "Japan, business",
+    "linked_refs": [
+     "6137d2ab-0c43-4667-94f7-401650b0c052"
+    ],
+    "status": "open",
+    "window": {
+     "earliest": "2027-03-01",
+     "flexible": true,
+     "latest": "2027-04-30"
+    }
+   }
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/api/v1/nodes",
+  "params": {
+   "schema_id": "place",
+   "fields": "id,value_json",
+   "limit": "100",
+   "offset": "0"
+  },
+  "sent": null,
+  "status": 200,
+  "answer": {
+   "limit": 100,
+   "nodes": [
+    {
+     "id": "6137d2ab-0c43-4667-94f7-401650b0c052",
+     "value_json": {
+      "country_code": "JP",
+      "kind": "country",
+      "name": "Japan",
+      "source_ref": "visa_research_agent:place:country:jp",
+      "source_system": "visa_research_agent",
+      "status": "active"
+     }
+    },
+    {
+     "id": "a95b5ecd-80ca-445a-8a77-6b37518a5242",
+     "value_json": {
+      "country_code": "TH",
+      "kind": "country",
+      "name": "Thailand",
+      "source_ref": "visa_research_agent:place:country:th",
+      "source_system": "visa_research_agent",
+      "status": "active"
+     }
+    }
+   ],
+   "offset": 0,
+   "total": null
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/api/v1/nodes",
+  "params": {
+   "schema_id": "travel-plan",
+   "fields": "id,value_json",
+   "limit": "100",
+   "offset": "0"
+  },
+  "sent": null,
+  "status": 200,
+  "answer": {
+   "limit": 100,
+   "nodes": [
+    {
+     "id": "70e189fe-9b34-4943-b820-593201c267dc",
+     "value_json": {
+      "candidates": [
+       {
+        "place_ref": "6137d2ab-0c43-4667-94f7-401650b0c052",
+        "purpose": "business"
+       }
+      ],
+      "commitment": "considering",
+      "label": "Japan, business",
+      "linked_refs": [
+       "6137d2ab-0c43-4667-94f7-401650b0c052"
+      ],
+      "status": "open",
+      "window": {
+       "earliest": "2027-03-01",
+       "flexible": true,
+       "latest": "2027-04-30"
+      }
+     }
+    },
+    {
+     "id": "6b6edecc-ac79-410e-8099-e37663e2054d",
+     "value_json": {
+      "candidates": [
+       {
+        "place_ref": "a95b5ecd-80ca-445a-8a77-6b37518a5242",
+        "purpose": "tourism"
+       }
+      ],
+      "commitment": "considering",
+      "label": "Thailand, tourism",
+      "linked_refs": [
+       "a95b5ecd-80ca-445a-8a77-6b37518a5242"
+      ],
+      "status": "open",
+      "window": {
+       "earliest": "2026-12-01",
+       "flexible": false,
+       "latest": "2026-12-20",
+       "nights": 19
+      }
+     }
+    }
+   ],
+   "offset": 0,
+   "total": null
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/api/v1/nodes",
+  "params": {
+   "schema_id": "work-authorization",
+   "fields": "id,value_json",
+   "limit": "100",
+   "offset": "0"
+  },
+  "sent": null,
+  "status": 200,
+  "answer": {
+   "limit": 100,
+   "nodes": [
+    {
+     "id": "b84a5937-e90e-432a-950d-29eb036bff6e",
+     "value_json": {
+      "citizenships": [
+       "IND",
+       "GB"
+      ],
+      "notes": "sandbox probe for visa research desk",
+      "source": "self_reported",
+      "work_authorized_in": [
+       "GB"
+      ]
+     }
+    }
+   ],
+   "offset": 0,
+   "total": null
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/api/v1/nodes",
+  "params": {
+   "schema_id": "travel-plan",
+   "fields": "id,value_json",
+   "limit": "100",
+   "offset": "0"
+  },
+  "sent": null,
+  "status": 200,
+  "answer": {
+   "limit": 100,
+   "nodes": [
+    {
+     "id": "70e189fe-9b34-4943-b820-593201c267dc",
+     "value_json": {
+      "candidates": [
+       {
+        "place_ref": "6137d2ab-0c43-4667-94f7-401650b0c052",
+        "purpose": "business"
+       }
+      ],
+      "commitment": "considering",
+      "label": "Japan, business",
+      "linked_refs": [
+       "6137d2ab-0c43-4667-94f7-401650b0c052"
+      ],
+      "status": "open",
+      "window": {
+       "earliest": "2027-03-01",
+       "flexible": true,
+       "latest": "2027-04-30"
+      }
+     }
+    },
+    {
+     "id": "6b6edecc-ac79-410e-8099-e37663e2054d",
+     "value_json": {
+      "candidates": [
+       {
+        "place_ref": "a95b5ecd-80ca-445a-8a77-6b37518a5242",
+        "purpose": "tourism"
+       }
+      ],
+      "commitment": "considering",
+      "label": "Thailand, tourism",
+      "linked_refs": [
+       "a95b5ecd-80ca-445a-8a77-6b37518a5242"
+      ],
+      "status": "open",
+      "window": {
+       "earliest": "2026-12-01",
+       "flexible": false,
+       "latest": "2026-12-20",
+       "nights": 19
+      }
+     }
+    }
+   ],
+   "offset": 0,
+   "total": null
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/api/v1/nodes",
+  "params": {
+   "schema_id": "travel-document",
+   "fields": "id,value_json",
+   "limit": "100",
+   "offset": "0"
+  },
+  "sent": null,
+  "status": 200,
+  "answer": {
+   "limit": 100,
+   "nodes": [
+    {
+     "id": "e4ce89ee-b3c9-4f16-b5e5-6e5a4994724e",
+     "value_json": {
+      "document_code": "P",
+      "expires_at": "2027-02-07",
+      "field_provenance": {
+       "expires_at": {
+        "source": "manual",
+        "verification": "none"
+       }
+      },
+      "issuing_state": "IND",
+      "kind": "passport",
+      "label": "Indian passport (visa desk test)",
+      "nationality": "IND",
+      "status": "valid"
+     }
+    }
+   ],
+   "offset": 0,
+   "total": null
+  }
+ },
+ {
+  "method": "GET",
+  "path": "/api/v1/nodes",
+  "params": {
+   "schema_id": "place",
+   "fields": "id,value_json",
+   "limit": "100",
+   "offset": "0"
+  },
+  "sent": null,
+  "status": 200,
+  "answer": {
+   "limit": 100,
+   "nodes": [
+    {
+     "id": "6137d2ab-0c43-4667-94f7-401650b0c052",
+     "value_json": {
+      "country_code": "JP",
+      "kind": "country",
+      "name": "Japan",
+      "source_ref": "visa_research_agent:place:country:jp",
+      "source_system": "visa_research_agent",
+      "status": "active"
+     }
+    },
+    {
+     "id": "a95b5ecd-80ca-445a-8a77-6b37518a5242",
+     "value_json": {
+      "country_code": "TH",
+      "kind": "country",
+      "name": "Thailand",
+      "source_ref": "visa_research_agent:place:country:th",
+      "source_system": "visa_research_agent",
+      "status": "active"
+     }
+    }
+   ],
+   "offset": 0,
+   "total": null
+  }
+ }
+]

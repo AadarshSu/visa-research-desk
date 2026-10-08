@@ -1424,11 +1424,68 @@ function renderPlan(plan, advice = null, weather = null) {
       renderTrip(),
       renderAdvice(advice, optionLabel(destinationSelect, destinationSelect.value)),
       renderWeather(weather, destinationSelect.value),
+      renderSaveTrip(),
     ].filter(Boolean),
   );
   const layout = element("div", "plan-layout");
   layout.append(main, side);
   results.replaceChildren(renderGlance(plan, Boolean(documents), Boolean(apply)), layout);
+}
+
+// DECISIONS entry 283. A signed-in traveller may save the trip this plan was made for to their
+// Ofself account — only that trip, only on their click, and nothing the plan concluded. Someone
+// researching several trips saves the one they choose. Built when the plan is shown, so a form
+// edited afterwards does not change which trip the button saves.
+function renderSaveTrip() {
+  if (document.body.dataset.signedIn !== "true" || !lastRun) return null;
+  const request = lastRun.request;
+  const destination = optionLabel(destinationSelect, request.destination);
+  const trip = tripDates();
+  const line = [destination, request.traveller.travel_purpose, trip ? tripRange(trip) : "no dates yet"].join(" · ");
+  const box = element("section", "save-trip");
+  box.setAttribute("aria-label", "Save this trip to Ofself");
+  box.append(
+    element("p", "trip-strip-label", "Your Ofself account"),
+    element("p", "save-trip-line", line),
+    element(
+      "p",
+      "save-trip-note",
+      `Saves it as a trip you're considering, adding ${destination} to your places if it isn't there. Nothing this plan concluded is saved.`,
+    ),
+  );
+  const status = element("p", "save-trip-status");
+  status.hidden = true;
+  const save = element("button", "account-action", "Save this trip to Ofself");
+  save.type = "button";
+  save.addEventListener("click", async () => {
+    save.disabled = true;
+    save.textContent = "Saving…";
+    status.hidden = true;
+    try {
+      const response = await fetch("/oauth/trip", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          destination: request.destination,
+          purpose: request.traveller.travel_purpose,
+          trip: request.trip || null,
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error((payload.detail && payload.detail.message) || "It could not be saved. Try again.");
+      const done = payload.status === "already_saved"
+        ? "This trip is already in your Ofself account."
+        : `Saved to your Ofself account as a trip you're considering${payload.place_created ? `, with ${destination} added to your places` : ""}.`;
+      save.replaceWith(element("p", "save-trip-done", done));
+    } catch (error) {
+      status.textContent = error instanceof Error ? error.message : "It could not be saved. Try again.";
+      status.hidden = false;
+      save.disabled = false;
+      save.textContent = "Save this trip to Ofself";
+    }
+  });
+  box.append(status, save);
+  return box;
 }
 
 // What each step of a plan request is called on screen (TODO item 57). The server names a step and

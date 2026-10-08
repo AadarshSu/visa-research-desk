@@ -1025,6 +1025,44 @@ button:disabled {
   font-weight: 650;
 }
 
+/* Saving the trip to Ofself (DECISIONS entry 283): beside the plan, in the trip strip's frame. */
+.save-trip {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.save-trip p {
+  margin: 0;
+}
+
+.save-trip-line {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.save-trip-note,
+.save-trip-status {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.save-trip-status {
+  color: var(--amber);
+  font-weight: 650;
+}
+
+.save-trip-done {
+  color: var(--green);
+  font-size: 14px;
+  font-weight: 700;
+}
+
 /* The answers at a glance: above the numbered panels and not one of them, so it takes no number.
    Each cell links down to the panel that sets its answer out. */
 html {

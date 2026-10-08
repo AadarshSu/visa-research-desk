@@ -1,0 +1,225 @@
+{
+  "category": "context",
+  "created_at": "2026-09-25T00:09:26.708450+00:00",
+  "created_by": "gilestwiss",
+  "created_by_third_party_id": null,
+  "deleted_at": null,
+  "description": "A place the person holds, lives in, keeps returning to or is working toward \u2014 a home, a property, a town, a region, a country, an airport, a venue, or a PART of a home or property (its roof, its workshop, a bedroom). One node per place at any grain, with `kind` saying which and `parent_ref` giving the hierarchy (Workshop \u2192 Casa in Catral \u2192 Catral \u2192 Alicante \u2192 Spain) without a second schema. Minted because the platform has no entity for a place: its `location` is a single visit whose `place_ref` points at exactly this, and every other place field on the gateway is a bare string. Cited by id from properties, goals, ends, decisions, trips, organizations, events and facts (edges: located_at, lives_at, part_of, fact_about). What is TRUE of a place \u2014 its nearest airport, its tax regime \u2014 is a `fact` node that points at it, never a field on it. Never deleted; `suspended` retires, as people are retired. v2 (2026-09-24) adds the `part` grain, `part_type`, a house's `drawing`, and declares `coords_source` / `coords_label`.",
+  "encrypted_fields": [],
+  "extends": null,
+  "formerly_encrypted_fields": [],
+  "group_id": "d5b0c994-b736-421f-b422-298b9f5f1707",
+  "id": "e10b76a2-c8cf-4643-ab34-ac4278edfae9",
+  "is_active": true,
+  "is_promoted": false,
+  "is_relationship": false,
+  "is_system": false,
+  "json_schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": true,
+    "properties": {
+      "address": {
+        "description": "The address as written, for a home or a property \u2014 'Casa in Catral, Alicante, Spain'. Null above that grain.",
+        "title": "Address",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "aliases": {
+        "description": "The other names it goes by in their words \u2014 'the Spanish house', 'Casa in Catral'. What dedupe rests on: a name that folds to one of these is this place, and the room never mints a twin.",
+        "items": {
+          "type": "string"
+        },
+        "title": "Aliases",
+        "type": "array"
+      },
+      "coords_label": {
+        "description": "The gazetteer's words for the position \u2014 'Catral, Alicante, Spain \u2014 its town, not its address'.",
+        "title": "Position label",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "coords_source": {
+        "description": "`given` pasted by the person, `chosen` picked by them from the finder's candidates, `found` placed by the finder on its own. Never set on a `part`.",
+        "enum": [
+          "given",
+          "chosen",
+          "found",
+          null
+        ],
+        "title": "Where the position came from",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "country": {
+        "title": "Country",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "country_code": {
+        "description": "ISO 3166-1 alpha-2 when known \u2014 'ES'.",
+        "title": "Country code",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "created_at": {
+        "title": "Created at",
+        "type": "string"
+      },
+      "drawing": {
+        "description": "For a `home` or `property` only: how its page draws it. Null reads as `house`.",
+        "enum": [
+          "house",
+          "flat",
+          null
+        ],
+        "title": "Drawing",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "kind": {
+        "description": "The grain: `home` where they live, `property` a place they hold, `part` a part of a home or property (it sits inside one by `parent_ref` and has no position or address of its own), then the geography above it. A country or a region is a place of that kind, never a schema of its own.",
+        "enum": [
+          "home",
+          "property",
+          "part",
+          "town",
+          "region",
+          "country",
+          "airport",
+          "venue",
+          "other"
+        ],
+        "title": "Kind",
+        "type": "string"
+      },
+      "lat": {
+        "title": "Latitude",
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "lng": {
+        "title": "Longitude",
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "minted_for": {
+        "description": "The id of the node this place was first read off \u2014 a property row, a goal, a decision \u2014 so a retraction there can find what it made.",
+        "title": "Minted for",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "name": {
+        "description": "What they call it \u2014 'Catral', 'Spain', 'Casa in Catral'. The title of the node says the same.",
+        "title": "Name",
+        "type": "string"
+      },
+      "parent_ref": {
+        "description": "The id of the place this one sits in \u2014 a part's house, the house's town, the town's region, the region's country. Mirrored by the `part_of` edge; this field is the read-side truth.",
+        "title": "Part of",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "part_type": {
+        "description": "For a `part` only: which part of the house it is, and so where it is drawn \u2014 `living` the living room, `front` the facade (shutters, windows, door), `systems` what runs the house (cooling, heating, electrics, water). Null for every other kind.",
+        "enum": [
+          "roof",
+          "living",
+          "front",
+          "bedroom",
+          "kitchen",
+          "bathroom",
+          "systems",
+          "workshop",
+          "garden",
+          "pool",
+          "other",
+          null
+        ],
+        "title": "Part type",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "region": {
+        "title": "Region",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "source_phrase": {
+        "description": "The words of theirs the place was read out of, when a reading minted it.",
+        "title": "Source phrase",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "source_ref": {
+        "description": "Stable per mint \u2014 'allocations:place:<kind>:<folded name>[:<folded country>]', and for a part 'allocations:place:part:<house id>:<part type>:<folded name>' so two houses' roofs are never one node \u2014 so a retried create is a retry, not a second node.",
+        "title": "Source ref",
+        "type": "string"
+      },
+      "source_system": {
+        "description": "Emitting app \u2014 'allocations_ofself'.",
+        "title": "Source system",
+        "type": "string"
+      },
+      "status": {
+        "description": "`suspended` retires a place \u2014 a property sold, a home left \u2014 without deleting what cited it.",
+        "enum": [
+          "active",
+          "suspended"
+        ],
+        "title": "Status",
+        "type": "string"
+      },
+      "town": {
+        "title": "Town",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "updated_at": {
+        "title": "Updated at",
+        "type": "string"
+      }
+    },
+    "required": [
+      "name",
+      "kind"
+    ],
+    "type": "object"
+  },
+  "node_ref_fields": [],
+  "owner_id": "f62fbcfb-8495-4204-b1d8-e795b2fb1077",
+  "private_to": null,
+  "recommended_by_developer": false,
+  "schema_metadata": null,
+  "schema_name": "place",
+  "scope": "public",
+  "updated_at": "2026-09-25T00:09:26.708454+00:00",
+  "version": 2
+}

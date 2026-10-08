@@ -1,0 +1,237 @@
+{
+  "category": null,
+  "created_at": "2026-09-20T21:52:02.524379+00:00",
+  "created_by": "shato",
+  "created_by_third_party_id": null,
+  "deleted_at": null,
+  "description": "A credential the person holds that bears on crossing a border: a passport, a national identity card, a residence permit, a visa, an ETA or an EUDI PID. One type rather than several, because a residence permit is BOTH an identity document and an entitlement, and splitting identity from permission would force it to exist twice; `kind` says which it is and the `grants` block is present only when the document confers permission rather than merely attesting who you are. The field that makes this schema worth having is `field_provenance`. Where a value came from is not metadata here, it is the difference between an answer and a guess: an expiry read from the MRZ carries a check digit, a date of issue from DG12 is signed by the issuing state, and the same two values typed in by hand are a person's memory of a document they may not be holding. THE RULE THAT FOLLOWS, AND IT IS ABSOLUTE: a self-declared field may RAISE a question and may never CLOSE one. Nothing computed from an unattested value may be presented as a cleared requirement. `issuing_state` is kept separate from `nationality` because the MRZ carries both and they differ for refugee and stateless travel documents, where treating them as one silently produces the wrong rule. `document_code` is kept because it is what lets an agent refuse correctly \u2014 a diplomatic or service passport is not an ordinary one and must never be scored as though it were.\n",
+  "encrypted_fields": [],
+  "extends": null,
+  "formerly_encrypted_fields": [],
+  "group_id": null,
+  "id": "e8b71928-240b-4b86-a46b-0398c61ece63",
+  "is_active": true,
+  "is_promoted": false,
+  "is_relationship": false,
+  "is_system": false,
+  "json_schema": {
+    "properties": {
+      "date_of_birth": {
+        "description": "Drives more than identity: minors need consent letters and birth certificates on a document checklist, and several fee schedules waive or reduce by age.\n",
+        "format": "date",
+        "type": "string"
+      },
+      "document_code": {
+        "description": "The MRZ document code \u2014 P for an ordinary passport, PD diplomatic, PS service, ID for a card. Kept so an agent can refuse correctly instead of assuming ordinary; a diplomatic page changes the applicable rule entirely.\n",
+        "maxLength": 4,
+        "type": "string"
+      },
+      "expires_at": {
+        "description": "Date of expiry. The input to every \"valid N months beyond departure\" rule.",
+        "format": "date",
+        "type": "string"
+      },
+      "field_provenance": {
+        "additionalProperties": {
+          "properties": {
+            "source": {
+              "enum": [
+                "mrz",
+                "dg1",
+                "dg2",
+                "dg11",
+                "dg12",
+                "nfc_chip",
+                "eudi_pid",
+                "verifiable_credential",
+                "ocr",
+                "manual",
+                "inferred"
+              ],
+              "type": "string"
+            },
+            "verification": {
+              "description": "`cryptographic` for a signed chip read or a verified credential, `checksum` for an MRZ line that passed its check digits, `none` for anything a person typed or a model read off a photograph.\n",
+              "enum": [
+                "cryptographic",
+                "checksum",
+                "none"
+              ],
+              "type": "string"
+            },
+            "verified_at": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "description": "Per FIELD, not per document: where that value came from and how strongly it is attested. A document is routinely part chip-read and part typed, and the two must never be weighed alike.\n",
+        "type": "object"
+      },
+      "given_names": {
+        "maxLength": 200,
+        "type": "string"
+      },
+      "grants": {
+        "description": "Present only when this document confers permission \u2014 a visa, a permit, an ETA. A passport attests identity and grants nothing, and leaving this absent is how the difference is recorded.\n",
+        "properties": {
+          "class": {
+            "description": "The coded class, never free text \u2014 a Schengen C, a UK Skilled Worker, a US B1/B2. A residence permit's class is what a checklist keys on when a non-citizen resident must prove regular status.\n",
+            "maxLength": 40,
+            "type": "string"
+          },
+          "conditions": {
+            "type": "string"
+          },
+          "entries": {
+            "enum": [
+              "single",
+              "double",
+              "multiple",
+              "unlimited"
+            ],
+            "type": "string"
+          },
+          "in_document_ref": {
+            "description": "The `travel-document` this is affixed to \u2014 a visa sits in a passport, and replacing the passport does not void the visa.",
+            "type": "string"
+          },
+          "issued_for_places": {
+            "description": "ISO alpha-3 codes this permission is good for. A Schengen visa lists many.",
+            "items": {
+              "maxLength": 3,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "max_stay_days": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "sponsor": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "valid_from": {
+            "format": "date",
+            "type": "string"
+          },
+          "valid_until": {
+            "format": "date",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "holder_ref": {
+        "description": "The `person` node this belongs to. Absent means the account holder.",
+        "type": "string"
+      },
+      "issued_at": {
+        "description": "Date of issue. Lives in DG12 and NOT in the MRZ, which is why it is so often missing \u2014 and it is unanswerable-without for the ten-year condition that applies across most of the Schengen corpus.\n",
+        "format": "date",
+        "type": "string"
+      },
+      "issuing_state": {
+        "description": "ISO 3166 alpha-3 of the authority that issued it. Deliberately SEPARATE from `nationality`: the MRZ carries both and they differ for refugee and stateless travel documents. Collapsing them applies the wrong country's rule without any error being raised.\n",
+        "maxLength": 3,
+        "type": "string"
+      },
+      "issuing_state_ref": {
+        "description": "Optional `place` node of kind country, when the code has been resolved.",
+        "type": "string"
+      },
+      "kind": {
+        "enum": [
+          "passport",
+          "national_id",
+          "residence_permit",
+          "visa",
+          "eta",
+          "evisa",
+          "eudi_pid",
+          "travel_document_other"
+        ],
+        "type": "string"
+      },
+      "label": {
+        "description": "What the person calls it \u2014 \"my Indian passport\", \"the old one\".",
+        "maxLength": 160,
+        "type": "string"
+      },
+      "linked_refs": {
+        "description": "Every node id this record points at, flattened into one top-level array of bare UUID strings \u2014 the only shape the platform's traversal index can see. The typed refs below stay the source of truth; this is the index's view and must be rewritten whenever any of them changes.\n",
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "nationality": {
+        "description": "ISO 3166 alpha-3 of the nationality the document attests.",
+        "maxLength": 3,
+        "type": "string"
+      },
+      "notes": {
+        "type": "string"
+      },
+      "number": {
+        "description": "The document number. SENSITIVE \u2014 this field is a candidate for `encrypted_fields` and should be turned on before any real document is stored. It is deliberately not a node reference, so encrypting it can never sever the graph.\n",
+        "maxLength": 60,
+        "type": "string"
+      },
+      "photo_ids": {
+        "description": "rawfile nodes \u2014 a scan or photograph of the document.",
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "place_of_birth": {
+        "maxLength": 120,
+        "type": "string"
+      },
+      "resident_address_ref": {
+        "description": "A `place` node, structured rather than a city string. It decides the application route, which is a measured source of wrong answers: a resident of one country sent to another country's mission is a wasted appointment.\n",
+        "type": "string"
+      },
+      "sex": {
+        "maxLength": 12,
+        "type": "string"
+      },
+      "status": {
+        "description": "Retired by status, never deleted \u2014 a prior visa, including a refused one, is exactly the history a later checklist asks about.",
+        "enum": [
+          "valid",
+          "expired",
+          "lost",
+          "stolen",
+          "cancelled",
+          "replaced",
+          "superseded"
+        ],
+        "type": "string"
+      },
+      "surname": {
+        "maxLength": 120,
+        "type": "string"
+      }
+    },
+    "required": [
+      "kind"
+    ],
+    "type": "object"
+  },
+  "node_ref_fields": [
+    "linked_refs",
+    "photo_ids"
+  ],
+  "owner_id": "bb0eb7d7-16cb-4fe0-8665-334d5f746887",
+  "private_to": null,
+  "recommended_by_developer": false,
+  "schema_metadata": null,
+  "schema_name": "travel-document",
+  "scope": "public",
+  "updated_at": "2026-09-20T21:52:02.524383+00:00",
+  "version": 1
+}

@@ -1,0 +1,14 @@
+{
+  "query": "travel-plan",
+  "count": 1,
+  "results": [
+    {
+      "schema_name": "travel-plan",
+      "version": 1,
+      "description": "A journey someone is considering but has not committed to \u2014 the question, where a `trip` is the answer. It exists because the eligibility question is most valuable BEFORE there is a trip: learning that a destination takes six weeks of consular processing is useful in January and worthless in March. What a plan holds that a trip structurally cannot is CANDIDATES. \"Somewhere warm in February \u2014 Thailand, Vietnam or Brazil\" is one plan with three candidates that resolve to nothing-to-do, three days, and six weeks plus an interview. A trip has one destination by definition, so modelling that comparison as trips means creating and deleting journeys that never happened. Dates gate the VALIDITY half of the question, not the PLANNING half, which is why a plan with only a rough window is still worth evaluating: whether a visa is needed at all, which route applies, how long it takes, and whether a second nationality is the better door are all answerable with no dates. Passport validity beyond departure, the ten-year issue rule and any rolling days-of-presence count are not, and must not be guessed from a rough window. `travellers` is plural and each carries their own documents and nationalities: two people on one plan routinely get different verdicts for the same candidate, and a design that assumes one traveller is wrong for most couples and every family.\n",
+      "scope": "public",
+      "owner_id": "bb0eb7d7-16cb-4fe0-8665-334d5f746887",
+      "id": "e9d46339-1d99-425b-a0f2-882ab3024e0e"
+    }
+  ]
+}

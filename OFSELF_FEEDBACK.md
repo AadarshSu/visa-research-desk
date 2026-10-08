@@ -59,6 +59,10 @@ rather than deleting it.
   scoped to the grant. This app declined encrypted fields partly for that.
 - **2.6 "`app push` asks for the app's metadata once"** [read]. It doesn't ask. Without the
   `.paradigm/pending.toml` that `init` writes, it exits with "Not a Paradigm project".
+- **2.7 A created node comes back bare, not under `node`** [observed, 2026-10-09]. The guide's
+  examples read `resp.json()["node"]["id"]`. Live, `POST /api/v1/nodes` answered `201` with the node
+  itself — `id`, `schema_name`, `title`, `value_json`, `stratum`, `owner_id` at the top. Code copied
+  from the guide fails on every write. This app accepts both.
 
 ## 3. Integrating an existing codebase
 
@@ -71,7 +75,9 @@ rather than deleting it.
   `init` that writes only the binding.
 - **3.2 `crux sync` says "Pushed" when it only staged** [observed]. `dlr show` read `requests (0)` and
   the consent card was empty until `paradigm commit`. The guide's DLR sections don't mention the
-  staging step.
+  staging step. **Again on 2026-10-09:** "✓ Pushed 9 request item(s) to the app's DLR", pointing at
+  `dlr show`, which still held the old seven until `commit` made v10; and its diff listed
+  `- nodes:read` though every read stayed. *Suggest:* say "staged", and name `commit`.
 - **3.3 `app push` registers with an empty DLR** [read, observed]. It doesn't read `CRUX.md`. Worth
   saying when it finishes.
 - **3.4 Good: `crux sync` refuses a non-interactive shell** [read], so an AI assistant can't confirm a
@@ -165,6 +171,12 @@ rather than deleting it.
   can move because Ofself changed a prompt or a model, with nothing on the app's side to show it,
   and a developer can neither reproduce a verdict nor diff two. *Suggest:* record the model and
   rubric version alongside `ran_at`.
+- **5.8 Every app write is stamped `stratum: inferred`, and the guide never mentions stratum**
+  [observed, 2026-10-09]. This app writes a trip only when the traveller clicks to save it — their
+  own statement, which CRUX §14 calls *asserted*. Both nodes came back `inferred`. Nothing says what
+  the strata are, how a node moves between them, or whether an app may record that the person
+  asserted it. *Suggest:* document stratum, and let an app mark a write made on the person's
+  explicit action as asserted.
 
 ## 6. Schema registry
 
@@ -186,6 +198,20 @@ rather than deleting it.
 - **6.7 Nothing writes `travel-document`** [observed, 2026-10-04]. The schema is ready for an upload
   (`photo_ids`, per-field `field_provenance`), but no app we know of turns an uploaded passport into
   one, so a reader has nothing to read until the person types it in somewhere.
+
+- **6.8 No schema says which document a trip is on** [observed, 2026-10-08]. `travel-plan` names its
+  `travellers` as `person` nodes and lets each person's documents decide, and `trip` holds no
+  document either. A dual national choosing a passport for one journey has nowhere to record that
+  choice, though it decides the answer. A per-traveller `document_ref` on a candidate would hold it.
+- **6.9 `trip` and `travel-plan` disagree on purpose** [observed, 2026-10-08]. `travel-plan` uses
+  `tourism`, `business`, `study`, `transit` and more; `trip` uses `leisure`, `business`, `family`,
+  `education` and `other`, and its `destination` is free text, not a `place`. Committing a plan to a
+  trip loses the purpose and the place. One purpose list, and a `place_ref` on `trip`, would keep them.
+- **6.10 A plan's destination must be a `place` node** [observed, 2026-10-08]. Writing a
+  `travel-plan` first means finding or minting a `place` of kind `country`. Each app then mints its
+  own copy of "Thailand" unless it dedupes on `country_code`, and `place.source_ref` follows one
+  app's naming convention (`allocations:place:...`). A shared rule for country-level places would
+  help.
 
 ## 7. Security and setup
 

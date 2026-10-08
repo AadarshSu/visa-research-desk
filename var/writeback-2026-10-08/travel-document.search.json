@@ -1,0 +1,22 @@
+{
+  "query": "travel-document",
+  "count": 2,
+  "results": [
+    {
+      "schema_name": "travel-obligation",
+      "version": 1,
+      "description": "Something the traveller must actually DO before a journey, and the state of doing it: apply for a visa, book biometrics, renew a passport, buy insurance, get a vaccination. It exists because of a line that has to be held everywhere else in this domain \u2014 THE ELIGIBILITY VERDICT IS DERIVED AND NEVER STORED. Whether a rule is satisfied is recomputed from the requirement, the person's documents and the dates, every time it is asked, because a stored verdict goes stale the moment a passport expires or a rule changes and it goes stale silently. What cannot be recomputed is what happened: that an appointment was booked for the fourteenth, that the application was submitted on the twentieth with this reference number, that it was refused. That history has no other source, so it gets a node; the judgement that the obligation existed in the first place does not. The loop closes through `produced_document_ref`: a granted application yields a `travel-document`, which then satisfies the requirement on its own terms without anyone having to remember that this obligation was why it exists. A refusal is kept rather than deleted, because a prior refusal genuinely changes later checklists and is one of the questions a later application will ask.\n",
+      "scope": "public",
+      "owner_id": "bb0eb7d7-16cb-4fe0-8665-334d5f746887",
+      "id": "c4500cbb-0247-41a6-ace5-fc1210fd913f"
+    },
+    {
+      "schema_name": "travel-document",
+      "version": 1,
+      "description": "A credential the person holds that bears on crossing a border: a passport, a national identity card, a residence permit, a visa, an ETA or an EUDI PID. One type rather than several, because a residence permit is BOTH an identity document and an entitlement, and splitting identity from permission would force it to exist twice; `kind` says which it is and the `grants` block is present only when the document confers permission rather than merely attesting who you are. The field that makes this schema worth having is `field_provenance`. Where a value came from is not metadata here, it is the difference between an answer and a guess: an expiry read from the MRZ carries a check digit, a date of issue from DG12 is signed by the issuing state, and the same two values typed in by hand are a person's memory of a document they may not be holding. THE RULE THAT FOLLOWS, AND IT IS ABSOLUTE: a self-declared field may RAISE a question and may never CLOSE one. Nothing computed from an unattested value may be presented as a cleared requirement. `issuing_state` is kept separate from `nationality` because the MRZ carries both and they differ for refugee and stateless travel documents, where treating them as one silently produces the wrong rule. `document_code` is kept because it is what lets an agent refuse correctly \u2014 a diplomatic or service passport is not an ordinary one and must never be scored as though it were.\n",
+      "scope": "public",
+      "owner_id": "bb0eb7d7-16cb-4fe0-8665-334d5f746887",
+      "id": "e8b71928-240b-4b86-a46b-0398c61ece63"
+    }
+  ]
+}

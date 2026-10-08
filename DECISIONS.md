@@ -293,6 +293,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [283](#283-the-trip-and-the-passport-may-be-written-to-ofself-and-nothing-the-plan-concluded) | **The trip and the passport may be written to Ofself, and nothing the plan concluded** — then only the trip, as a `travel-plan`, since no schema can link a passport to it; a direct write on our button for the one trip the traveller picks; a `place` minted for the destination where they hold none; built, not yet synced or run live |
 | [280](#280-a-fact-the-traveller-gave-may-decide-the-plan-exact-dates-a-rough-span-wholly-on-one-side-a-detail-read-off-a-document) | **A fact the traveller gave may decide the plan** — exact dates; a rough span wholly on one side; a shared detail read off a document, never a typed-in one; `decided_for` shown beside the decision |
 | [279](#279-travel-dates-reach-the-plan-call-and-no-store-shared-between-travellers-holds-anything-about-one) | **Travel dates reach the plan call; no shared store holds anything about one traveller** — counts made by the app, the model compares; dates never change the decision; corridor store and plan reuse checked and frozen in tests |
 | [278](#278-what-a-traveller-must-see-leaves-the-open-questions-exceptions-disagreements-and-gaps) | **What a traveller must see leaves the open questions** — `exceptions`, `disagreements` and `gaps` are shown, `unresolved_questions` kept for us; `disagreements` returns entry 30's field within item 13's bounds |
@@ -321,6 +322,90 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 283. The trip and the passport may be written to Ofself, and nothing the plan concluded
+
+**2026-10-08 · the owner, amending TODO item 55's rule 6 and settling entry 251's fifth decision.**
+After a plan, a button may offer to write **the trip and the passport** into the traveller's
+Ofself account, and nothing else. **Not written:** the visa decision, the checklist, where to apply,
+fees, the travel authorisation, any deadline, and no to-do derived from the plan. Each is an answer,
+and a stored answer goes stale silently (entry 44, CRUX §4). Approving it would not help, because
+the traveller cannot check it either: 17 of the 19 wrong plans in entry 282 were `verified`.
+
+**What the schemas allow** (read from the registry on 2026-10-08 and saved in
+`var/writeback-2026-10-08/`):
+- **The trip is a `travel-plan`,** "a journey someone is considering but has not committed to".
+  `trip` is the booked journey: a free-text destination and its own purpose list (`leisure`,
+  `education`), which this app's purposes do not map onto. The fields written: `label`; one
+  candidate with `place_ref` and `purpose` (`tourism`, `business`, `study` and `transit` are in its
+  enum); `linked_refs` mirroring the `place_ref`, as the schema requires; `window` from the form's
+  dates — exact dates as `earliest`/`latest` with `flexible: false`, a rough span with
+  `flexible: true`, "not sure" as no window; `commitment: considering`; `status: open`. **Left
+  out:** `decide_by`, which the schema itself calls derived from lead times, and so a conclusion;
+  `verdict_cached_at`; and `ruled_out_reason`.
+- **A trip's candidate must point at a `place` node.** Writing the trip therefore means reusing the
+  traveller's `place` of kind `country` with that code (the app already reads `place`), or creating
+  one. That is a third kind of node, which the owner's line did not name.
+- **No schema says which passport a trip is on.** `travel-plan` names its `travellers` as `person`
+  nodes and says each traveller's own documents decide. The passport can only be written as the
+  traveller's document, unlinked to the trip: a `travel-document` with `kind: passport`,
+  `nationality` (alpha-3) and `document_code: P` (the app researches ordinary passports only, so the
+  form's choice is one), and with `field_provenance` recording the nationality as `manual`,
+  `verification: none`. No number, name, dates or scan. It is written only where the graph holds
+  no passport of that nationality. The schema's own rule binds every reader: a self-declared field
+  "may RAISE a question and may never CLOSE one".
+
+**How:** CRUX §14 already commits to a proposal, which the person approves in Ofself before anything
+is written (guide §19). That needs `propose` in the DLR, and so a re-consent from everyone granted;
+today that is the owner alone.
+
+**The owner's answers, the same day:**
+1. **No passport is written.** Unlinked to the trip, it would say only which passports the person
+   holds, which is not what was wanted. Only the trip is written.
+2. **A `place` is minted** (yes): a `country` place for the destination, only where the traveller
+   holds none of that code, and reused by every later save.
+3. **A direct write on our button, never one per plan.** A traveller may research several trips;
+   the button writes only the one they pick, and it is for someone who knows their Ofself identity
+   and wants it there. The click is the consent, so there is no proposal and no second approval on
+   Ofself's page. The button names exactly what it writes. This needs `nodes:create` for
+   `travel-plan` (and `place`, if 2 is yes) in the DLR, and a re-consent. A trip already in their
+   graph with the same destination, purpose and window is not written twice.
+
+**Built.** `OfselfIdentity.save_trip` (`api/ofself.py`) reads the traveller's `travel-plan`s and
+`place`s; returns `already_saved` where an open plan (not abandoned) has a candidate in that country,
+with that purpose and that window; otherwise reuses their `country` place (a town or a suspended
+place does not count) or mints one, then writes the plan. `POST /oauth/trip` takes the destination,
+purpose and dates. A `403` that is not a lost grant is `OfselfWriteRefused` and asks the traveller
+to re-approve; a lost grant ends the session, as on every read. The page shows "Save this trip to
+Ofself" beside a plan, for a signed-in traveller only, built from the request the plan was made
+for, and says what it saves and that nothing the plan concluded is. CRUX.md declares workflow 3 and
+two `create` requests limited to the fields written; `paradigm crux validate` passes.
+
+**Tested** against a fake Paradigm: what each write holds, and that nothing concluded is in it; the
+place reused, and a town or a suspended place not taken for the country; a rough span saved soft and
+"not sure" with no window; an open plan for the same trip not written again, and one abandoned, for
+another purpose, other dates or ruled out not stopping the save; a refused write, a lost grant and a
+write answered without an id. Seen in the browser with the plan and the save stubbed: the box, the
+body it sends, the saved state, and no box when signed out.
+
+**Synced and run live, 2026-10-09, with the owner's yes.** `crux sync` then `paradigm commit
+--ep-action continue` made DLR v10 with the two `create` requests, existing grants kept (each user
+re-approves before a save can succeed); `crux push` stored the CRUX (spec v11).
+`var/writeback-2026-10-08/probe.py` saved through `save_trip` for the sandbox test user, whose
+grant is full access and ignores the DLR (OFSELF_FEEDBACK 4.1), so this tests the write, not the
+grant:
+- Thailand `tourism`, 1–20 December, and Japan `business`, March–April 2027, each saved with its
+  `country` place minted; each saved again came back `already_saved`, with nothing written.
+- Ofself stored exactly the fields sent, and both trips came back as the form's starting points.
+- **The guide was wrong about the answer:** a write returns `201` with the node itself, `id` at the
+  top, not under `node` (OFSELF_FEEDBACK 2.7). The code accepted both; the tests now use the live
+  shape.
+- **Ofself stamps both nodes `stratum: inferred`,** though the traveller asserted the trip by
+  clicking. The guide never mentions stratum, so nothing here sets it (OFSELF_FEEDBACK 5.8).
+
+**Left:** the owner re-approving the app, a save from a real grant, and a deploy.
 
 ---
 

@@ -1,0 +1,62 @@
+{
+  "query": "trip",
+  "count": 7,
+  "results": [
+    {
+      "schema_name": "contact-group",
+      "version": 1,
+      "description": "A group of people a person keeps together, as an address book's groups: \"Family\", \"Book club\", \"Lisbon trip\". It carries its name and the people it gathers, as the ids of their `person` (or `contact-person`) nodes. A person may be in several groups; a group may be empty. Everyone is also in the reader's own \"All Contacts\", which is never a node. Deleting a group keeps its people.\n",
+      "scope": "public",
+      "owner_id": "4aabe540-9693-4172-9513-6992e51297e8",
+      "id": "2719a3d6-7dcf-4885-a49e-d8b4d7fc2990"
+    },
+    {
+      "schema_name": "place",
+      "version": 2,
+      "description": "A place the person holds, lives in, keeps returning to or is working toward \u2014 a home, a property, a town, a region, a country, an airport, a venue, or a PART of a home or property (its roof, its workshop, a bedroom). One node per place at any grain, with `kind` saying which and `parent_ref` giving the hierarchy (Workshop \u2192 Casa in Catral \u2192 Catral \u2192 Alicante \u2192 Spain) without a second schema. Minted because the platform has no entity for a place: its `location` is a single visit whose `place_ref` points at exactly this, and every other place field on the gateway is a bare string. Cited by id from properties, goals, ends, decisions, trips, organizations, events and facts (edges: located_at, lives_at, part_of, fact_about). What is TRUE of a place \u2014 its nearest airport, its tax regime \u2014 is a `fact` node that points at it, never a field on it. Never deleted; `suspended` retires, as people are retired. v2 (2026-09-24) adds the `part` grain, `part_type`, a house's `drawing`, and declares `coords_source` / `coords_label`.",
+      "scope": "public",
+      "owner_id": "f62fbcfb-8495-4204-b1d8-e795b2fb1077",
+      "id": "e10b76a2-c8cf-4643-ab34-ac4278edfae9"
+    },
+    {
+      "schema_name": "travel-stay",
+      "version": 1,
+      "description": "One person's dated presence in one country: entered on this day, left on that day. A `trip` holds a journey and a single destination; a stay holds the leg, and the distinction exists because the hardest computation in this domain runs on legs. A rolling allowance \u2014 ninety days in any one hundred and eighty across the whole Schengen area \u2014 cannot be answered from a journey with one destination and two dates. It needs every entry and exit, in order, across every member country, including trips taken before this app existed. A stay is also what turns self-declared travel history into recorded fact. Asked cold, \"which countries have you visited recently\" is unverifiable and stale by construction, usable only to raise a question. Accumulated as stays, the same history is a record with dates, and after a year of use the unverifiable window has shrunk to whatever predates the app. `exit_at` may be absent, and that is a real state rather than a missing field: the person is still there, or has not said yet. An open stay must be counted as ongoing rather than as zero days, because treating it as zero understates a rolling total in exactly the direction that gets someone refused at a border.\n",
+      "scope": "public",
+      "owner_id": "bb0eb7d7-16cb-4fe0-8665-334d5f746887",
+      "id": "b7cdf0af-216b-4544-a8eb-840d6adf42f4"
+    },
+    {
+      "schema_name": "travel-plan",
+      "version": 1,
+      "description": "A journey someone is considering but has not committed to \u2014 the question, where a `trip` is the answer. It exists because the eligibility question is most valuable BEFORE there is a trip: learning that a destination takes six weeks of consular processing is useful in January and worthless in March. What a plan holds that a trip structurally cannot is CANDIDATES. \"Somewhere warm in February \u2014 Thailand, Vietnam or Brazil\" is one plan with three candidates that resolve to nothing-to-do, three days, and six weeks plus an interview. A trip has one destination by definition, so modelling that comparison as trips means creating and deleting journeys that never happened. Dates gate the VALIDITY half of the question, not the PLANNING half, which is why a plan with only a rough window is still worth evaluating: whether a visa is needed at all, which route applies, how long it takes, and whether a second nationality is the better door are all answerable with no dates. Passport validity beyond departure, the ten-year issue rule and any rolling days-of-presence count are not, and must not be guessed from a rough window. `travellers` is plural and each carries their own documents and nationalities: two people on one plan routinely get different verdicts for the same candidate, and a design that assumes one traveller is wrong for most couples and every family.\n",
+      "scope": "public",
+      "owner_id": "bb0eb7d7-16cb-4fe0-8665-334d5f746887",
+      "id": "e9d46339-1d99-425b-a0f2-882ab3024e0e"
+    },
+    {
+      "schema_name": "fact",
+      "version": 1,
+      "description": "A fact about the world that bears on what the person is doing \u2014 a tax rule, a visa floor, a fee, the nearest airport to a town \u2014 as one node, looked up once, dated, sourced, and cited from every goal, decision, trip and place it bears on. It carries no verdict and no advice: the rule, the figure, the date, and where it came from. What the person did with it lives on the goal or the decision that cited it (edges: cites_fact from the citer, fact_about to the place, organization or goal it is about). Superseded, never edited in place: when the world moves a successor is minted with `supersedes_ref` and this one is marked, so a decision taken on the old value still reads true.",
+      "scope": "public",
+      "owner_id": "f62fbcfb-8495-4204-b1d8-e795b2fb1077",
+      "id": "a6aa0a3f-86d1-41e8-9381-af2e29404969"
+    },
+    {
+      "schema_name": "place",
+      "version": 1,
+      "description": "A place the person holds, lives in, keeps returning to or is working toward \u2014 a home, a property, a town, a region, a country, an airport, a venue. One node per place at any grain, with `kind` saying which and `parent_ref` giving the hierarchy (Catral \u2192 Alicante \u2192 Spain) without a second schema. Minted because the platform has no entity for a place: its `location` is a single visit whose `place_ref` points at exactly this, and every other place field on the gateway is a bare string. Cited by id from properties, goals, ends, decisions, trips, organizations, events and facts (edges: located_at, lives_at, part_of, fact_about). What is TRUE of a place \u2014 its nearest airport, its tax regime \u2014 is a `fact` node that points at it, never a field on it. Never deleted; `suspended` retires, as people are retired.",
+      "scope": "public",
+      "owner_id": "f62fbcfb-8495-4204-b1d8-e795b2fb1077",
+      "id": "dcf022cb-5fca-48eb-a988-cf5ef46f2206"
+    },
+    {
+      "schema_name": "trip",
+      "version": 1,
+      "description": "A journey or holiday \u2014 destination, dates, itinerary, memories.",
+      "scope": "public",
+      "owner_id": null,
+      "id": "1c619eda-8447-484a-89d3-9b9d8b610447"
+    }
+  ]
+}

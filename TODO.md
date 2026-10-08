@@ -47,6 +47,7 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 | **Now** | 80. A travel-readiness app for one traveller — next, the news panel | `explore`, with the owner |
 |  | 81. Explore new layouts and UI workflows for the site | `explore`, its own session |
 |  | 84. Build the news panel from Ofself's Assimilation destination briefing | `soon`, part of 80 |
+|  | 88. Offer to write the trip to Ofself after a plan — synced and saved live; re-approval and deploy next | `soon` |
 |  | 63. Make most corridors return accurate and useful information | `ongoing` |
 |  | 55. Take the traveller from Ofself's shared identity, through one adapter | `soon` |
 |  | 79. Score pages fetched live with the post-aware stored-text fixes | `soon` |
@@ -182,17 +183,29 @@ input to the visa answer; the visa form gets no harder. Mockup with example data
 **Before building, the owner decides** (each set out in entry 251): (1) dates, fees and processing
 times as cited values; (2) the travel-advice source tier and whose advice; (3) the news plugin
 writing into the traveller's account; (4) research-first with a "have you booked?" question, or
-not; (5) writing to Ofself — only what the person did, chose or confirmed; (6) reading their
+not; (5) writing to Ofself — settled by entry 283: the trip only (item 88); (6) reading their
 calendar.
 
 **To see the form fill from real documents,** a `travel-document` has to exist: no app writes one
 yet. Create one in the owner's account with their developer token, or in the sandbox user, **with
 the owner's yes** — only the fields the app reads, never a number, name or scan.
 
-**Rules it meets — each moves only by a decision entry:** nothing written back to Ofself (item 55
+**Rules it meets — each moves only by a decision entry:** nothing written back to Ofself beyond the trip (item 55
 rule 6, entry 44); no submission, booking or form filling, and no promise of approval; any field
 added to `TravellerProfile` reaches the model on every plan (item 55 rule 1) — advice, news and
 weather never do.
+
+### 88. Offer to write the trip to Ofself after a plan — `soon`, **re-approval and deploy next**
+
+**The owner, 2026-10-08 (entry 283):** a button after a plan writes that one trip into the
+traveller's Ofself account as a `travel-plan`, directly, on their click, minting a `country` place
+for the destination where they hold none. Nothing the plan concluded is written, and no passport.
+**Built, synced (DLR v10) and saved live in the sandbox user** (entry 283). **Left:**
+1. **The owner re-approves the app on Ofself.** Existing grants were kept without `create`, so a
+   save from a real grant answers `403` (`OfselfWriteRefused`) until then.
+2. **One save from the owner's own account,** signed in on the page — the sandbox grant ignores
+   the DLR, so only a real grant shows the `create` request narrows as declared.
+3. **Deploy** to the server.
 
 ### 63. Make most corridors return accurate and useful information — `ongoing`
 
@@ -268,7 +281,8 @@ is in [CRUX.md](CRUX.md), argued in entries 180 and 181; platform surprises are 
 4. **A missing deciding field is asked, never defaulted** — the anonymous form's default traveller
    must not answer someone else's corridor.
 5. **After the adapter a country is an ISO alpha-2 code.**
-6. **Nothing is written back without a decision entry.** A plan is a rendering, never a stored fact
+6. **Nothing is written back without a decision entry.** Entry 283 allows the trip and the
+   passport, and nothing the plan concluded; then only the trip (item 88). A plan is a rendering, never a stored fact
    (entry 44); `travel-requirement` rows are never read as evidence. `fact` nodes are never evidence.
 
 ### 79. Score pages fetched live with the post-aware stored-text fixes — `soon`

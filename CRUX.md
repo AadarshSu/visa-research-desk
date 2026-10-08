@@ -70,7 +70,9 @@ traveller confirms before one is written.
 checklist, a place to apply — is a rendering of official pages retrieved for one request. Written
 into the graph it would become a stored answer that every other app reads, with no citation, no age
 and no way to go stale, and a wrong "you need a visa" is the most damaging thing this app can say.
-Its project rules forbid storing an answer (DECISIONS entry 44).
+Its project rules forbid storing an answer (DECISIONS entry 44). What it may write is the trip
+the traveller chose to save — their own statement of where and when, not a conclusion (§7,
+workflow 3).
 
 ## 5. Everyday decisions
 
@@ -101,7 +103,15 @@ their account: a destination and purpose from a `travel-plan` they are consideri
 from their `travel-document`s and `citizenships` — with its expiry, and whether that date was read
 off the passport or typed in — and the country they apply from from a residence permit. A
 diplomatic or service passport is named and not offered. They confirm or change every field. The app researches the destination's official pages and shows a plan
-with a citation on every claim, or refuses and says why. Nothing is in the graph afterwards.
+with a citation on every claim, or refuses and says why. Nothing is in the graph afterwards
+unless they ask (workflow 3).
+
+**Workflow 3 (DECISIONS entry 283).** Beside a plan, a signed-in traveller may save that trip to
+their account. One click writes one `travel-plan` they are considering — the destination, the
+purpose and the dates they entered, as its window — and, when they hold no `place` of kind
+`country` for the destination, that place first. A traveller who researched several trips saves
+the one they choose. An open plan for the same trip is not written twice. Nothing the plan
+concluded is written.
 
 **Workflow 2.** A traveller whose authorisation was paused, revoked or has expired is asked to
 reconnect. The app never substitutes a default traveller, and a plan is not shown if access was
@@ -155,7 +165,9 @@ Nothing shared is never read as nothing recorded — Ofself answers both the sam
 ## 10. What it deliberately doesn't do
 
 **Not built.**
-- **Writing back.** No node is created, edited or proposed; see §4.
+- **Writing back anything concluded.** Only the trip a traveller saves is written (§7,
+  workflow 3): never the visa decision, a checklist, a fee, a deadline, `decide_by` or a passport.
+  No node is edited or proposed.
 - **Reading the user's `guidelines` custom prompts.** Text from outside would steer the model call
   that decides the visa answer.
 - **Reading `fact` nodes as evidence.** Other apps already store visa rules there with a source URL,
@@ -182,7 +194,8 @@ Nothing shared is never read as nothing recorded — Ofself answers both the sam
 
 ## 11. Schemas used, and why
 
-**Schemas.** All read-only, and every read narrowed to named fields.
+**Schemas.** Read-only and narrowed to named fields, except two this app creates on a
+traveller's click (§7, workflow 3): `travel-plan` and `place`, each limited to the fields written.
 - **`work-authorization`** — `citizenships`, the passport default the app uses today.
 - **`travel-document`** — the passport as a document, and residence permits: type, nationality,
   issuing state, dates, what it grants, and where each value came from. For §7's planned
@@ -231,6 +244,14 @@ dlr:
       verb: read
       schemas: [place]
       fields: [kind, country_code, parent_ref, status]
+    - resource: nodes
+      verb: create
+      schemas: [travel-plan]
+      fields: [label, candidates, linked_refs, window, commitment, status]
+    - resource: nodes
+      verb: create
+      schemas: [place]
+      fields: [name, kind, country_code, status, source_system, source_ref]
 ```
 
 **Never requested, at any point.** A document or application `number` or `reference_number`,
@@ -257,26 +278,30 @@ residence with its status and expiry.
 
 ## 13. Cross-app connections
 
-**Who reads what you write.** No app. This app writes nothing.
+**Who reads what you write.** Any app reading `travel-plan` — this one included, which offers a
+saved trip back as the form's starting point (§7, planned C). The `place` it mints is the
+person's own country node, which any app's `place` reference may then point at.
 
-**If nobody does.** It feeds nothing outward, which matches §4: it reuses and does not compound.
+**If nobody does.** The trip still starts this app's form next time. Nothing concluded feeds
+outward, which matches §4.
 
 ## 14. Stratum & ratification
 
-**Asserted.** Nothing.
+**Asserted.** The trip a traveller saves, on their click: their own statement of where they are
+considering going, for what and when (§7, workflow 3). Nothing inferred.
 
-**Proposed.** Nothing today. If the traveller's own statements — which passport this trip is on,
-where they apply from — are ever written back, that is a proposal the person approves, never an
-inference, and it waits on a decision entry.
+**Proposed.** Nothing. The click on "Save this trip to Ofself" is the traveller's approval, so
+the trip is written directly rather than proposed for a second approval on Ofself (DECISIONS entry
+283). Which passport a trip is on is not written: no schema can link one to a trip.
 
-**If nothing.** Nothing is written, so no inference exists to compound.
+**If nothing.** Only what the traveller stated is written, so no inference exists to compound.
 
 ## 15. Platform features
 
 | Feature | Using it | Why / why not |
 |---|---|---|
 | `nodes:read` | yes | `work-authorization` for passport nationality today; the travel schemas and `place` for §7's planned workflows |
-| `nodes:create` | no | Nothing concluded is stored; §4 |
+| `nodes:create` | yes | `travel-plan` and `place` only, on the traveller's click: the trip they chose to save (§7, workflow 3). Nothing concluded is stored; §4 |
 | `nodes:edit` | no | Another app's record is not this app's to change |
 | `nodes:delete` | no | As above |
 | `relationships` | no | No graph structure is needed to answer a visa question |

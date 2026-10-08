@@ -1,0 +1,166 @@
+{
+  "query": "person",
+  "count": 20,
+  "results": [
+    {
+      "schema_name": "cv-layout",
+      "version": 4,
+      "description": "The arrangement of one CV and the join between its entries and the graph. One node per resume-parse, keyed by parse_ref. The parse itself cannot carry either: its entry shapes forbid extra keys and a node is pinned to the schema version it was created under, so a node id or a layout field written onto the parse is a write the gateway refuses. `bindings` pin each parse entry (section, index) to the canonical node promotion made or reused for it, with the entry's identity key at binding time as a guard against a reordered list. `section_order` and `headings` are the person's own arrangement as the extraction read it. `print_statements` is the holder's choice whether the sent document quotes what referees confirmed. `appearance` is the r\u00e9sum\u00e9's own look on the sent document (paper, display face), separate from any card's.",
+      "scope": "public",
+      "owner_id": "f62fbcfb-8495-4204-b1d8-e795b2fb1077",
+      "id": "a533ebbf-4294-4ed2-b567-36d1689e12f9"
+    },
+    {
+      "schema_name": "account-identity",
+      "version": 5,
+      "description": "The name and email the person typed into their Caliber account \u2014 onboarding's ask and Account \u2192 About's Save. One node per account. It is the first of three name stores: what they typed, then the name on their CV (resume-parse identity.display_name), then the profile Paradigm minted at signup; every surface that prints the holder's name resolves them in that order (lib/holder-name.js). Its own schema because neither existing home can take these fields: the platform's profile node is not this app's to write, and the persona singleton's existing nodes are pinned to the schema version they were created under. Since v2 it also keeps the tray's seen list \u2014 which inbox rows the person has pressed or marked read (lib/inbox-seen.js) \u2014 so every device agrees on what is seen; a message's read state stays on its own node. Since v3 it also keeps sharing (lib/shares.js): `shares`, the records this person shared and with whom at what level (the truth Caliber enforces), and `shared_with_me`, the index of what others shared with them.",
+      "scope": "public",
+      "owner_id": "f62fbcfb-8495-4204-b1d8-e795b2fb1077",
+      "id": "8e10ca69-0c1a-4222-ac32-c5f800b8f746"
+    },
+    {
+      "schema_name": "reference-ask-inbox",
+      "version": 4,
+      "description": "An ask that arrived: 'this person would like you to vouch for them'. Lives in the RECIPIENT'S graph and is theirs \u2014 theirs to answer, keep or delete, and nobody else can edit it. Caliber writes it on the asker's behalf because the platform gives an app no way to make one user's node readable by another (POST /sharing and POST /follows are both JWT-only, and an app is never issued a user JWT), so the ask is COPIED rather than shared. That copy is the honest cost of the courier: once written it is the recipient's node, so the asker withdrawing marks it withdrawn rather than removing it. The claim text is duplicated from the asker's reference-request, which remains the original \u2014 request_ref points back at it so the two can be rejoined when user-to-user sharing becomes reachable, at which point this schema is replaced by a belongs_to attachment and deleted. scope is 'public' because on this platform scope governs who can see the VOCABULARY, not who can read the nodes \u2014 node data is gated by owner_id and exposure profiles either way. It cannot be 'private': a third-party app is shown a private schema only when that app created it (backend/app/routes/schemas.py::_base_schema_query), and this one is created by a developer JWT, so private would make it permanently invisible to Caliber's app key and every write would 404.",
+      "scope": "public",
+      "owner_id": "f62fbcfb-8495-4204-b1d8-e795b2fb1077",
+      "id": "3d78d2d6-79e6-42a6-b3dc-8a24056f46db"
+    },
+    {
+      "schema_name": "reference-intake",
+      "version": 1,
+      "description": "One published reference figure for one nutrient: a Daily Value, a reference intake, a tolerable upper level. The figure is true for everyone in the population it names \u2014 what varies is whether a given person is in that population, which is not this node's business and never stated here. A FIGURE IS NOT A TARGET. `direction` carries the difference the label regulations make and food apps routinely lose: 18 mg of iron is a floor, 2300 mg of sodium is a ceiling, and an upper level is neither \u2014 it is the point past which more is not better. A node that did not say which would be read as a goal by the first thing to pick it up.\n",
+      "scope": "public",
+      "owner_id": "9ae3ac45-71a3-4f45-9967-ed7eb65e930a",
+      "id": "66b48585-8509-4c41-b28f-f9d4adcfa2bd"
+    },
+    {
+      "schema_name": "cuisine",
+      "version": 1,
+      "description": "A cuisine, and the family it belongs to. A vocabulary of the world, not a classification of anybody: nothing is read off a meal to decide a cuisine, and a word of a person's own stands beside these as an equal rather than being corrected into one of them. A FAMILY IS A CUISINE TOO. \"Indian\" is a complete answer for someone who does not want to name a state, so a family has a node of its own and names itself as its own family.\n",
+      "scope": "public",
+      "owner_id": "9ae3ac45-71a3-4f45-9967-ed7eb65e930a",
+      "id": "fda81b15-f612-4d71-a56d-f926cf5e8db7"
+    },
+    {
+      "schema_name": "dietary-rule",
+      "version": 1,
+      "description": "A line a plate does not cross, as the world names it: a diet, or a major allergen. Two kinds kept apart on purpose \u2014 an allergy is not a preference, and anything reading these needs to see at a glance which one it is holding. These are the shared ones only. Most of the lines people actually keep have no common name (\"no meat on Tuesdays\", \"eggless only\"), and those stay in the person's own record where they belong; this catalog exists so the common ones are not retyped into every app that asks.\n",
+      "scope": "public",
+      "owner_id": "9ae3ac45-71a3-4f45-9967-ed7eb65e930a",
+      "id": "5023642e-e7cc-4941-b560-e74ddd93a77c"
+    },
+    {
+      "schema_name": "food-composition-source",
+      "version": 1,
+      "description": "A published food composition table or product database, as a fact about the world rather than a string in one app: who publishes it, which population its numbers describe, under what licence they travel, and how one of its records is cited. Every food record this app writes already names its source by a short id (\"nevo\", \"ciqual\"); only this app could expand that id into a licence and a citation. One node per table, in the app's own catalog, means a person's food can point at the table it came from and any of their apps can read what it is. Availability is deliberately absent: whether a table can answer right now is runtime state of one deployment, not a property of the table.\n",
+      "scope": "public",
+      "owner_id": "9ae3ac45-71a3-4f45-9967-ed7eb65e930a",
+      "id": "379c1194-429f-4613-9db3-05ec712aee1a"
+    },
+    {
+      "schema_name": "account-identity",
+      "version": 4,
+      "description": "The name and email the person typed into their Caliber account \u2014 onboarding's ask and Account \u2192 About's Save. One node per account. It is the first of three name stores: what they typed, then the name on their CV (resume-parse identity.display_name), then the profile Paradigm minted at signup; every surface that prints the holder's name resolves them in that order (lib/holder-name.js). Its own schema because neither existing home can take these fields: the platform's profile node is not this app's to write, and the persona singleton's existing nodes are pinned to the schema version they were created under. Since v2 it also keeps the tray's seen list \u2014 which inbox rows the person has pressed or marked read (lib/inbox-seen.js) \u2014 so every device agrees on what is seen; a message's read state stays on its own node. Since v3 it also keeps sharing (lib/shares.js): `shares`, the records this person shared and with whom at what level (the truth Caliber enforces), and `shared_with_me`, the index of what others shared with them.",
+      "scope": "public",
+      "owner_id": "f62fbcfb-8495-4204-b1d8-e795b2fb1077",
+      "id": "b3a419df-8ab0-467d-9b98-304588f8f358"
+    },
+    {
+      "schema_name": "account-identity",
+      "version": 3,
+      "description": "The name and email the person typed into their Caliber account \u2014 onboarding's ask and Account \u2192 About's Save. One node per account. It is the first of three name stores: what they typed, then the name on their CV (resume-parse identity.display_name), then the profile Paradigm minted at signup; every surface that prints the holder's name resolves them in that order (lib/holder-name.js). Its own schema because neither existing home can take these fields: the platform's profile node is not this app's to write, and the persona singleton's existing nodes are pinned to the schema version they were created under. Since v2 it also keeps the tray's seen list \u2014 which inbox rows the person has pressed or marked read (lib/inbox-seen.js) \u2014 so every device agrees on what is seen; a message's read state stays on its own node. Since v3 it also keeps sharing (lib/shares.js): `shares`, the records this person shared and with whom at what level (the truth Caliber enforces), and `shared_with_me`, the index of what others shared with them.",
+      "scope": "public",
+      "owner_id": "f62fbcfb-8495-4204-b1d8-e795b2fb1077",
+      "id": "6c779c9d-8397-40fd-8e3d-121ae0a8db45"
+    },
+    {
+      "schema_name": "food-preferences",
+      "version": 2,
+      "description": "How this person wants to be fed, as distinct from what they are aiming at nutritionally \u2014 one node per person. It holds the variety level they actually want and how soon a repeat starts to feel like a repeat, the cuisines and formats they lean on, and what they avoid, with the reason and whether it is absolute. It is kept apart from `nutrition-goal` on purpose: preferences outlive any one goal, and folding them in would lose them every time a goal ended. It is also kept apart from per-food liking, which belongs on the food \u2014 `food.favorite` carries the settled answer and `meal-review` nodes are the evidence \u2014 so this node holds only what is true about the person rather than about one dish. An avoidance with `reason: allergy` and `strict: true` is the one thing here that Plan must treat as a hard constraint rather than a preference.\n",
+      "scope": "public",
+      "owner_id": "9ae3ac45-71a3-4f45-9967-ed7eb65e930a",
+      "id": "57a1c7e8-188c-4403-9e72-c2545c9b4205"
+    },
+    {
+      "schema_name": "definition",
+      "version": 6,
+      "description": "A definition \u2014 a term and what it means \u2014 as a first-class node of the ecosystem (owner law 2026-09-18: definitions are currency, not a kind of note). The node's title is the term. Any app mints one (Ink from a selection, the dictionary from its index, a persona through a hand that ratifies), any app cites one, and the dictionary app is where they are cultivated. The definition itself is markdown and may be empty: a term seen and not yet defined is a real state, and the dictionary shows it as such. Usages are the places the term was met \u2014 each an anchor (the quote and a little of either side) into a source node in some app, so the citing words can be found again without a position ever being written into the source. Origin says whose words the definition is. Stance says whether the term is held or avoided \u2014 a person's vocabulary is what they refuse as much as what they keep \u2014 and an avoided term names, in rather, the words to use instead.",
+      "scope": "public",
+      "owner_id": "4aabe540-9693-4172-9513-6992e51297e8",
+      "id": "41c681eb-785d-46ef-a228-3a4f7d4bfd9e"
+    },
+    {
+      "schema_name": "definition",
+      "version": 5,
+      "description": "A definition \u2014 a term and what it means \u2014 as a first-class node of the ecosystem (owner law 2026-09-18: definitions are currency, not a kind of note). The node's title is the term. Any app mints one (Ink from a selection, the dictionary from its index, a persona through a hand that ratifies), any app cites one, and the dictionary app is where they are cultivated. The definition itself is markdown and may be empty: a term seen and not yet defined is a real state, and the dictionary shows it as such. Usages are the places the term was met \u2014 each an anchor (the quote and a little of either side) into a source node in some app, so the citing words can be found again without a position ever being written into the source. Origin says whose words the definition is. Stance says whether the term is held or avoided \u2014 a person's vocabulary is what they refuse as much as what they keep \u2014 and an avoided term names, in rather, the words to use instead.",
+      "scope": "public",
+      "owner_id": "4aabe540-9693-4172-9513-6992e51297e8",
+      "id": "df4f1b3e-19b8-46c3-9641-307322dd1965"
+    },
+    {
+      "schema_name": "resume-parse",
+      "version": 6,
+      "description": "Structured extraction from a rawfile resume by an LLM. Holds everything the model found, plus provenance, before optional promotion to canonical schemas (job, Skill, Project, Person, etc.). One node per parse run; re-uploads create new parse nodes \u2014 the prior is preserved for diffing.",
+      "scope": "public",
+      "owner_id": "f62fbcfb-8495-4204-b1d8-e795b2fb1077",
+      "id": "498cac2e-cfbc-41fb-a153-2feed75ca5ea"
+    },
+    {
+      "schema_name": "cv-layout",
+      "version": 3,
+      "description": "The arrangement of one CV and the join between its entries and the graph. One node per resume-parse, keyed by parse_ref. The parse itself cannot carry either: its entry shapes forbid extra keys and a node is pinned to the schema version it was created under, so a node id or a layout field written onto the parse is a write the gateway refuses. `bindings` pin each parse entry (section, index) to the canonical node promotion made or reused for it, with the entry's identity key at binding time as a guard against a reordered list. `section_order` and `headings` are the person's own arrangement as the extraction read it. `print_statements` is the holder's choice whether the sent document quotes what referees confirmed. `appearance` is the r\u00e9sum\u00e9's own look on the sent document (paper, display face), separate from any card's.",
+      "scope": "public",
+      "owner_id": "f62fbcfb-8495-4204-b1d8-e795b2fb1077",
+      "id": "9189bc3d-c6ee-4c86-ba35-2709d60fb25a"
+    },
+    {
+      "schema_name": "nutrition-goal",
+      "version": 1,
+      "description": "A nutrition goal the person set, and how it breaks down. Extends `goal`, because a nutrition goal is a committed end with a horizon and a status like any other, and inherits `description`, `horizon`, `status`, `priority`, `due_at` and `tags` from it rather than restating them. What it adds is the nutritional part: whether the goal is held intuitively, numerically or both; the period it runs over; the per-nutrient targets; the opt-in breakdown of those targets to a day and then to a meal; and the flexibility level, which says how strictly a day may miss and whether a shortfall averages out across the week. The breakdown is a RULE, not dated rows \u2014 shares or explicit targets per occasion \u2014 so correcting it never leaves stale per-day records behind, and a day's standing is derived at read time. An intuitive goal with no targets is a complete, legal goal: \"more protein, less snacking at night\" is how most people hold this, and it is enough for Plan to act on.\n",
+      "scope": "public",
+      "owner_id": "9ae3ac45-71a3-4f45-9967-ed7eb65e930a",
+      "id": "2baf5d85-67d2-4925-b525-6f302d882c31"
+    },
+    {
+      "schema_name": "food-preferences",
+      "version": 1,
+      "description": "How this person wants to be fed, as distinct from what they are aiming at nutritionally \u2014 one node per person. It holds the variety level they actually want and how soon a repeat starts to feel like a repeat, the cuisines and formats they lean on, and what they avoid, with the reason and whether it is absolute. It is kept apart from `nutrition-goal` on purpose: preferences outlive any one goal, and folding them in would lose them every time a goal ended. It is also kept apart from per-food liking, which belongs on the food \u2014 `food.favorite` carries the settled answer and `meal-review` nodes are the evidence \u2014 so this node holds only what is true about the person rather than about one dish. An avoidance with `reason: allergy` and `strict: true` is the one thing here that Plan must treat as a hard constraint rather than a preference.\n",
+      "scope": "public",
+      "owner_id": "9ae3ac45-71a3-4f45-9967-ed7eb65e930a",
+      "id": "75b1d949-e197-40fb-9fa7-40c35efcc24b"
+    },
+    {
+      "schema_name": "meal-plan",
+      "version": 1,
+      "description": "A stretch of meals the person planned ahead \u2014 usually a week. The plan is the node and the slots are rows, each a date and an occasion with what is intended for it: a `meal-format`, specific `food` nodes, or just a sentence. A slot is an INTENTION and never a record: when the meal actually happens it is logged as an `eating` node like any other, and the slot points at it through `eating_ref`, so plan-versus-actual is readable without the same meal being stored twice and without a plan quietly becoming a log. A slot that was skipped or swapped says so, because the gap between what someone planned and what they did is the most useful thing in here. Plans are disposable: abandoning one is normal and leaves the eating record untouched.\n",
+      "scope": "public",
+      "owner_id": "9ae3ac45-71a3-4f45-9967-ed7eb65e930a",
+      "id": "989ba682-2dc9-4707-986b-1dffa4599417"
+    },
+    {
+      "schema_name": "meal-review",
+      "version": 1,
+      "description": "What the person made of a meal after having it \u2014 the survey half of logging. Extends `perception`, which extends `percept`, because a review IS what a person thinks or feels about something at a moment: it inherits `subject_ref` (the `eating` or `food` node it is about), `subject_schema`, `text` in their own words, `valence`, `facet` and `at`, and so reaches the observation stratum the loop and journals already read instead of sitting in a private ratings table. What it adds is the part that is specific to a meal and that Plan needs as FACTS rather than prose: whether they would have it again, whether the portion left them right, what was off about it, and whether it looked like a finished plate. Every field is optional \u2014 a review that is one sentence of text and nothing else is complete, and no survey is ever required to log a meal. These are also the evidence that settles `food.favorite` and that proposes what belongs in `nutrition-preferences`; neither is written from a single review.\n",
+      "scope": "public",
+      "owner_id": "9ae3ac45-71a3-4f45-9967-ed7eb65e930a",
+      "id": "21a1fd5a-591a-4f82-a9e7-480b4551f438"
+    },
+    {
+      "schema_name": "thing",
+      "version": 2,
+      "description": "An object in a person's life that they keep a relationship with: something they own, want, have borrowed or lent, keep for someone, or have let go. It carries its story (where it came from, from whom), where it lives, and what it cost, as links to person, place, photo and transaction nodes. Its moments are thing-moment nodes and how the person feels about it are perception nodes, both pointing here. Not an insurance inventory: no serials, valuations or warranties.\n",
+      "scope": "public",
+      "owner_id": "4aabe540-9693-4172-9513-6992e51297e8",
+      "id": "7d44c6d0-b8cc-495d-b4c8-0dab92217581"
+    },
+    {
+      "schema_name": "thing-moment",
+      "version": 1,
+      "description": "One moment in a person's life with a thing: acquiring it, using it, caring for it, mending it, lending it and having it back, moving it, a check-in, wanting it, deciding, letting it go. One node per moment so any app reads them as events; the thing's arc is these, in time.\n",
+      "scope": "public",
+      "owner_id": "4aabe540-9693-4172-9513-6992e51297e8",
+      "id": "f195bde0-14d7-4971-9615-7fdbbf566a87"
+    }
+  ]
+}

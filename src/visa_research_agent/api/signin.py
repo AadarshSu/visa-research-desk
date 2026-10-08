@@ -40,20 +40,27 @@ from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse, RedirectResponse
+from pydantic import Field
 
 from visa_research_agent.api.allowance import (
     AllowanceSpent,
     AllowanceStoreError,
     AnonymousAllowance,
 )
+from visa_research_agent.api.countries import normalise_country
 from visa_research_agent.api.ofself import (
     OfselfAuthorizationLost,
     OfselfError,
     OfselfIdentity,
     OfselfSignInRejected,
+    OfselfWriteRefused,
+    SavedTrip,
     TravellerDefaults,
+    TripToSave,
 )
 from visa_research_agent.config.settings import settings
+from visa_research_agent.discovery.lexicon import get_country_registry
+from visa_research_agent.domain.models import StrictModel, TravelPurpose, TripDates
 
 SESSION_COOKIE = "visa_desk_session"
 PENDING_COOKIE = "visa_desk_signin"
@@ -407,21 +414,82 @@ async def traveller(
     try:
         return await sign_in.identity.traveller_defaults(user_id, today=date.today())
     except OfselfAuthorizationLost as exc:
-        # The grant is gone, paused or expired: the one honest answer is to ask them to reconnect,
-        # never to carry on as if a traveller had been described (item 55, rule 4). And the session
-        # ends here too: a browser whose grant is gone is not signed in to anything this app can
-        # read, and leaving the cookie kept it looking signed in (pointed out by Ofself,
-        # 2026-09-24).
-        response = JSONResponse(
-            status_code=status.HTTP_403_FORBIDDEN,
-            content={"detail": {"message": str(exc), "code": exc.code, "reconnect": True}},
-        )
-        response.delete_cookie(SESSION_COOKIE)
-        return response
+        return grant_lost(exc)
     except OfselfError as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY, detail={"message": str(exc)}
         ) from exc
+
+
+class SaveTripRequest(StrictModel):
+    """The trip on the form, as the plan beside the button was researched for."""
+
+    destination: str = Field(min_length=1, max_length=80)
+    """A destination's slug as the page lists it, or a country code."""
+
+    purpose: TravelPurpose
+    trip: TripDates | None = None
+
+
+@router.post("/trip", response_model=SavedTrip)
+async def save_trip(
+    body: SaveTripRequest,
+    request: Request,
+    sign_in: Annotated[SignIn, Depends(require_sign_in)],
+) -> SavedTrip | JSONResponse:
+    """Save the trip to the signed-in traveller's Ofself account (DECISIONS entry 283).
+
+    Only on their click, and only the trip they chose: a `travel-plan` they are considering, with
+    its destination, purpose and window, and nothing the plan concluded. The destination's
+    `place` is minted only where they hold none.
+    """
+
+    user_id = sign_in.signed_in_user(request)
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"message": "Sign in with Ofself first.", "sign_in": True},
+        )
+    try:
+        by_slug = next(
+            (c.code for c in get_country_registry().countries if c.slug == body.destination), None
+        )
+        destination = by_slug or normalise_country(body.destination)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail={"message": str(exc)}
+        ) from exc
+    trip = TripToSave(destination=destination, purpose=body.purpose, trip=body.trip)
+    try:
+        return await sign_in.identity.save_trip(user_id, trip)
+    except OfselfAuthorizationLost as exc:
+        return grant_lost(exc)
+    except OfselfWriteRefused as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"message": str(exc), "permission": True},
+        ) from exc
+    except OfselfError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY, detail={"message": str(exc)}
+        ) from exc
+
+
+def grant_lost(exc: OfselfAuthorizationLost) -> JSONResponse:
+    """Ask the traveller to reconnect, and end the session with the grant.
+
+    The grant is gone, paused or expired: the one honest answer is to ask them to reconnect, never
+    to carry on as if a traveller had been described (item 55, rule 4). And the session ends here
+    too: a browser whose grant is gone is not signed in to anything this app can read, and leaving
+    the cookie kept it looking signed in (pointed out by Ofself, 2026-09-24).
+    """
+
+    response = JSONResponse(
+        status_code=status.HTTP_403_FORBIDDEN,
+        content={"detail": {"message": str(exc), "code": exc.code, "reconnect": True}},
+    )
+    response.delete_cookie(SESSION_COOKIE)
+    return response
 
 
 @router.post("/logout", include_in_schema=False)

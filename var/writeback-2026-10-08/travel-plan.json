@@ -1,0 +1,156 @@
+{
+  "category": null,
+  "created_at": "2026-09-20T21:52:03.417261+00:00",
+  "created_by": "shato",
+  "created_by_third_party_id": null,
+  "deleted_at": null,
+  "description": "A journey someone is considering but has not committed to \u2014 the question, where a `trip` is the answer. It exists because the eligibility question is most valuable BEFORE there is a trip: learning that a destination takes six weeks of consular processing is useful in January and worthless in March. What a plan holds that a trip structurally cannot is CANDIDATES. \"Somewhere warm in February \u2014 Thailand, Vietnam or Brazil\" is one plan with three candidates that resolve to nothing-to-do, three days, and six weeks plus an interview. A trip has one destination by definition, so modelling that comparison as trips means creating and deleting journeys that never happened. Dates gate the VALIDITY half of the question, not the PLANNING half, which is why a plan with only a rough window is still worth evaluating: whether a visa is needed at all, which route applies, how long it takes, and whether a second nationality is the better door are all answerable with no dates. Passport validity beyond departure, the ten-year issue rule and any rolling days-of-presence count are not, and must not be guessed from a rough window. `travellers` is plural and each carries their own documents and nationalities: two people on one plan routinely get different verdicts for the same candidate, and a design that assumes one traveller is wrong for most couples and every family.\n",
+  "encrypted_fields": [],
+  "extends": null,
+  "formerly_encrypted_fields": [],
+  "group_id": null,
+  "id": "e9d46339-1d99-425b-a0f2-882ab3024e0e",
+  "is_active": true,
+  "is_promoted": false,
+  "is_relationship": false,
+  "is_system": false,
+  "json_schema": {
+    "properties": {
+      "became_trip_ref": {
+        "description": "The `trip` node this became on commitment. A plan is not deleted when it commits; it is the record of what was considered and why.",
+        "type": "string"
+      },
+      "candidates": {
+        "description": "The shortlist. Each entry is a destination under consideration, not a decision. The comparison across them is the point of this schema.\n",
+        "items": {
+          "properties": {
+            "place_ref": {
+              "description": "A `place` node",
+              "normally of kind country.": null,
+              "type": "string"
+            },
+            "purpose": {
+              "description": "Purpose is per candidate \u2014 the same trip may be business in one country and transit in the next, and the rules differ.",
+              "enum": [
+                "tourism",
+                "business",
+                "family",
+                "transit",
+                "study",
+                "work",
+                "medical",
+                "conference",
+                "other"
+              ],
+              "type": "string"
+            },
+            "rough_days": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "ruled_out_reason": {
+              "maxLength": 300,
+              "type": "string"
+            },
+            "shortlisted": {
+              "type": "boolean"
+            },
+            "verdict_cached_at": {
+              "description": "When the eligibility verdict was last computed. The VERDICT ITSELF IS NOT STORED \u2014 it is derived from requirements, documents and dates at read time, because a stored verdict goes stale the moment a passport expires or a rule changes, and it goes stale silently, which in this domain means someone at a border. Only the timestamp is kept, so the interface can say how fresh the last look was.\n",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          "required": [
+            "place_ref"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "commitment": {
+        "description": "How real this is. `booked` should coincide with `became_trip_ref` being set.",
+        "enum": [
+          "idea",
+          "considering",
+          "decided",
+          "booked",
+          "abandoned"
+        ],
+        "type": "string"
+      },
+      "decide_by": {
+        "description": "The last day a decision still leaves time to satisfy the slowest obligation across the candidates. DERIVED from lead times, stored here only so it can be alerted on. This is the field that makes the schema earn its place: the useful warning is never \"this needs a visa\", it is \"start this one within nine days or take it off the list\".\n",
+        "format": "date",
+        "type": "string"
+      },
+      "label": {
+        "description": "The plan in the person's words \u2014 \"somewhere warm, February\", \"Ana's wedding\".",
+        "maxLength": 160,
+        "type": "string"
+      },
+      "linked_refs": {
+        "description": "Every node id this record points at, flattened into one top-level array of bare UUID strings \u2014 the only shape the traversal index can see. Candidate place refs live inside an array of objects and are invisible to it, so they must be mirrored here.\n",
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "notes": {
+        "type": "string"
+      },
+      "status": {
+        "enum": [
+          "open",
+          "committed",
+          "abandoned"
+        ],
+        "type": "string"
+      },
+      "travellers": {
+        "description": "The `person` nodes travelling. An array of bare ids, so the index can traverse it directly. Each traveller's own documents and nationalities decide their verdict; one plan can carry several different answers.\n",
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "window": {
+        "description": "Roughly when, and deliberately not `travel_dates`. A plan's window is soft and may be a whole month; a trip's dates are firm and are what every validity computation keys on. Never promote one to the other silently.\n",
+        "properties": {
+          "earliest": {
+            "format": "date",
+            "type": "string"
+          },
+          "flexible": {
+            "type": "boolean"
+          },
+          "latest": {
+            "format": "date",
+            "type": "string"
+          },
+          "nights": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "required": [
+      "label"
+    ],
+    "type": "object"
+  },
+  "node_ref_fields": [
+    "linked_refs",
+    "travellers"
+  ],
+  "owner_id": "bb0eb7d7-16cb-4fe0-8665-334d5f746887",
+  "private_to": null,
+  "recommended_by_developer": false,
+  "schema_metadata": null,
+  "schema_name": "travel-plan",
+  "scope": "public",
+  "updated_at": "2026-09-20T21:52:03.417265+00:00",
+  "version": 1
+}

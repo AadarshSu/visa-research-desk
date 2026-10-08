@@ -1,0 +1,45 @@
+{
+ "thailand_again": {
+  "status": "already_saved",
+  "plan_id": "6b6edecc-ac79-410e-8099-e37663e2054d",
+  "place_created": false
+ },
+ "japan": {
+  "status": "saved",
+  "plan_id": "70e189fe-9b34-4943-b820-593201c267dc",
+  "place_created": true
+ },
+ "japan_again": {
+  "status": "already_saved",
+  "plan_id": "70e189fe-9b34-4943-b820-593201c267dc",
+  "place_created": false
+ },
+ "plans_offered": [
+  {
+   "label": "Japan, business",
+   "earliest": "2027-03-01",
+   "latest": "2027-04-30",
+   "candidates": [
+    {
+     "destination": "JP",
+     "destination_slug": "japan",
+     "purpose": "business",
+     "recorded_purpose": null
+    }
+   ]
+  },
+  {
+   "label": "Thailand, tourism",
+   "earliest": "2026-12-01",
+   "latest": "2026-12-20",
+   "candidates": [
+    {
+     "destination": "TH",
+     "destination_slug": "thailand",
+     "purpose": "tourism",
+     "recorded_purpose": null
+    }
+   ]
+  }
+ ]
+}

@@ -5,6 +5,7 @@ the ones the live endpoint gave a made-up and a missing code on 2026-09-17, and 
 an assumption until a real sign-in has been seen.
 """
 
+import json
 import logging
 from collections.abc import AsyncIterator, Awaitable, Callable
 from urllib.parse import parse_qs, urlsplit
@@ -450,6 +451,82 @@ async def test_the_page_says_nothing_of_ofself_where_sign_in_is_neither_configur
     assert "Ofself" not in page
     assert '<option value="IN" selected>' in page
     assert 'id="sign-in-note"' not in page
+
+
+# --- saving the trip to Ofself (DECISIONS entry 283) ------------------------------------------
+
+TRIP = {
+    "destination": "thailand",
+    "purpose": "tourism",
+    "trip": {"mode": "exact", "start": "2026-12-01", "end": "2026-12-20"},
+}
+
+
+def writable(written: list[dict[str, object]]) -> Handler:
+    """No nodes to read; each write answered with the new node, as Paradigm did live."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "GET":
+            return httpx.Response(200, json={"nodes": [], "total": None})
+        written.append(json.loads(request.content))
+        return httpx.Response(201, json={"id": f"new-{len(written)}", **written[-1]})
+
+    return handler
+
+
+async def test_saving_a_trip_needs_a_signed_in_traveller(started: Start) -> None:
+    client = await started(paradigm())
+
+    response = await client.post("/oauth/trip", json=TRIP)
+
+    assert response.status_code == 401
+
+
+async def test_a_signed_in_traveller_saves_the_trip_they_chose(started: Start) -> None:
+    written: list[dict[str, object]] = []
+    client = await signed_in(started, writable(written))
+
+    response = await client.post("/oauth/trip", json=TRIP)
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "saved", "plan_id": "new-2", "place_created": True}
+    assert [body["schema_name"] for body in written] == ["place", "travel-plan"]
+
+
+async def test_a_destination_that_is_no_country_is_refused_before_anything_is_written(
+    started: Start,
+) -> None:
+    written: list[dict[str, object]] = []
+    client = await signed_in(started, writable(written))
+
+    response = await client.post("/oauth/trip", json={**TRIP, "destination": "atlantis"})
+
+    assert response.status_code == 422
+    assert written == []
+
+
+async def test_a_grant_without_create_asks_for_re_approval(started: Start) -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "GET":
+            return httpx.Response(200, json={"nodes": [], "total": None})
+        return httpx.Response(403, json={"error": {"code": "PERMISSION_DENIED", "message": "no"}})
+
+    client = await signed_in(started, handler)
+
+    response = await client.post("/oauth/trip", json=TRIP)
+
+    assert response.status_code == 403
+    assert response.json()["detail"]["permission"] is True
+
+
+async def test_a_lost_grant_while_saving_ends_the_session(started: Start) -> None:
+    client = await signed_in(started, refused(403, "EP_REVOKED"))
+
+    response = await client.post("/oauth/trip", json=TRIP)
+
+    assert response.status_code == 403
+    assert response.json()["detail"]["reconnect"] is True
+    assert (await client.get("/oauth/session")).json()["signed_in"] is False
 
 
 # --- a plan is spent only for a signed-in traveller (DECISIONS entry 191) --------------------
