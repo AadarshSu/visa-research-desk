@@ -1897,8 +1897,10 @@ function offerChoices(container, choices, onPick) {
       // A choice with a detail is two lines, the same shape however long its name (entry 286).
       const button = element("button", "field-choice", choice.detail === undefined ? choice.label : undefined);
       if (choice.detail !== undefined) {
-        button.append(element("span", "field-choice__name", choice.label), element("span", "field-choice__detail", choice.detail));
-        button.setAttribute("aria-label", `${choice.label}, ${choice.detail}`);
+        const name = element("span", "field-choice__name", choice.label);
+        if (choice.aside) name.append(element("span", "field-choice__aside", ` · ${choice.aside}`));
+        button.append(name, element("span", "field-choice__detail", choice.detail));
+        button.setAttribute("aria-label", [choice.label, choice.aside, choice.detail].filter(Boolean).join(", "));
       }
       button.type = "button";
       button.dataset.key = choice.key;
@@ -2061,16 +2063,26 @@ function planIsOver(plan) {
   return last !== null && last < today();
 }
 
-// The button names the destination, and beneath it the dates. The plan's own name is added only
-// where it says something they do not — a trip this app saved is called "Thailand, tourism".
+// The purpose as the form's own list names it; one this app does not research, in the plan's words.
+function tripPurpose(candidate) {
+  if (candidate.purpose) {
+    const option = purposeSelect.querySelector(`option[value="${candidate.purpose}"]`);
+    return option ? option.textContent.trim() : candidate.purpose;
+  }
+  const recorded = candidate.recorded_purpose;
+  return recorded ? recorded.charAt(0).toUpperCase() + recorded.slice(1) : "";
+}
+
+// The button names the destination and the purpose, and beneath them the dates. The plan's own name
+// is added only where it says something they do not — a trip this app saved is "Thailand, tourism".
+// A name that is only the purpose says nothing more either.
 function tripChoice(choice, key) {
   const destination = destinationLabel(destinationSelect, choice.candidate.destination_slug);
-  const details = [];
-  const when = planWhen(choice.plan);
-  if (when) details.push(when);
-  if (!choice.plan.label.toLowerCase().startsWith(destination.toLowerCase())) details.push(choice.plan.label);
-  else if (!when) details.push("No dates");
-  return { key, label: destination, detail: details.join(" · "), value: choice };
+  const details = [planWhen(choice.plan) || "No dates"];
+  const purpose = tripPurpose(choice.candidate);
+  const name = choice.plan.label.toLowerCase();
+  if (!name.startsWith(destination.toLowerCase()) && name !== purpose.toLowerCase()) details.push(choice.plan.label);
+  return { key, label: destination, aside: purpose, detail: details.join(" · "), value: choice };
 }
 
 const PLAN_CHOICES_SHOWN = 5;

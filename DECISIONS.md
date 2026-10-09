@@ -294,7 +294,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
-| [286](#286-saved-trips-are-offered-soonest-first-with-their-dates-and-past-ones-hidden) | **Saved trips are offered soonest first, with their dates, and past ones hidden** — the form offered every open `travel-plan` as a button, unsorted, past trips included, and two trips to one place looked identical; now five same-shaped rows across the form's width, then "Show all" |
+| [286](#286-saved-trips-are-offered-soonest-first-with-their-dates-and-past-ones-hidden) | **Saved trips are offered soonest first, with their dates, and past ones hidden** — the form offered every open `travel-plan` as a button, unsorted, past trips included, and two trips to one place looked identical; now five same-shaped rows across the form's width, each with its dates and purpose, then "Show all" |
 | [284](#284-the-sidebar-becomes-the-boarding-passs-stub-the-trip-then-advice-weather-and-keeping-it-in-one-card) | **The sidebar becomes the boarding pass's stub** — the trip as its head, then advice, weather and keeping the trip in one card; weather on the card's surface with every forecast day as wrapping tiles; the save row says what it gives |
 | [283](#283-the-trip-and-the-passport-may-be-written-to-ofself-and-nothing-the-plan-concluded) | **The trip and the passport may be written to Ofself, and nothing the plan concluded** — then only the trip, as a `travel-plan`, since no schema can link a passport to it; a direct write on our button for the one trip the traveller picks; a `place` minted for the destination where they hold none; built, not yet synced or run live |
 | [280](#280-a-fact-the-traveller-gave-may-decide-the-plan-exact-dates-a-rough-span-wholly-on-one-side-a-detail-read-off-a-document) | **A fact the traveller gave may decide the plan** — exact dates; a rough span wholly on one side; a shared detail read off a document, never a typed-in one; `decided_for` shown beside the decision |
@@ -359,6 +359,13 @@ and a long one two. A smaller font only moves where that happens. So every trip 
 two-line row, and a destination field offering trips spans the form's whole width (Passport moves
 down a row). Measured at 1440px wide and on a 375px phone: every row 48px high, no dates cut off,
 no sideways scroll.
+
+**Then the purpose, the owner: "you now have space to put trip purpose as well", and then "on the
+top line after destination".** The top line reads "**France** · Tourism": the purpose as the form's
+own list names it, or in the plan's words where this app does not research it ("Honeymoon"). The
+line beneath reads the dates, then the plan's name where it adds something — never a name that is
+only the purpose. Either line is cut at its end rather than wrapped; on a 375px phone none of the
+test trips was, and the button's accessible name holds all of it.
 
 ---
 

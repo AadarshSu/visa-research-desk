@@ -276,16 +276,25 @@ button.field-choice--more {
   text-align: left;
 }
 
+.field-choice__name,
+.field-choice__detail {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .field-choice__name {
   font-weight: 700;
 }
 
+.field-choice__aside {
+  font-weight: 500;
+}
+
 .field-choice__detail {
-  overflow: hidden;
   color: var(--muted);
   font-size: 12px;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  font-weight: 500;
 }
 
 button.field-choice:hover .field-choice__detail,
