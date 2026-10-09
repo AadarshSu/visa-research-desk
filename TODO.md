@@ -44,91 +44,59 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 
 | | | |
 | --- | --- | --- |
-| **Now** | 80. A travel-readiness app for one traveller | `explore`, with the owner |
+| **Now** | 80. A travel-readiness app for one traveller — what is left on each built piece | `explore`, with the owner |
 |  | 81. Explore new layouts and UI workflows for the site | `explore`, its own session |
-|  | 88. Offer to write the trip to Ofself after a plan — synced and saved live; re-approval and deploy next | `soon` |
 |  | 63. Make most corridors return accurate and useful information | `ongoing` |
 |  | 55. Take the traveller from Ofself's shared identity, through one adapter | `soon` |
 |  | 79. Score pages fetched live with the post-aware stored-text fixes | `soon` |
 |  | 4. Decide the client-side retrieval question | `soon` |
 |  | 20. Make the stores substrate-swappable and durable | `soon` |
-| **Parked** | Expansion: 64, 2 · Speed and cost: 58, 59, 61, 87 · Hosting: 7's leftovers · News: 84 | until required |
+| **Parked** | News: 84 · Expansion: 64, 2 · Speed and cost: 58, 59, 61, 87 · Hosting: 7's leftovers | until required |
 |  | Retrieval and blocks: 46, 11, 27, 10, 69 · Corpus coverage: 49, 35, 47 · Ranking: 86 · Deciders and drift: 12, 13, 14 | until required |
 
 ---
 
 ## Now — this phase's work
 
-### 84. Build the news panel from Ofself's Assimilation destination briefing — `parked`, **part of 80**
+### 80. A travel-readiness app for one traveller, built around their dates — `explore`, **with the owner**
 
-**Parked by the owner, 2026-10-09,** after reading five live briefings
-(`https://claude.ai/artifact/BgnXYd36bohYiDsSeADfjk`, raw JSON in `var/news-2026-10-08/`). **Still
-expected to be integrated later.** Why now is not the time:
-- **Only three parts earned a place:** significant stories (on topic for all five destinations),
-  public holidays (right where the country is known; Thailand was not), and possibly severe-weather
-  alerts (none were active to judge). "News now" was mostly about other countries, trip events found
-  nothing in all five, Canada's advisory came back empty every time, and the quoted entry rules can
-  read as a second visa answer beside the plan (FCDO: "a visa on arrival in Japan" for a British
-  passport).
-- **Assimilation's developer is capping use at 10 calls a day** while they develop, which is too few to
-  test with, and is pushing changes meant to improve the data. They offered to take our own SerpAPI
-  key for search; not taken (we have none, and Brave stays our search, 2026-10-09).
-- **Before resuming:** re-run the five briefings with `var/news-2026-10-08/probe.py` (owner's user
-  id in `PROBE_USER`) and `review.py`, and decide what the panel does when the cap is hit — say news
-  is unavailable, reuse a destination-only briefing for the day (a shared store may hold no dates or
-  passport, entry 279), or a fallback source (its own decision entry).
+**The direction — the owner, 2026-10-05 (entry 251).** Someone planning a trip enters where and
+when, and sees the visa answer with what else bears on going. **One traveller**; friends come much
+later. **One date range**, entered by the traveller. Ofself's schemas are read to learn about the
+person, and the trip may be written back (item 88). Mockup with example data:
+`https://claude.ai/artifact/D7yXirsNX4jTBSA4LD71s4`.
 
+**Built and deployed** — each is a row in *Done*: the date field and the
+at-a-glance box; the dates reaching the plan call and deciding it where the traveller's own fact
+settles a rule; the plan written for the specific traveller; the travel-advice and weather panels;
+the result page redesign; an open decision leading with where to settle it; the
+`travel_authorisation` role; plans without sign-in; saving the trip to Ofself.
 
-**The owner, 2026-10-08,** gave the integration steps:
-1. **Sign-in and grant:** the app is registered with Paradigm and its sign-in works (item 55). The
-   DLR must also request `plugins:execute`, ideally scoped to Assimilation's plugin id
-   `912d0476-5ea8-4ae0-991f-2a242979ea16`. Widening the DLR asks every signed-in traveller to
-   re-consent; entry 181's note says a re-approval does not restart the grant's expiry (feedback
-   9.8).
-2. **Call through the Paradigm SDK** with the app's own credentials and the signed-in traveller's
-   user id; Paradigm signs the request to Assimilation. `api/ofself.py` uses `httpx` directly today
-   — decide whether the SDK replaces it or sits beside it for plugin calls only.
-3. **Mode `destination-briefing`:** a destination, the trip dates and optionally the passport
-   country; it combines news, stories, holidays, events, advisories and entry requirements. Fare
-   searches are a separate mode, not wanted here.
-4. **Answers:** `PluginNotEnabled` → show its `setup_url`; `ConsentRequired` → show its
-   `consent_url`; otherwise decode `execution.message` as JSON and check whether the execution
-   failed before showing anything.
+**Left on what is built:**
+- **Travel authorisation (entry 275):** named on the plan 5 of 8 live (known problem 47). Run Canada
+  and United States `GB/GB` end to end.
+- **Travel advice (entry 260):** Finland answered `429` after five links; Czechia's pages need a
+  region in the address; Russia waits on evidence for `mid.ru`; eight governments are unclear;
+  re-run `visa-discover advisory-links` when a government moves its pages. **Open:** whether India's
+  "no advisory for this country" may be shown.
+- **Weather (entry 261):** the city list is by population, so places travellers go that few people
+  live in (Chiang Mai, Phuket, Bali) are missing; some cities have no station within 60 km — Brazil
+  none, and the capitals of Egypt, Slovakia and Uruguay; average lows are often unrecorded.
+- **The form from real documents:** no app writes a `travel-document` yet. Create one in the owner's
+  account with their developer token, or in the sandbox user, **with the owner's yes** — only the
+  fields the app reads, never a number, name or scan.
 
-**The owner's answers, 2026-10-08:**
-- **Show everything the briefing returns for now** — news, stories, holidays, events, advisories
-  and entry requirements — and decide from real output what to keep. Its entry requirements and
-  advisories are another app's claims (entry 181, rule 2) that have passed none of this project's
-  trust checks, so label every part as Assimilation's and keep the panel visibly apart from the
-  plan; whether they stay is decided once seen.
-- **Send the passport country the traveller entered on the form**, with the destination and the
-  dates. Nothing from `shared_details`.
-- **Whether it writes into the traveller's account:** not a concern for now.
+**Not built:** news — item 84, parked. **Later (the owner):** the length of stay in the plan itself.
 
-**Built 2026-10-08 — the server side; the panel waits on a real briefing:**
-- **Step 2 answered by the platform:** the SDK's repository is private to us (OFSELF_FEEDBACK 12.1),
-  so `api/assimilation.py` makes the SDK's REST call with `httpx`, beside `api/ofself.py`.
-  `GET /news-briefing` (signed-in only) sends the destination's code, the passport typed on the form
-  and the dates as a pair, and answers a `Briefing`: `ok` with Assimilation's decoded answer, or
-  `setup`/`consent` with Paradigm's link (https on Ofself's hosts only), `reconnect`, `refused` or
-  `unavailable`, each with the seconds it took. Tests: `tests/test_assimilation.py`.
-- **Step 1, live:** CRUX.md §9 asks for `plugins:execute` scoped to Assimilation's id, synced and
-  committed with `--ep-action continue` (existing grants kept; the new permission waits on each
-  traveller's re-consent). `dlr show --json` holds the id (OFSELF_FEEDBACK 12.3).
-- **Seen live:** `GET /plugins/<id>` gives the usage guide (`var/news-2026-10-08/plugin.json`); the
-  sandbox test user's `execute` answers `403 PLUGIN_NOT_ENABLED` with a setup link, so `taxonomy` and
-  a real briefing have not been read. **Next:** the owner sets Assimilation up on their own account
-  and signs in to the app again; then `taxonomy`, a few real briefings timed, and the panel built
-  from what they hold.
+**The owner's open decisions from entry 251:** (1) dates, fees and processing times as cited
+values; (4) research first, with a "have you booked?" question, or not; (6) reading their calendar.
+Settled: (2) the advice tier (entry 260); (3) the news plugin writing into the account — Assimilation
+writes nothing (OFSELF_FEEDBACK 12.4); (5) writing to Ofself — the trip only (entry 283).
 
-**Bounds — each moves only by a decision entry:**
-- **Never an input to the visa answer** (entry 251), and shown apart from it, like the advice and
-  weather panels.
-- **Signed-in travellers only:** the call needs their user id. The anonymous page shows no panel.
-- Log anything the platform does unexpectedly in `OFSELF_FEEDBACK.md`.
-
-**Measure:** how long a briefing takes (the plan already takes ~55s; the panel must not hold it up
-— load it beside the plan, as advice and weather are), and what a failure looks like.
+**Rules it meets — each moves only by a decision entry:** nothing written back to Ofself beyond the
+trip (item 55 rule 6, entry 44); no submission, booking or form filling, and no promise of approval;
+any field added to `TravellerProfile` reaches the model on every plan (item 55 rule 1) — advice, news
+and weather never do, and none is ever an input to the visa answer.
 
 ### 81. Explore new layouts and UI workflows for the site — `explore`, **its own session, with the owner**
 
@@ -144,8 +112,8 @@ purpose: what to try is the owner's to direct in that session.
   itinerary of folded stops.
 - **What any layout has to carry:** the trip form with Ofself prefill, progress while a plan is
   researched, the decision with its condition and any travel authorisation, where to apply,
-  documents, the cited plan, the travel advice and weather panels, and the problem report. News will
-  join them (item 80). Free plans without sign-in (entry 262) are part of the flow.
+  documents, the cited plan, the travel advice and weather panels, and the problem report. News may
+  join them later (item 84, parked). Free plans without sign-in (entry 262) are part of the flow.
 
 **What it must not change:** what a plan says. The rules under "What a plan may say" in CLAUDE.md
 hold whatever the layout. A fold-away or hidden section never hides the decision or what qualifies
@@ -153,92 +121,6 @@ it (entries 6, 250).
 
 **How:** experiment on a branch, preview against real plans, and record what is chosen in a
 decision entry when it lands on `main`.
-
-### 80. A travel-readiness app for one traveller, built around their dates — `explore`, **with the owner; dates, advice, weather and the redesign built; news parked (item 84)**
-
-**The direction — the owner, 2026-10-05 (entry 251).** Someone planning a trip enters where and
-when, and sees the visa answer with what else bears on going. **One traveller**; friends come much
-later. **One date range**, entered by the traveller. Ofself's schemas are read to learn about the
-person and, once allowed, written to record what happened for next time.
-
-**Built:** the date field — exact, roughly, not sure — kept in the page and out of the research, with
-a "Your trip" line above the plan (entry 256); the at-a-glance box of visa, where to apply and
-documents (entry 253).
-
-**Next — explore with the owner:** a **travel-advice** panel **below the at-a-glance box**, shown
-**only** where the traveller's government publishes advice we can read (entry 259). Six publish a
-feed (US, UK, Canada, Germany, Netherlands, Japan), a dozen more only a page. Before code, the owner
-has approved the source tier (entry 260). **Built:** `visa-discover advisories`, run on all 198
-passports (`var/advisories/survey.yaml`). **Links only** (the owner, entry 260): the panel names the
-government and links its advice for this destination; nothing is read or quoted. **Reviewed** (entry
-260, `var/advisories/review.tsv`): 38 governments publish per destination, 21 one page, 8 unclear,
-131 none found. **Built** (entry 260): 52 reviewed publishers, 682 checked
-destination links for 16 governments, `GET /travel-advice`, and the link panel under the
-at-a-glance box. **Left:** Finland answered `429` after five links; Czechia's pages need a region in
-the address; Russia waits on evidence for `mid.ru`; the eight unclear governments; re-run
-`visa-discover advisory-links` when a government moves its pages. **Not deployed.**
-
-**An open decision leads with where to settle it — built 2026-10-07 (entries 271, 272).**
-
-**A pre-travel authorisation has its own role — built 2026-10-07 (entry 275),** replacing entry
-274's GB-only pages and rules. Found on 8 of 8 corridors that have one; on the plan 5 of 8.
-**Then (the owner):** an authorisation needed for any way of travelling is named with its
-condition, and any stated condition is said in a step or the caveats (rules 8m, 10a). Replayed only;
-**left:** run Canada and United States `GB/GB` end to end.
-
-**The result page redesign — built 2026-10-06 (entry 270):** a verdict band, the pass as the result's
-header, advice and weather in a sidebar, and a no-visa plan's travel authorisation
-beside the decision (entry 263; its entry steps left the band in entry 273). A bolder makeover is parked on the local branch `design-bold`.
-**Plans without sign-in** (entry 262): ten free plans per address, with Ofself offered for importing
-details. **None of it is deployed.**
-
-**Weather — built 2026-10-06 (entry 261):** a panel under the travel advice with MET Norway's
-forecast for the days inside its window and NOAA station averages for the months beyond, for a city
-picked in the panel (the capital first). **Left:** the city list is by population, so places
-travellers go that few people live in (Chiang Mai, Phuket, Bali) are missing; some cities have no
-station within 60 km — Brazil none, and the capitals of Egypt, Slovakia and Uruguay; average lows
-are often unrecorded. **Not deployed.** **Open:** whether India's
-"no advisory for this country" may be shown (entry 260). **News**, once integrated, is
-expected on every corridor. Later, the owner wants the length of stay in the plan itself.
-
-**First piece — decided:** an optional date range on the form, and **three context panels beside the
-visa plan: travel advice, news and weather.** Each is labelled with its source, linked, and never an
-input to the visa answer; the visa form gets no harder. Mockup with example data:
-`https://claude.ai/artifact/D7yXirsNX4jTBSA4LD71s4`.
-- **Travel advice** from the traveller's own government (US State Department JSON API, GOV.UK
-  content API — both checked; India publishes none found), in the government's words.
-- **News** from Ofself's Assimilation plugin — **now item 84**, with the integration steps the owner
-  gave on 2026-10-08. Its `destination-briefing` mode takes a destination and dates, which answers
-  this list's old question of whether it can work from a country and a window.
-- **Weather** — built (entry 261): MET Norway's forecast, NOAA's averages, a city picker in the
-  panel.
-
-**Before building, the owner decides** (each set out in entry 251): (1) dates, fees and processing
-times as cited values; (2) the travel-advice source tier and whose advice; (3) the news plugin
-writing into the traveller's account; (4) research-first with a "have you booked?" question, or
-not; (5) writing to Ofself — settled by entry 283: the trip only (item 88); (6) reading their
-calendar.
-
-**To see the form fill from real documents,** a `travel-document` has to exist: no app writes one
-yet. Create one in the owner's account with their developer token, or in the sandbox user, **with
-the owner's yes** — only the fields the app reads, never a number, name or scan.
-
-**Rules it meets — each moves only by a decision entry:** nothing written back to Ofself beyond the trip (item 55
-rule 6, entry 44); no submission, booking or form filling, and no promise of approval; any field
-added to `TravellerProfile` reaches the model on every plan (item 55 rule 1) — advice, news and
-weather never do.
-
-### 88. Offer to write the trip to Ofself after a plan — `soon`, **re-approval and deploy next**
-
-**The owner, 2026-10-08 (entry 283):** a button after a plan writes that one trip into the
-traveller's Ofself account as a `travel-plan`, directly, on their click, minting a `country` place
-for the destination where they hold none. Nothing the plan concluded is written, and no passport.
-**Built, synced (DLR v10) and saved live in the sandbox user** (entry 283). **Left:**
-1. **The owner re-approves the app on Ofself.** Existing grants were kept without `create`, so a
-   save from a real grant answers `403` (`OfselfWriteRefused`) until then.
-2. **One save from the owner's own account,** signed in on the page — the sandbox grant ignores
-   the DLR, so only a real grant shows the `create` request narrows as declared.
-3. **Deploy** to the server.
 
 ### 63. Make most corridors return accurate and useful information — `ongoing`
 
@@ -367,6 +249,26 @@ redirect flags the country.
 **The owner, 2026-09-30 (entry 247):** set aside until something requires them. Each is cut to what
 it is, what is known, and what to do first; the entries named hold the rest, and the full text of
 each item as it last stood is in this file's history before that date.
+
+### News
+
+- **84. The news panel from Ofself's Assimilation plugin — parked by the owner, 2026-10-09,** and
+  still expected later. **Built and committed:** `api/assimilation.py` and `GET /news-briefing`
+  (signed-in only; sends the destination, the dates and the passport typed on the form), tested in
+  `tests/test_assimilation.py`; the DLR asks for `plugins:execute` on Assimilation's id alone, live
+  and scoped (OFSELF_FEEDBACK 12.3). No panel and no page calls it. **Why parked:** five live
+  briefings (`https://claude.ai/artifact/BgnXYd36bohYiDsSeADfjk`, raw JSON in
+  `var/news-2026-10-08/`) answered in 1–3 s, but only significant stories and public holidays were
+  useful, severe-weather alerts maybe; "news now" was mostly about other countries, trip events
+  found nothing, Canada's advisory was empty, and the quoted entry rules can read as a second visa
+  answer (OFSELF_FEEDBACK 12.6). Assimilation is capped at 10 calls a day while its developer
+  changes it; their offer to take our own SerpAPI key was declined (Brave stays our search).
+  **To resume:** re-run the five with `var/news-2026-10-08/probe.py` (the owner's id in
+  `PROBE_USER`) and `review.py`; decide what the panel shows when the cap is hit — that news is
+  unavailable, a destination-only briefing reused for the day (a shared store holds no dates or
+  passport, entry 279), or a fallback source (its own decision entry). **Bounds:** never an input to
+  the visa answer, shown apart from it; signed-in travellers only; every part labelled as
+  Assimilation's.
 
 ### Expansion
 
@@ -499,6 +401,14 @@ The reasoning is in the DECISIONS entry; this is the index. Code comments cite s
 
 | Was | Done | Entry | What building it found |
 | --- | --- | --- | --- |
+| 88. Save the trip to Ofself after a plan | 10-09 | 283 | A button beside a plan writes that one trip as a `travel-plan`, minting a `country` place where the traveller holds none, and nothing the plan concluded; saved live in the sandbox user; done and deployed, the owner, 2026-10-09 |
+| — A fact the traveller gave may decide the plan | 10-08 | 280 | Exact dates; a rough span wholly on one side; a detail read off a document, never a typed-in one |
+| — Trip dates reach the plan call | 10-07 | 279 | Measured against stay limits, application windows and passport validity; no shared store holds anything about one traveller, frozen in tests |
+| — The plan is written for the specific traveller | 10-07 | 276 | What a signed-in traveller shares reaches the plan call, named beside a rule and never deciding it; a developer token cannot write the owner's account (OFSELF_FEEDBACK 9.9) |
+| — An open decision leads with where to settle it | 10-07 | 271, 272 | The authority's checker, an unread official page or its contractor as a button; a questionnaire is never where to apply |
+| — The weather panel | 10-06 | 261 | MET Norway's forecast within about nine days, NOAA averages beyond, a city picker; gaps are under item 80 |
+| — The travel-advice panel | 10-05 | 259, 260 | Links only: 52 reviewed publishers, 682 checked destination links for 16 governments; gaps are under item 80 |
+| — Dates on the form and the at-a-glance box | 10-05 | 253, 256 | Exact, roughly or not sure; visa, where to apply and documents first |
 | 82. Decide how to cache only results that are likely right | 10-08 | 282 | Measured on 108 runs: 17 of 19 wrong plans were `verified`, two agreeing runs halve it at best, and the wrong results the corridor store kept were plan-reading faults on the right pages. A report now evicts the corridor it names and its plan drafts; United Kingdom `US/US` was never stored at all |
 | 85. Thailand `IN/IN` tourism refuses 2 runs in 4 | 10-08 | 281 | Entry 245's purpose rule had pushed September's in-force notice from 77th offered to withheld. Named in `always_read.yaml`, five live runs gave 4 `verified` "no visa"; the fifth was a roles-call refusal the packet does not reproduce (10 of 10 on replay) |
 | — A seventh role, `travel_authorisation` | 10-07 | 275 | A body vocabulary could not find the page — every GOV.UK visa page carries the ETA notice; title and address could. Discovery 8 of 8, the plan 5 of 8; GB always-read entries removed |

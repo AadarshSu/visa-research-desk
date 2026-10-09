@@ -7,8 +7,8 @@ stands, what to do next, and what is known to be broken. The history of how it g
 | | |
 | --- | --- |
 | **Repository** | `github.com/AadarshSu/visa-research-agent` |
-| **Last updated** | 2026-10-08 — update this line when you touch the handoff |
-| **Tests** | 1,180 on the owner's machine, with `var/` present: 1,179 passing and 1 skipped (the opt-in browser test), run 2026-10-08; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
+| **Last updated** | 2026-10-09 — update this line when you touch the handoff |
+| **Tests** | 1,181 on the owner's machine, with `var/` present: 1,180 passing and 1 skipped (the opt-in browser test), run 2026-10-09; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
 
 | Question | File |
 | --- | --- |
@@ -32,83 +32,29 @@ this phase's work; both are under *Parked* in [TODO.md](TODO.md) and come back a
 propose either unprompted.**
 
 **Next, with the owner: a travel-readiness app for one traveller, built around the dates they enter
-(TODO item 80, entry 251).** Built so far: optional dates on the form (entry 256) and the
-at-a-glance box (entry 253). **Built next:** a travel-advice panel below the at-a-glance box,
-from the passport's government, **links only** — nothing read or quoted (entry 260). Built on
-2026-10-05: 52 reviewed publishers, 682 checked destination links, `GET /travel-advice` and the
-panel under the at-a-glance box — seen on the fixture plan, not yet deployed. **Weather** (entry 261)
-followed on 2026-10-06: MET Norway's forecast within about nine days, NOAA station averages beyond,
-for a city picked in the panel — also not deployed. Neither panel is ever an input to the visa
-answer.
-**News** (item 84) is **parked** (the owner, 2026-10-09): the call to Assimilation and
-`GET /news-briefing` are built and tested, and the app's DLR asks for `plugins:execute` on Assimilation
-alone, but no panel is built. Five live briefings showed three useful parts, and Assimilation is capped
-at 10 calls a day while its developer works on it; TODO item 84 says what to do before resuming.
+(TODO item 80, entry 251).** Built from 2026-10-05 to 10-08 — each a row in TODO's *Done*, with its
+entry:
+- **Around the plan:** the date field and the at-a-glance box (entries 253, 256); a travel-advice
+  panel that links the passport government's advice and reads nothing (entries 259, 260); a weather
+  panel (entry 261); the redesigned result page with advice and weather in a sidebar (entries 270,
+  273). None of the panels is ever an input to the visa answer.
+- **In the plan:** what a signed-in traveller shares through Ofself, and the trip's dates, reach the
+  plan call (entries 276, 279); a fact the traveller gave may decide it (entry 280); an open decision
+  leads with where to settle it (entries 271, 272); a seventh role finds a pre-travel authorisation,
+  which is never called a visa (entries 263, 275); rule 8k was tightened (entries 264, 268).
+- **Access and Ofself:** ten free plans without sign-in (entry 262); saving the trip to Ofself as a
+  `travel-plan` (entry 283, item 88).
+- **Ranking:** a country may name pages its corridors read on every run (`config/always_read.yaml`,
+  entry 267) — Australia's ETA page (known problem 46) and Thailand's September notice (entry 281).
 
-**Design exploration has its own item (TODO 81) and belongs in a session of its own:** different
-layouts and UI workflows for the site, starting from the current design (entry 270) and the parked
-`design-bold` branch.
+**All of it is deployed** (the owner, 2026-10-09). **News is parked** (TODO item 84, the owner 2026-10-09):
+the Assimilation client and route are built and tested, no panel, and the plugin is capped at 10
+calls a day while its developer changes it. **Design exploration** (item 81) belongs in a session of
+its own, from the current design and the local branch `design-bold`.
 
-**What 2026-10-06 changed** (entries 262–270), all on `main` and pushed to GitHub, **none of it on
-the deployed server yet**:
-- **Plans no longer need sign-in** (entry 262). A visitor gets ten free plans per address, counted
-  under a keyed hash in `var/allowance/`, and signing in with Ofself imports their details and lifts
-  the limit.
-- **A checker is never where to apply** (entry 272). United Kingdom `US/US` sometimes filed GOV.UK's
-  visa checker as the route. The plan now drops a route whose address is a named questionnaire for
-  another question. In five real runs it was never filed there.
-- **A seventh discovery role, `travel_authorisation`** (entry 275, the owner's request). Every
-  corridor looks for a pre-travel authorisation that is not a visa, scored from a page's title and
-  address only. A "no visa" plan names it in its own field from the role's pages, and the band shows
-  "Travel authorisation required — not a visa: <name> ↗"; with none found, nothing is shown. It
-  replaced entry 274's GB always-read pages and rules. Found on 8 of 8 corridors that have one, 0 of
-  8 that do not; **named on the plan 5 of 8** live; with conditions allowed, 11 of 12 replayed — known problem 47.
-- **The plan is written for the specific traveller** (entry 276, the owner's direction). A
-  signed-in traveller's documents, stays and applications from Ofself reach the plan call, which
-  names a detail beside a rule it bears on and never decides from it; the anonymous form is
-  unchanged. Seen live on Ofself's sandbox test user with a typed-in Indian passport expiring
-  2027-02-07: the expiry is named beside the validity rule. A developer token cannot write the
-  owner's own account (OFSELF_FEEDBACK 9.9), so no real traveller's records have been used.
-- **Trip dates reach the plan** (entry 279): measured against stay limits, application windows and
-  passport validity, in bold, counted by the app. No shared store holds
-  anything about one traveller, checked and frozen in tests. **Since entry 280** the traveller's own exact dates, a rough span wholly on one side, or a
-  detail read off a document may decide the plan, named beside it ("For your trip, …").
-- **An open decision leads with where to settle it** (entry 271). The band offers the authority's
-  checker, an unread official page or its contractor as a button, and says "Could not be confirmed"
-  only with none of them. Where to apply and documents read "if you need a visa" or fold into one
-  line, and a documents cell shows only over a documents section.
-- **The result page was redesigned** (entry 270): a verdict band, the pass as the result's header,
-  and advice and weather in a sidebar. A bolder makeover is parked on the local branch `design-bold`.
-- **A travel authorisation is never called a visa** (entry 263). New Zealand on a US passport reads
-  "No visa required" with "Travel authorisation required — not a visa: NZeTA" beside it. A document
-  the authority itself calls a visa (Australia's ETA, subclass 601) stays "visa required".
-- **Rule 8k was tightened twice.** It states the side an ordinary trip of the purpose falls on
-  (entry 264). It names a condition only where it changes *whether* a visa is needed, never which
-  visa or a disqualification such as a conviction (entry 268).
-- **Australia's ETA page could not win the ranking** (entries 265, 266). The nationality check ran
-  on substrings ("us" matched "Australia"), and an eligibility list did not read as a decision;
-  both are fixed. The page still ranks 55th, held down by the breadth penalty (known problem 46). So
-  a country may now name pages its corridors read on every run, in `config/always_read.yaml` (entry
-  267). Australia `US/US` then answered "visa required, ETA (601)" 3 of 3.
-- **`visa-discover corpus-add`** stores named pages with no crawl (entry 265), and a source id the
-  model writes into a plan's prose is now removed (entry 269).
-- **Every prompt change was measured** by replaying the plan call on captured packets, the current
-  prompt against the candidate, with controls. The tooling is under *Where things are*.
-
-**Thailand `IN/IN` tourism (item 85) is done** (entry 281): September's in-force notice, priced out
-of the pool by entry 245, is now read on every Thai tourism corridor; 4 of 5 live runs `verified`
-"no visa". **Saving the trip to Ofself (item 88, entry 283) is built**: a button beside a plan writes that one
-trip as a `travel-plan` the traveller is considering, minting their `country` place if they hold
-none, and nothing the plan concluded. The DLR is synced (v10) and two trips were saved live in the
-sandbox user; it waits on the owner re-approving the app, a save from a real grant, and a deploy. **This phase's queue** is TODO's *Now*: 80 with its news panel (84, Ofself's Assimilation briefing), 88, then **63** (accurate answers, ongoing), **55** (what is
-left of the Ofself adapter), **79** (a small scoring consistency fix), **4** (the client-side
-retrieval decision) and **20** (durable stores).
-
-**Item 71 shipped 2026-10-05 (entry 252):** the form asks for an optional state or region after the
-country, from a committed GeoNames list (`config/regions.yaml`, regenerated with `visa-discover
-regions`); a plan names the post the page assigns to that region, and says "In person" only where a
-page does. Measured by replaying the plan call on saved packets, 1–2 runs a case; no corridor was run
-end to end, and the deployed server has not been updated.
+**This phase's queue** is TODO's *Now*: 80's leftovers, 81, then **63** (accurate answers,
+ongoing), **55** (what is left of the Ofself adapter), **79** (a small scoring consistency fix),
+**4** (the client-side retrieval decision) and **20** (durable stores).
 
 **Where item 63 was left (entries 214–224).**
 - The second round of ten destinations, `IN/IN`, twice each: decisions 5 → 7 of 10, checklists
@@ -144,13 +90,15 @@ several times first.** Rule 8e's bounds live only in the prompt, and a packet ch
 ## Waiting, or shipped and not measured
 
 - **Decisions waiting on the owner:** item 4, whether the traveller's own browser may fetch what the
-  agent was refused. Parked with their items: whether a corridor's five
+  agent was refused. From entry 251 (item 80): dates, fees and processing times as cited
+  values; research first with a "have you booked?" question; reading the traveller's calendar. Parked with their items: whether a corridor's five
   renders should grow (item 61), and whether to store a refusal (entry 151).
 - **Questions for Ofself:** does it host apps, and does any of its apps record a trip before it
   happens (TODO item 55).
 - **Not measured live:** entry 178's plan reuse has never been timed; of the 2026-09-25 rebuild,
   only entry 204's corridors and item 63's ten have been run; entries 134 and 135 were never priced
-  (entry 136). On the server, no plan and no corridor has been timed.
+  (entry 136). On the server, no plan and no corridor has been timed. Item 71's region
+  (entry 252) was measured by replaying the plan call only; no corridor was run end to end.
 - **Ofself sign-in** works for real, but the owner's account holds no travel records, so the form
   has only been seen filling from the sandbox user and a fake Ofself. **The grant expires
   2026-10-17.**
@@ -237,7 +185,7 @@ goal ended, is at the top of [TODO.md](TODO.md).
 | **Runtime** | `source_mode: live`, `extraction_mode: openai`, `render_mode: on_demand`, `discovery_decider: model`, `discovery_selector: model`, `destination_mode: automatic`, `model_route: personas` — see `config/runtime.yaml` |
 | **Model calls** | Through Ofself Personas since 2026-09-24, on Ofself's account (entry 188). Graded against the direct route: selection 41 of 48 roles against 39 of 48 |
 | **Selection** | The model selector sees the fusion top 120 plus 40 best-linked pages with no stored text (entry 195). On `oracle/selection_oracle.yaml`: 100% role recall against the heuristic's 70% at matched budget (entry 87) |
-| **Sign-in** | Optional since 2026-10-06 (entry 262): ten free plans per address without an Ofself session, counted in `var/allowance/`; sign-in imports the traveller's details and lifts the limit. `REQUIRE_SIGN_IN=true` locks every plan behind sign-in (entry 191). The deployed server still runs 191's rule until updated |
+| **Sign-in** | Optional since 2026-10-06 (entry 262): ten free plans per address without an Ofself session, counted in `var/allowance/`; sign-in imports the traveller's details and lifts the limit. `REQUIRE_SIGN_IN=true` locks every plan behind sign-in (entry 191). |
 | **Ofself app** | "Visa Research Desk", app id `ed21d312-1c8a-487e-9de3-38ed61abb013`, client id `tp_hErNm3BbU_ISDz_Q703QpVIbTTZ87Ixt6H306ihMtAU`, incubator mode, redirect `http://localhost:8000/oauth/callback`. Design in [CRUX.md](CRUX.md); the DLR is live; details in TODO item 55 |
 
 **Speed (entry 171).** A fresh request is ~55s: ~25s of research and ~29s writing the plan. The
