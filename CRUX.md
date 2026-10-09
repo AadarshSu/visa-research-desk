@@ -244,6 +244,9 @@ dlr:
       verb: read
       schemas: [place]
       fields: [kind, country_code, parent_ref, status]
+    - resource: plugins
+      verb: execute
+      plugin_ids: [912d0476-5ea8-4ae0-991f-2a242979ea16]
     - resource: nodes
       verb: create
       schemas: [travel-plan]
@@ -317,7 +320,7 @@ them cannot compound; the trip stays `inferred` until they declare it themselves
 | `discovery:friends` | no | Not needed |
 | `discovery:realms` | no | Not needed |
 | `sub_entity` | no | One pipeline, one grant |
-| `plugins:execute` | no | Uses no other app's plugin |
+| `plugins:execute` | yes | Assimilation only (`912d0476-…`), for the news panel beside the plan: the destination, the trip dates and the passport typed on the form are sent, nothing from the graph, and nothing it returns reaches the visa answer (TODO item 84) |
 | `is_plugin` | no | A plugin's output would be a stored answer; §4 |
 | `activity` | no | Not needed |
 | `automations` | no | Research runs only when a traveller asks |

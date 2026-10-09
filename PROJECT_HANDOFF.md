@@ -8,7 +8,7 @@ stands, what to do next, and what is known to be broken. The history of how it g
 | --- | --- |
 | **Repository** | `github.com/AadarshSu/visa-research-agent` |
 | **Last updated** | 2026-10-08 — update this line when you touch the handoff |
-| **Tests** | 1,163 on the owner's machine, with `var/` present: 1,162 passing and 1 skipped (the opt-in browser test), run 2026-10-08; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
+| **Tests** | 1,180 on the owner's machine, with `var/` present: 1,179 passing and 1 skipped (the opt-in browser test), run 2026-10-08; two more skip in a checkout without the corpora. `ruff` and `mypy --strict` clean. The suite is blocked from the network (`tests/conftest.py`, entry 45) |
 
 | Question | File |
 | --- | --- |
@@ -40,6 +40,10 @@ panel under the at-a-glance box — seen on the fixture plan, not yet deployed. 
 followed on 2026-10-06: MET Norway's forecast within about nine days, NOAA station averages beyond,
 for a city picked in the panel — also not deployed. Neither panel is ever an input to the visa
 answer.
+**News** (item 84) is **parked** (the owner, 2026-10-09): the call to Assimilation and
+`GET /news-briefing` are built and tested, and the app's DLR asks for `plugins:execute` on Assimilation
+alone, but no panel is built. Five live briefings showed three useful parts, and Assimilation is capped
+at 10 calls a day while its developer works on it; TODO item 84 says what to do before resuming.
 
 **Design exploration has its own item (TODO 81) and belongs in a session of its own:** different
 layouts and UI workflows for the site, starting from the current design (entry 270) and the parked

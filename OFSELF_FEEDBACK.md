@@ -467,6 +467,47 @@ In order of what would have saved the most time here:
 - **Sandbox users:** one command, a working `X-User-ID`, no OAuth.
 - **Personas' `/api/v1/docs`** is versioned with the deployment and readable as markdown.
 
+## 12. Calling another app's plugin: Assimilation
+
+Read live on 2026-10-08 with this app's key and the sandbox test user (`var/news-2026-10-08/`).
+
+- **12.1 The usage guide's only example needs an SDK an app cannot install** [observed]. Assimilation's
+  `usage_guide` shows `from paradigm import ParadigmAppClientSync` and `execute_plugin`. The SDK the
+  CLI pins is `git+https://github.com/Radius-of-Self/paradigm_sdk.git`, which answers "Repository not
+  found" to an outside developer, and the CLI's own skill says it is not on PyPI. This app calls
+  `POST /api/v1/plugins/<id>/execute` with `{"input_parameters": {...}}` instead. *Suggest:* publish
+  the SDK, or give the REST call beside the SDK one in every usage guide.
+- **12.2 The SDK's exception names are not the wire codes** [observed]. The guide names
+  `PluginNotEnabled` and `ConsentRequired`; over HTTP the first is `403` with
+  `error.code: PLUGIN_NOT_ENABLED` and a `setup_url`. The second has not been seen, so its code is a
+  guess (`CONSENT_REQUIRED`). The developer guide's §31.4 names a third, `PLUGIN_NOT_AUTHORIZED`.
+  *Suggest:* list the codes and their fields.
+- **12.3 How a DLR scopes `plugins:execute` to one plugin is undocumented for CRUX** [read]. The
+  developer guide's §31.3 YAML is `type: run_plugins` with `plugins: [<id>]`; its `access` shape is
+  `plugins.execute.plugin_ids`; CRUX §9 takes `resource`/`verb` items, and `crux validate` accepted
+  `plugin_ids:` without checking it. It does narrow the grant: after `commit`, `dlr show --json`
+  holds `plugin_ids: [912d0476-…]` (2026-10-08). But the plain `dlr show` prints only
+  `plugins:execute`, which reads as a grant to run any plugin. *Suggest:* print the ids.
+- **12.5 `paradigm commit` stops on a widened DLR without naming its own flag** [observed,
+  2026-10-08]. It answers `EP_ACTION_REQUIRED`, telling the caller to "specify ep_action" — the API
+  field. The CLI's flag is `--ep-action continue|cancel`, found only in `commit --help`. The message
+  also does not say that `cancel` revokes every existing user's grant. *Suggest:* name the flag in
+  the error, and prompt for the choice when the shell is interactive.
+- **12.6 What five live briefings held** [observed, 2026-10-08; `var/news-2026-10-08/`]. Fast:
+  1.1–3.3 s each through Paradigm. On topic: significant stories and public holidays. Off topic:
+  "news now" for Japan, Thailand and France was mostly about other countries, and identical with or
+  without trip dates. Empty: trip events in all five (30–161 articles checked, `extracting: true`);
+  Thailand's holidays `known: false`; Global Affairs Canada's advisory has a level but no label,
+  summary, date or link in all five. Entry rules quote the passport's own government (US, GB, CA
+  only); the FCDO's "visa on arrival in Japan" would read as a second visa answer beside an app's own.
+- **12.7 A plugin's capacity is set by its developer and is not visible to a caller** [told,
+  2026-10-09]. Assimilation's developer is capping use at 10 calls a day during development. Nothing in
+  the plugin record or `taxonomy` states a limit or how a capped call is answered. *Suggest:* a
+  `limits` field on the plugin record and a documented refusal code.
+- **12.4 Good: the plugin record says what it reads and writes** [observed]. `GET /plugins/<id>`
+  returns the whole calling contract in `usage_guide`, an empty `output_declaration`, and `usable`
+  for this user, so an app can tell before calling that setup is missing.
+
 ---
 
 ## Open questions
@@ -486,4 +527,4 @@ In order of what would have saved the most time here:
 | Can an app reach a person who isn't on its page, e.g. a notification? | 10-02 | — | — |
 | Does a `belongs_to` edge to another person's node make it readable to them alone? (for travelling with friends, later) | 10-02 | — | — |
 | Is there a status page or reliability figure for Personas `/run`, and does a run the gateway abandoned at 55 s still complete and bill? (8.22, 8.25) | 10-05 | — | — |
-| Assimilation's news plugin: its manifest; can it take a country and date window instead of the person's interests; must it save articles into the user's account; can an app trigger it (guide §11 says only the user, §28 and §31 say an app can); how fast; which sources | 10-05 | — | — |
+| Assimilation's news plugin: its manifest; can it take a country and date window instead of the person's interests; must it save articles into the user's account; can an app trigger it (guide §11 says only the user, §28 and §31 say an app can); how fast; which sources | 10-05 | — | **Read 2026-10-08 (12.4):** `destination-briefing` takes a place, `startDate`/`endDate` and a passport; it writes nothing (`persist` is refused); an app calls it for a user who has set it up. Speed and sources not yet seen |

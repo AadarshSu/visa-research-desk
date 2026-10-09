@@ -13,6 +13,7 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import ValidationError
 
 from visa_research_agent.api.allowance import AllowanceStoreError, AnonymousAllowance
+from visa_research_agent.api.assimilation import AssimilationClient, Briefing
 from visa_research_agent.api.countries import normalise_country
 from visa_research_agent.api.dependencies import (
     get_automatic_destinations,
@@ -274,6 +275,58 @@ async def weather(
             normals=normals_for(code, place.name),
             now=now,
         )
+    )
+
+
+def get_assimilation_client() -> AssimilationClient | None:
+    """Assimilation through Paradigm, with this app's key; None while no key is configured."""
+
+    if settings.paradigm_api_key is None:
+        return None
+    return AssimilationClient(
+        settings.paradigm_api_key.get_secret_value(), base_url=settings.paradigm_base_url
+    )
+
+
+@router.get("/news-briefing", response_model=Briefing, tags=["visa research"])
+async def news_briefing(
+    request: Request,
+    destination: str,
+    sign_in: Annotated[SignIn | None, Depends(get_sign_in)],
+    assimilation: Annotated[AssimilationClient | None, Depends(get_assimilation_client)],
+    passport: str | None = None,
+    start: date | None = None,
+    end: date | None = None,
+) -> Briefing:
+    """Assimilation's briefing for the trip, beside the plan and never an input to it (item 84).
+
+    Signed-in travellers only: the call is made for their Ofself user id. Sent: the destination,
+    the dates and the passport typed on the form, nothing from their graph. A refusal is answered
+    as a `Briefing` naming it, so the page can say why there is no news.
+    """
+
+    user_id = sign_in.signed_in_user(request) if sign_in is not None else None
+    if user_id is None or assimilation is None:
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED, detail={"message": "News needs an Ofself sign-in"}
+        )
+    if (start is None) != (end is None) or (
+        start and end and (end < start or (end - start).days > MAXIMUM_TRIP_DAYS)
+    ):
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail={"message": "the dates must come as a pair, forwards, over at most two years"},
+        )
+    try:
+        by_slug = next(
+            (c.code for c in get_country_registry().countries if c.slug == destination), None
+        )
+        place = by_slug or normalise_country(destination)
+        passport_code = normalise_country(passport) if passport else None
+    except ValueError as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail={"message": str(exc)}) from exc
+    return await assimilation.destination_briefing(
+        user_id, place=place, passport=passport_code, start=start, end=end
     )
 
 

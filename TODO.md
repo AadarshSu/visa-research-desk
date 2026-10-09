@@ -44,23 +44,40 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 
 | | | |
 | --- | --- | --- |
-| **Now** | 80. A travel-readiness app for one traveller — next, the news panel | `explore`, with the owner |
+| **Now** | 80. A travel-readiness app for one traveller | `explore`, with the owner |
 |  | 81. Explore new layouts and UI workflows for the site | `explore`, its own session |
-|  | 84. Build the news panel from Ofself's Assimilation destination briefing | `soon`, part of 80 |
 |  | 88. Offer to write the trip to Ofself after a plan — synced and saved live; re-approval and deploy next | `soon` |
 |  | 63. Make most corridors return accurate and useful information | `ongoing` |
 |  | 55. Take the traveller from Ofself's shared identity, through one adapter | `soon` |
 |  | 79. Score pages fetched live with the post-aware stored-text fixes | `soon` |
 |  | 4. Decide the client-side retrieval question | `soon` |
 |  | 20. Make the stores substrate-swappable and durable | `soon` |
-| **Parked** | Expansion: 64, 2 · Speed and cost: 58, 59, 61, 87 · Hosting: 7's leftovers | until required |
+| **Parked** | Expansion: 64, 2 · Speed and cost: 58, 59, 61, 87 · Hosting: 7's leftovers · News: 84 | until required |
 |  | Retrieval and blocks: 46, 11, 27, 10, 69 · Corpus coverage: 49, 35, 47 · Ranking: 86 · Deciders and drift: 12, 13, 14 | until required |
 
 ---
 
 ## Now — this phase's work
 
-### 84. Build the news panel from Ofself's Assimilation destination briefing — `soon`, **part of 80**
+### 84. Build the news panel from Ofself's Assimilation destination briefing — `parked`, **part of 80**
+
+**Parked by the owner, 2026-10-09,** after reading five live briefings
+(`https://claude.ai/artifact/BgnXYd36bohYiDsSeADfjk`, raw JSON in `var/news-2026-10-08/`). **Still
+expected to be integrated later.** Why now is not the time:
+- **Only three parts earned a place:** significant stories (on topic for all five destinations),
+  public holidays (right where the country is known; Thailand was not), and possibly severe-weather
+  alerts (none were active to judge). "News now" was mostly about other countries, trip events found
+  nothing in all five, Canada's advisory came back empty every time, and the quoted entry rules can
+  read as a second visa answer beside the plan (FCDO: "a visa on arrival in Japan" for a British
+  passport).
+- **Assimilation's developer is capping use at 10 calls a day** while they develop, which is too few to
+  test with, and is pushing changes meant to improve the data. They offered to take our own SerpAPI
+  key for search; not taken (we have none, and Brave stays our search, 2026-10-09).
+- **Before resuming:** re-run the five briefings with `var/news-2026-10-08/probe.py` (owner's user
+  id in `PROBE_USER`) and `review.py`, and decide what the panel does when the cap is hit — say news
+  is unavailable, reuse a destination-only briefing for the day (a shared store may hold no dates or
+  passport, entry 279), or a fallback source (its own decision entry).
+
 
 **The owner, 2026-10-08,** gave the integration steps:
 1. **Sign-in and grant:** the app is registered with Paradigm and its sign-in works (item 55). The
@@ -87,6 +104,22 @@ running a corridor to reading a code path, and measure a proposed fix before imp
 - **Send the passport country the traveller entered on the form**, with the destination and the
   dates. Nothing from `shared_details`.
 - **Whether it writes into the traveller's account:** not a concern for now.
+
+**Built 2026-10-08 — the server side; the panel waits on a real briefing:**
+- **Step 2 answered by the platform:** the SDK's repository is private to us (OFSELF_FEEDBACK 12.1),
+  so `api/assimilation.py` makes the SDK's REST call with `httpx`, beside `api/ofself.py`.
+  `GET /news-briefing` (signed-in only) sends the destination's code, the passport typed on the form
+  and the dates as a pair, and answers a `Briefing`: `ok` with Assimilation's decoded answer, or
+  `setup`/`consent` with Paradigm's link (https on Ofself's hosts only), `reconnect`, `refused` or
+  `unavailable`, each with the seconds it took. Tests: `tests/test_assimilation.py`.
+- **Step 1, live:** CRUX.md §9 asks for `plugins:execute` scoped to Assimilation's id, synced and
+  committed with `--ep-action continue` (existing grants kept; the new permission waits on each
+  traveller's re-consent). `dlr show --json` holds the id (OFSELF_FEEDBACK 12.3).
+- **Seen live:** `GET /plugins/<id>` gives the usage guide (`var/news-2026-10-08/plugin.json`); the
+  sandbox test user's `execute` answers `403 PLUGIN_NOT_ENABLED` with a setup link, so `taxonomy` and
+  a real briefing have not been read. **Next:** the owner sets Assimilation up on their own account
+  and signs in to the app again; then `taxonomy`, a few real briefings timed, and the panel built
+  from what they hold.
 
 **Bounds — each moves only by a decision entry:**
 - **Never an input to the visa answer** (entry 251), and shown apart from it, like the advice and
@@ -121,7 +154,7 @@ it (entries 6, 250).
 **How:** experiment on a branch, preview against real plans, and record what is chosen in a
 decision entry when it lands on `main`.
 
-### 80. A travel-readiness app for one traveller, built around their dates — `explore`, **with the owner; dates, advice, weather and the redesign built, news next**
+### 80. A travel-readiness app for one traveller, built around their dates — `explore`, **with the owner; dates, advice, weather and the redesign built; news parked (item 84)**
 
 **The direction — the owner, 2026-10-05 (entry 251).** Someone planning a trip enters where and
 when, and sees the visa answer with what else bears on going. **One traveller**; friends come much
