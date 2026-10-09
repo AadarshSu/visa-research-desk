@@ -287,14 +287,17 @@ outward, which matches §4.
 
 ## 14. Stratum & ratification
 
-**Asserted.** The trip a traveller saves, on their click: their own statement of where they are
-considering going, for what and when (§7, workflow 3). Nothing inferred.
+**Asserted.** The trip a traveller saves (§7, workflow 3), written on their click without a
+proposal, so Paradigm stamps it `inferred` like every app write. It records where they said they are
+considering going, for what and when — nothing this app concluded. Left `inferred` by the owner's
+decision (DECISIONS entry 283): only the person can declare it, in Ofself.
 
 **Proposed.** Nothing. The click on "Save this trip to Ofself" is the traveller's approval, so
 the trip is written directly rather than proposed for a second approval on Ofself (DECISIONS entry
 283). Which passport a trip is on is not written: no schema can link one to a trip.
 
-**If nothing.** Only what the traveller stated is written, so no inference exists to compound.
+**If nothing.** What is written is what the traveller typed on the form, so an inference about
+them cannot compound; the trip stays `inferred` until they declare it themselves.
 
 ## 15. Platform features
 

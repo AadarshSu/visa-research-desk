@@ -402,8 +402,10 @@ grant:
 - **The guide was wrong about the answer:** a write returns `201` with the node itself, `id` at the
   top, not under `node` (OFSELF_FEEDBACK 2.7). The code accepted both; the tests now use the live
   shape.
-- **Ofself stamps both nodes `stratum: inferred`,** though the traveller asserted the trip by
-  clicking. The guide never mentions stratum, so nothing here sets it (OFSELF_FEEDBACK 5.8).
+- **Ofself stamps both nodes `stratum: inferred`.** That is Paradigm's rule — the CRUX template
+  says "Apps write `inferred`. Only a person can declare." — not a fault (OFSELF_FEEDBACK 5.8).
+  **The owner, 2026-10-09: leave it `inferred`.** A proposal might ratify it, at the cost of the
+  second approval declined above, and nothing in this app reads stratum.
 
 **Left:** the owner re-approving the app, a save from a real grant, and a deploy.
 

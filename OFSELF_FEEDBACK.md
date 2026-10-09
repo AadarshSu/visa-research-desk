@@ -171,12 +171,12 @@ rather than deleting it.
   can move because Ofself changed a prompt or a model, with nothing on the app's side to show it,
   and a developer can neither reproduce a verdict nor diff two. *Suggest:* record the model and
   rubric version alongside `ran_at`.
-- **5.8 Every app write is stamped `stratum: inferred`, and the guide never mentions stratum**
-  [observed, 2026-10-09]. This app writes a trip only when the traveller clicks to save it — their
-  own statement, which CRUX §14 calls *asserted*. Both nodes came back `inferred`. Nothing says what
-  the strata are, how a node moves between them, or whether an app may record that the person
-  asserted it. *Suggest:* document stratum, and let an app mark a write made on the person's
-  explicit action as asserted.
+- **5.8 Stratum is explained in one template line, and nowhere in the developer guide** [observed,
+  2026-10-09]. Both nodes this app wrote came back `stratum: inferred`, though each was written only
+  on the traveller's click. That is the rule — the CRUX template's §14 says *"Apps write `inferred`.
+  Only a person can declare."* — but it is the only place it is said: the developer guide never
+  mentions stratum, which values it takes, or how a node is ratified. Whether an approved proposal
+  lands as ratified was not tested. *Suggest:* a section on strata and ratification in the guide.
 
 ## 6. Schema registry
 
