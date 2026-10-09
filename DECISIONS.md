@@ -111,6 +111,7 @@ not — and stored text ranks, it never speaks).
 ### Finding the right page: ranking, recall, judgement
 | | |
 | --- | --- |
+| [285](#285-the-40-pages-shown-on-their-links-alone-are-taken-role-by-role) | **The 40 pages shown on their links alone are taken role by role** — the authorisation role had filled 37 of South Korea's 40 with K-ETA notices and `IN/IN` refused, 2 of 2, for want of the Chennai waiver list; offline over 36 corridors the oracle keeps 129 of 131 in both arms and every authorisation page that filled the role is still shown; Korea resolves 2 of 2 live |
 | [281](#281-thailand-reads-septembers-in-force-notice-on-every-tourism-corridor-because-entry-245-priced-it-out-of-the-pool) | **Thailand reads September's in-force notice on every tourism corridor** — entry 245's purpose rule moved it from 77th offered to withheld; named in `always_read.yaml`, `IN/IN` 4 of 5 `verified` "no visa", the fifth a rare roles-call refusal (10 of 10 on replay); US and GB already read it unaided, China does not need it |
 | [246](#246-live-the-boosted-60--40-shortlist-gives-the-same-decisions-and-loses-frances-processing-time-for-one-traveller) | **Measured live: the boosted 60 + 40 shortlist gives the same decisions and checklists, and loses France's Filipino processing time** — ten corridors, three runs an arm: decisions 30 of 30 and checklists 26 of 30 in both, 159 roles against 163, on 44% less selector input; `selection_boost_searched` is in the code and off; **the owner kept 120 + 40** |
 | [245](#245-the-stored-text-score-credits-the-travellers-own-post-and-a-60--40-shortlist-becomes-level) | **Shipped: the stored-text score credits the traveller's own post** — the nationality bonus stops reading a URL's host, the post serving the traveller is credited and another post penalised, and a decision stops earning the tourism bonus; at today's cut the selector finds every decision and checklist in every run (127.0 of 131 against 126.6), and with the search boost a 60 + 40 shortlist is level (125.8) on 45% less input |
@@ -323,6 +324,50 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 285. The 40 pages shown on their links alone are taken role by role
+
+**2026-10-09 · the owner, after a traveller's report: South Korea · Indian passport · from
+Karnataka · tourism refused 2 of 2 on the deployed app.** Changes `shown_to_selector`.
+
+**What went wrong.** The selector is shown the fusion top 120 plus 40 pages with no stored text,
+and those 40 were the best by *best link score*, on one list (entry 195). Entry 275's
+`travel_authorisation` role scores South Korea's K-ETA site on every corridor: `IN/IN`'s pool went
+from 402 (2026-09-25) to 787, about 375 of the new pages K-ETA notices. They took 37 of the 40,
+the cut rose to a link score of 36, and the Chennai consulate's visa-waiver page — 14, no stored
+text, the page that decided `IN/IN` on 2026-09-25 — was withheld. The roles call was left with the
+K-ETA eligibility page, whose stored text is the site's shell with no country list, and found no
+decision. Reproduced here once (`var/recall/2b61…json`).
+
+**The change.** The 40 are taken as `fusion_order` takes the top: per role by link score, the
+roles in turn, a page several roles score placed once (`link_order_by_role`). One role can no
+longer fill them; each still has a route in. Not excluding the role: a country whose
+authorisation page has no stored text reaches the selector only this way, as Australia's and New
+Zealand's ETA pages did (the owner). **Not a bigger cut:** entry 194 measured the longer list
+choosing worse (whole pool 76.6 of 90, top 120 82.4, 120 + 40 80.0).
+
+**Measured offline** (`var/blind-share-2026-10-09/`: `capture.py` from item 66's, current stores
+only, 321 searches and no model call; `compare.py` grades as `selection-recall` does), the 27
+oracle corridors, entry 275's eight authorisation corridors and Korea `IN/IN`:
+- **Oracle roles shown: 129 of 131 before and after**, no corridor changing.
+- **Authorisation pages shown** are unchanged within 3 everywhere except Canada (44–47 → 28: its
+  translated eTA fact sheets, two status forms, two help-centre answers) and Korea `IN/IN`
+  (74 → 52). The United Kingdom gains one on all three corridors. The pages that filled the role
+  live in entry 275 — `gov.uk/eta`, the NZeTA pages, `esta.cbp.dhs.gov` — are shown in both arms.
+- **What the 40 give up instead is mostly copies:** United States `GB/GB` loses four
+  `travel.state.gov` addresses of the Visa Waiver Program page, which stays shown at its
+  `adoption.state.gov` mirror with dhs.gov's waiver pages and two of the London embassy's; Czechia
+  loses duplicate `mzv.gov.cz` list addresses; Germany ten mission contact forms.
+- **Korea `IN/IN` gains the Chennai page.**
+
+**Live, South Korea `IN/IN`, twice:** `visa_decision` filled 2 of 2 from the Chennai page ("India
+only under Diplomatic & Official"); the checklist unfilled, as on 2026-09-25 (entries 216, 219).
+
+**Not measured:** the selector replayed on the new packets, and any other corridor live. The
+oracle cannot credit a page with no stored text (entry 195), which is the lane this changes — the
+Korea run is the evidence for that lane, the oracle only that nothing it sees moved.
 
 ---
 

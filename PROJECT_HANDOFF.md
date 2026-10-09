@@ -46,8 +46,10 @@ entry:
   `travel-plan` (entry 283, item 88).
 - **Ranking:** a country may name pages its corridors read on every run (`config/always_read.yaml`,
   entry 267) — Australia's ETA page (known problem 46) and Thailand's September notice (entry 281).
+  The 40 pages shown on their links alone are taken role by role (entry 285): the authorisation
+  role had filled 37 of South Korea's, and `IN/IN` refused for want of its consulate's waiver list.
 
-**All of it is deployed** (the owner, 2026-10-09). **News is parked** (TODO item 84, the owner 2026-10-09):
+**All of it is deployed** (the owner, 2026-10-09), except entry 285. **News is parked** (TODO item 84, the owner 2026-10-09):
 the Assimilation client and route are built and tested, no panel, and the plugin is capped at 10
 calls a day while its developer changes it. **Design exploration** (item 81) belongs in a session of
 its own, from the current design and the local branch `design-bold`.
@@ -115,13 +117,12 @@ several times first.** Rule 8e's bounds live only in the prompt, and a packet ch
 
 - **The deployed app (entry 231):** one AWS EC2 instance at `https://<dashed-ip>.sslip.io`, a systemd
   service `visa` behind Caddy. Update: `cd ~/visa-research-agent && git pull && sudo systemctl restart
-  visa`. **It has not pulled since before 2026-10-05**, so it lacks the advice and weather panels,
-  the redesign, free plans without sign-in and entries 263–269. Pulling brings all of them in at
-  once, including ten free plans per address for anyone who finds it. The pages added with
+  visa`. **Last deployed 2026-10-09, before entry 285** (the owner); it needs a pull for
+  that fix. The pages added with
   `corpus-add` (Australia's ETA and eVisitor) are in this machine's stores only; the always-read
   list fetches the ETA page live, so that fix needs no store. Its `.env`, `var/corpus` and `var/pagetext` were copied by hand, so they drift from this
-  machine's. Its stores are on the instance's disk, lost only on terminate. Not yet run there: a plan,
-  a corridor's timing, and the block/challenge rate from an AWS address. Travellers' problem reports land
+  machine's. Its stores are on the instance's disk, lost only on terminate. Travellers use it (the owner ran South Korea `IN/IN` there, 2026-10-09). Not yet
+  measured there: a corridor's timing, and the block/challenge rate from an AWS address. Travellers' problem reports land
   in its `var/reports/`; read them there with `visa-discover reports` (entry 233).
 - **Raw outputs of item 63's rounds:** `var/item70-2026-09-24/`
   - `item63-round2/<slug>_IN_IN/<1|2>/`
@@ -184,7 +185,7 @@ goal ended, is at the top of [TODO.md](TODO.md).
 | **Stores** | **All 55 have a page corpus and a page-text index**, rebuilt 2026-09-24/25 (entries 193, 203, 204) and partly again 2026-09-26 (entry 223): 285,261 pages; `var/pagetext/` is 942 MB. Plus a shared EU store for Schengen visa decisions (entry 201) |
 | **Runtime** | `source_mode: live`, `extraction_mode: openai`, `render_mode: on_demand`, `discovery_decider: model`, `discovery_selector: model`, `destination_mode: automatic`, `model_route: personas` — see `config/runtime.yaml` |
 | **Model calls** | Through Ofself Personas since 2026-09-24, on Ofself's account (entry 188). Graded against the direct route: selection 41 of 48 roles against 39 of 48 |
-| **Selection** | The model selector sees the fusion top 120 plus 40 best-linked pages with no stored text (entry 195). On `oracle/selection_oracle.yaml`: 100% role recall against the heuristic's 70% at matched budget (entry 87) |
+| **Selection** | The model selector sees the fusion top 120 plus 40 pages with no stored text, ranked on their links role by role (entries 195, 285). On `oracle/selection_oracle.yaml`: 100% role recall against the heuristic's 70% at matched budget (entry 87) |
 | **Sign-in** | Optional since 2026-10-06 (entry 262): ten free plans per address without an Ofself session, counted in `var/allowance/`; sign-in imports the traveller's details and lifts the limit. `REQUIRE_SIGN_IN=true` locks every plan behind sign-in (entry 191). |
 | **Ofself app** | "Visa Research Desk", app id `ed21d312-1c8a-487e-9de3-38ed61abb013`, client id `tp_hErNm3BbU_ISDz_Q703QpVIbTTZ87Ixt6H306ihMtAU`, incubator mode, redirect `http://localhost:8000/oauth/callback`. Design in [CRUX.md](CRUX.md); the DLR is live; details in TODO item 55 |
 

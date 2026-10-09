@@ -74,7 +74,8 @@ the result page redesign and its stub sidebar; an open decision leading with whe
 
 **Left on what is built:**
 - **Travel authorisation (entry 275):** named on the plan 5 of 8 live (known problem 47). Run Canada
-  and United States `GB/GB` end to end.
+  and United States `GB/GB` end to end. Its pages had crowded South Korea's link-only 40; taken
+  role by role since entry 285, which **needs a deploy** and a run of South Korea `IN/IN` there.
 - **Travel advice (entry 260):** Finland answered `429` after five links; Czechia's pages need a
   region in the address; Russia waits on evidence for `mid.ru`; eight governments are unclear;
   re-run `visa-discover advisory-links` when a government moves its pages. **Open:** whether India's

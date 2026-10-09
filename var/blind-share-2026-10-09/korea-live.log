@@ -1,0 +1,72 @@
+
+Corridor south-korea/IN/IN/tourism
+
+  visa_decision                        21.5  https://overseas.mofa.go.kr/in-chennai-en/wpge/m_2782/contents.do
+                                             Visa Issuance
+                                             why: visa_decision: Its visa-waiver lists place India only under “Diplomatic & Official” passports; India is not listed among ordinary-passport countries under a vis
+  application_route                    34.8  https://overseas.mofa.go.kr/in-en/wpge/m_2660/contents.do
+                                             Visa | Embassy of the Republic of Korea in India
+                                             why: application_route: The Embassy in India page identifies the VFS Korea Visa Application Centres in New Delhi and Kolkata and sets out visa-submission jurisdictio
+  general_entry                        31.4  https://e-arrivalcard.go.kr/portal/board/viewBoardDetail.do?bbsId=0000000008&eacBbsKndCd=1&flId=&pageIndex=1
+                                             전자입국신고서
+                                             why: general_entry: It states that foreign nationals entering Korea must submit an entry declaration form, which can be submitted online from three days before arriv
+
+  could not be identified:
+    document_checklist
+  note: the crawl was skipped: South Korea's stored page corpus already offers 5294 pages on currently trusted domains, more than a crawl could visit
+  note: 15 of 160 candidates were chosen to read by a model shown what 115 of them say, rather than by ranking the links to them; 9 of those were offered on their stored text, the links to them having scored nothing for any role; 627 of the 787 were not shown to it — it saw the 120 ranked likeliest on their links and stored text, and 40 more with no stored text on their links alone, because a longer list chose worse (entry 194)
+  note: 0 of 1 checklist documents linked from pages this run read were read as well
+  note: overseas.mofa.go.kr could not be read because the link is labelled as a document and returned a web page instead
+  note: overseas.mofa.go.kr could not be read because the page returned too little readable text to trust
+  note: www.immigration.go.kr could not be read because the page returned too little readable text to trust
+  note: no candidate was judged to be the document checklist
+
+  15 pages read, 2 model calls
+
+
+  80.6s in the resolver, by stage:
+    search          4.3s    5%
+    corpus          1.3s    2%
+    crawl           2.6s    3%
+    select          7.1s    9%
+    fetch          33.9s   42%
+    adjudicate     31.3s   39%
+
+  model calls:
+    select       7.0s   packet  221.9k   prompt   4.4k   in 65722  out 368
+    roles       31.3s   packet   44.4k   prompt  11.3k   in 14849  out 1397
+
+Corridor south-korea/IN/IN/tourism
+
+  visa_decision                        21.5  https://overseas.mofa.go.kr/in-chennai-en/wpge/m_2782/contents.do
+                                             Visa Issuance
+                                             why: visa_decision: The visa-waiver list places India only under “Diplomatic & Official,” not under the ordinary-passport visa-exemption or visa-free-entry lists. Fo
+  application_route                    34.8  https://overseas.mofa.go.kr/in-en/wpge/m_2660/contents.do
+                                             Visa | Embassy of the Republic of Korea in India
+                                             why: application_route: The Embassy in India page identifies the New Delhi and Kolkata VFS Korean Visa Application Centres and gives visa-submission jurisdiction by 
+  general_entry                        31.4  https://e-arrivalcard.go.kr/portal/board/viewBoardDetail.do?bbsId=0000000008&eacBbsKndCd=1&flId=&pageIndex=1
+                                             전자입국신고서
+                                             why: general_entry: It states that foreign nationals entering Korea must submit an entry declaration form, either paper or e-Arrival card, and lists the exemptions. 
+
+  could not be identified:
+    document_checklist
+  note: the crawl was skipped: South Korea's stored page corpus already offers 5294 pages on currently trusted domains, more than a crawl could visit
+  note: 8 of 160 candidates were chosen to read by a model shown what 115 of them say, rather than by ranking the links to them; 9 of those were offered on their stored text, the links to them having scored nothing for any role; 627 of the 787 were not shown to it — it saw the 120 ranked likeliest on their links and stored text, and 40 more with no stored text on their links alone, because a longer list chose worse (entry 194)
+  note: 0 of 1 checklist documents linked from pages this run read were read as well
+  note: overseas.mofa.go.kr could not be read because the link is labelled as a document and returned a web page instead
+  note: no candidate was judged to be the document checklist
+
+  8 pages read, 2 model calls
+
+
+  23.7s in the resolver, by stage:
+    search          3.5s   15%
+    corpus          1.3s    5%
+    crawl           2.7s   11%
+    select          3.8s   16%
+    fetch           0.1s    0%
+    adjudicate     12.4s   52%
+
+  model calls:
+    select       3.8s   packet  221.9k   prompt   4.4k   in 65722  out 184
+    roles       12.4s   packet   27.8k   prompt  11.3k   in 10185  out 1011

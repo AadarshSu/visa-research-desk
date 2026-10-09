@@ -20,6 +20,7 @@ from visa_research_agent.discovery.selection import (
     build_selection_packet,
     excerpt_budget,
     fusion_order,
+    link_order_by_role,
     load_selection_prompt,
     shown_to_selector,
     validated_selection,
@@ -338,6 +339,46 @@ def test_a_searched_page_the_links_score_nothing_for_is_still_ranked_by_the_boos
     order = fusion_order([unscored, found, scored], {}, boost_searched=True)
 
     assert order.index(found) < order.index(unscored)
+
+
+def test_one_role_cannot_fill_the_pages_shown_on_their_links_alone() -> None:
+    """Entry 285: South Korea's 40 went 37 to K-ETA notices on best link score, and the consulate
+    page deciding the visa, scoring 14, was withheld. Taken role by role, it is shown."""
+
+    read = linked("https://a.gov.example/read", visa_decision=90.0)
+    notices = [
+        linked(f"https://eta.gov.example/notice-{i}", travel_authorisation=90.0 - i)
+        for i in range(4)
+    ]
+    decision = linked("https://a.gov.example/waiver-list", visa_decision=14.0)
+    has_text = {read.link.url}.__contains__
+
+    offered, withheld = shown_to_selector(
+        [read, *notices, decision], {}, has_text, shown=1, blind=2
+    )
+
+    assert [c.link.url for c in offered] == [
+        "https://a.gov.example/read",
+        "https://eta.gov.example/notice-0",
+        "https://a.gov.example/waiver-list",
+    ]
+    assert [c.link.url for c in withheld] == [
+        "https://eta.gov.example/notice-1",
+        "https://eta.gov.example/notice-2",
+        "https://eta.gov.example/notice-3",
+    ]
+
+
+def test_a_page_several_roles_score_takes_one_blind_place() -> None:
+    both = linked("https://a.gov.example/both", visa_decision=50.0, fees=50.0)
+    fees = linked("https://a.gov.example/fees", fees=40.0)
+    other = linked("https://a.gov.example/other", visa_decision=30.0)
+
+    assert link_order_by_role([other, fees, both]) == [
+        "https://a.gov.example/both",
+        "https://a.gov.example/other",
+        "https://a.gov.example/fees",
+    ]
 
 
 def test_a_pool_no_larger_than_the_cut_is_shown_whole() -> None:

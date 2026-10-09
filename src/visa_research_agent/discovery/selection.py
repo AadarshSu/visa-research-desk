@@ -389,6 +389,28 @@ def fusion_order(
     return ordered
 
 
+def link_order_by_role(pages: Sequence[CandidatePage]) -> list[str]:
+    """Addresses of `pages` by link score per role, the roles taken in turn — every role's best
+    before any role's second. A page several roles score is placed once, at its first turn; a page
+    no role scores is left out. Ties break by address, so the order is the same on every run."""
+
+    per_role = [
+        sorted(
+            (c for c in pages if c.link_scores.score_for(role) > 0),
+            key=lambda c: (-c.link_scores.score_for(role), c.link.url),
+        )
+        for role in ROLE_ORDER
+    ]
+    ordered: list[str] = []
+    seen: set[str] = set()
+    for depth in range(max((len(ranked) for ranked in per_role), default=0)):
+        for ranked in per_role:
+            if depth < len(ranked) and (url := ranked[depth].link.url) not in seen:
+                seen.add(url)
+                ordered.append(url)
+    return ordered
+
+
 def shown_to_selector(
     pool: Sequence[CandidatePage],
     text_scores: Mapping[str, RoleScores],
@@ -400,9 +422,13 @@ def shown_to_selector(
 ) -> tuple[list[CandidatePage], list[CandidatePage]]:
     """Which of the pool the selector sees, in the order it sees them, and which it does not.
 
-    The best `shown` by `fusion_order`, plus the `blind` best-linked pages with **no stored text**
-    among the rest — added, never displacing, and kept in fusion order so a position means the same
-    thing either way. A pool no larger than `shown` is returned whole.
+    The best `shown` by `fusion_order`, plus `blind` pages with **no stored text** among the rest —
+    added, never displacing, and kept in fusion order so a position means the same thing either
+    way. A pool no larger than `shown` is returned whole.
+
+    **The blind pages are taken role by role, as `fusion_order` takes the top** (entry 285). Ranked
+    on one list by best link score, one role could fill them all: `travel_authorisation` put 37
+    K-ETA notices in South Korea's 40 and cut the consulate page that decides the visa.
 
     **This reverses the rule this module was written with**, that no candidate is dropped for want
     of room — the owner's decision, entry 195. That rule kept the heuristic from being the recall
@@ -416,11 +442,7 @@ def shown_to_selector(
     if len(ordered) <= shown:
         return ordered, []
     rest = ordered[shown:]
-    unread = sorted(
-        (c for c in rest if not has_text(c.link.url)),
-        key=lambda c: (-c.link_scores.best()[1], c.link.url),
-    )[:blind]
-    added = {candidate.link.url for candidate in unread}
+    added = set(link_order_by_role([c for c in rest if not has_text(c.link.url)])[:blind])
     offered = ordered[:shown] + [c for c in rest if c.link.url in added]
     withheld = [c for c in rest if c.link.url not in added]
     return offered, withheld

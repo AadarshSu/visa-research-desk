@@ -279,8 +279,9 @@ Corridor ─▶ search ─▶ corpus ─▶ crawl ─▶ select ─▶ fetch ─
 4. **Select** (`discovery/selection.py`, `discovery_selector: model`). The pool is every candidate
    whose link scores above zero for some role, plus the five best per role the link scored zero and
    stored text puts back (`admitted_on_text`, entry 158). It is then cut: `fusion_order` — per role,
-   reciprocal-rank fusion of link rank and stored-text rank — shows the model the top 120 plus the 40
-   best-linked candidates with no stored text (entries 194, 195). A third ranking, of the pages live
+   reciprocal-rank fusion of link rank and stored-text rank — shows the model the top 120 plus 40
+   candidates with no stored text, ranked on their links with the roles taken in turn so no one role
+   fills them (entries 194, 195, 285). A third ranking, of the pages live
    search returned, is in the code and off (`selection_boost_searched`, entry 246). The notes and the
    recall log record what was withheld. The model reads stored excerpts and picks up to 20 pages; its `Selection` type
    holds ids and no prose. With no stored text the heuristic shortlist is used instead, and the notes
