@@ -253,6 +253,10 @@ button.field-choice[aria-pressed="true"] {
   background: var(--green);
 }
 
+button.field-choice--more {
+  border-style: dashed;
+}
+
 .status-dot {
   width: 7px;
   height: 7px;

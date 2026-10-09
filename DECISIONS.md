@@ -294,6 +294,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [286](#286-saved-trips-are-offered-soonest-first-with-their-dates-and-past-ones-hidden) | **Saved trips are offered soonest first, with their dates, and past ones hidden** — the form offered every open `travel-plan` as a button, unsorted, past trips included, and two trips to one place looked identical; now five, then "Show all" |
 | [284](#284-the-sidebar-becomes-the-boarding-passs-stub-the-trip-then-advice-weather-and-keeping-it-in-one-card) | **The sidebar becomes the boarding pass's stub** — the trip as its head, then advice, weather and keeping the trip in one card; weather on the card's surface with every forecast day as wrapping tiles; the save row says what it gives |
 | [283](#283-the-trip-and-the-passport-may-be-written-to-ofself-and-nothing-the-plan-concluded) | **The trip and the passport may be written to Ofself, and nothing the plan concluded** — then only the trip, as a `travel-plan`, since no schema can link a passport to it; a direct write on our button for the one trip the traveller picks; a `place` minted for the destination where they hold none; built, not yet synced or run live |
 | [280](#280-a-fact-the-traveller-gave-may-decide-the-plan-exact-dates-a-rough-span-wholly-on-one-side-a-detail-read-off-a-document) | **A fact the traveller gave may decide the plan** — exact dates; a rough span wholly on one side; a shared detail read off a document, never a typed-in one; `decided_for` shown beside the decision |
@@ -324,6 +325,35 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 286. Saved trips are offered soonest first, with their dates, and past ones hidden
+
+**2026-10-09 · the owner: "implement the fix", after asking what the form looks like with many
+`travel-plan`s in Ofself.** Changes `prefillDestination` in `app.js`.
+
+**What it did.** A signed-in traveller's open `travel-plan`s (entry 283, TODO item 55) were offered
+as one button per plan and destination, in Ofself's order, with no limit. A trip whose dates had
+passed was offered beside an upcoming one: only `committed` and `abandoned` plans were left out. A
+trip this app saved is labelled "Thailand, tourism", so its button read "Thailand · Thailand,
+tourism", and two Thailand trips with different dates looked the same until clicked.
+
+**What it does.**
+- **A trip whose last day is before today is not offered**, judged on the traveller's own day, and
+  the note counts them ("2 trips whose dates have passed are not shown"). A trip with no dates is
+  never over.
+- **Soonest first**, by the earliest date; undated trips last; Ofself's order among equals.
+- **The button names the destination and the dates** ("Japan · 2 Apr – 16 Apr 2027"); the plan's
+  name only where it adds something ("· Honeymoon"); "no dates" where there are none.
+- **Five buttons, then "Show all N"**, which keeps a pick already made. One trip left is still
+  filled in without asking.
+
+Nothing on the server changed: the server still returns every open plan, and this is how the page
+offers them. **Checked** in the local app with a made-up payload of nine trips (two past, two to
+Thailand, one undated, one with two destinations), not with a real Ofself account. In the form's
+half-width column each button wraps to two lines, so "Show all" on a long list is still a tall
+column.
 
 ---
 

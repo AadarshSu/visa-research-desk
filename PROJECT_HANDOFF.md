@@ -43,13 +43,13 @@ entry:
   leads with where to settle it (entries 271, 272); a seventh role finds a pre-travel authorisation,
   which is never called a visa (entries 263, 275); rule 8k was tightened (entries 264, 268).
 - **Access and Ofself:** ten free plans without sign-in (entry 262); saving the trip to Ofself as a
-  `travel-plan` (entry 283, item 88).
+  `travel-plan` (entry 283, item 88); saved trips offered soonest first, past ones hidden (entry 286).
 - **Ranking:** a country may name pages its corridors read on every run (`config/always_read.yaml`,
   entry 267) — Australia's ETA page (known problem 46) and Thailand's September notice (entry 281).
   The 40 pages shown on their links alone are taken role by role (entry 285): the authorisation
   role had filled 37 of South Korea's, and `IN/IN` refused for want of its consulate's waiver list.
 
-**All of it is deployed** (the owner, 2026-10-09), except entry 285. **News is parked** (TODO item 84, the owner 2026-10-09):
+**All of it is deployed** (the owner, 2026-10-09), except entries 285 and 286. **News is parked** (TODO item 84, the owner 2026-10-09):
 the Assimilation client and route are built and tested, no panel, and the plugin is capped at 10
 calls a day while its developer changes it. **Design exploration** (item 81) belongs in a session of
 its own, from the current design and the local branch `design-bold`.

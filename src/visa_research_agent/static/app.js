@@ -2039,19 +2039,59 @@ function windowSentence(plan) {
   return `, ${formatDate(plan.earliest || plan.latest)}`;
 }
 
+// A saved trip's dates as a button shows them: "1 – 20 Dec", the year only where it is not this one.
+function planWhen(plan) {
+  const first = parseDay(plan.earliest || plan.latest);
+  const last = parseDay(plan.latest || plan.earliest);
+  if (!first) return "";
+  const thisYear = today().getFullYear();
+  const withYear = last.getFullYear() !== thisYear;
+  if (isoDay(first) === isoDay(last)) return dayLabel(first, withYear);
+  return `${dayLabel(first, first.getFullYear() !== last.getFullYear())} – ${dayLabel(last, withYear)}`;
+}
+
+// A trip whose last day is before today is over; a trip with no dates never is.
+function planIsOver(plan) {
+  const last = parseDay(plan.latest || plan.earliest);
+  return last !== null && last < today();
+}
+
+// The button names the destination and the dates. The plan's own name is added only where it says
+// something they do not — a trip this app saved is called "Thailand, tourism".
+function choiceLabel(choice) {
+  const destination = destinationLabel(destinationSelect, choice.candidate.destination_slug);
+  const parts = [destination];
+  const when = planWhen(choice.plan);
+  if (when) parts.push(when);
+  if (!choice.plan.label.toLowerCase().startsWith(destination.toLowerCase())) parts.push(choice.plan.label);
+  else if (!when) parts.push("no dates");
+  return parts.join(" · ");
+}
+
+const PLAN_CHOICES_SHOWN = 5;
+
 function prefillDestination(payload) {
   const choices = [];
+  let over = 0;
   for (const plan of payload.plans || []) {
     for (const candidate of plan.candidates) {
       // A destination this page cannot research is not offered at all.
       const option = destinationSelect.querySelector(`option[value="${candidate.destination_slug}"]`);
       if (!option || option.disabled) continue;
+      if (planIsOver(plan)) {
+        over += 1;
+        continue;
+      }
       choices.push({ plan, candidate });
     }
   }
-  const unresolved = payload.unresolved_candidates
-    ? ` ${payload.unresolved_candidates === 1 ? "One place" : `${payload.unresolved_candidates} places`} in your plans could not be matched to a country.`
-    : "";
+  // Soonest first, undated last; a stable sort keeps Ofself's order among equals.
+  const start = (plan) => plan.earliest || plan.latest || "9999-12-31";
+  choices.sort((a, b) => start(a.plan).localeCompare(start(b.plan)));
+  const unresolved =
+    (payload.unresolved_candidates
+      ? ` ${payload.unresolved_candidates === 1 ? "One place" : `${payload.unresolved_candidates} places`} in your plans could not be matched to a country.`
+      : "") + (over ? ` ${over === 1 ? "One trip" : `${over} trips`} whose dates have passed ${over === 1 ? "is" : "are"} not shown.` : "");
 
   const pick = ({ plan, candidate }) => {
     destinationSelect.value = candidate.destination_slug;
@@ -2074,16 +2114,19 @@ function prefillDestination(payload) {
   if (choices.length === 1) {
     pick(choices[0]);
   } else if (choices.length > 1) {
-    offerChoices(
-      destinationChoices,
-      choices.map((choice, index) => ({
-        key: String(index),
-        label: `${destinationLabel(destinationSelect, choice.candidate.destination_slug)} · ${choice.plan.label}`,
-        value: choice,
-      })),
-      pick,
-    );
-    showNote(destinationNote, [`From your Ofself plans. Choose a destination to research.${unresolved}`]);
+    const offered = choices.map((choice, index) => ({ key: String(index), label: choiceLabel(choice), value: choice }));
+    offerChoices(destinationChoices, offered.slice(0, PLAN_CHOICES_SHOWN), pick);
+    if (offered.length > PLAN_CHOICES_SHOWN) {
+      const more = element("button", "field-choice field-choice--more", `Show all ${offered.length}`);
+      more.type = "button";
+      more.addEventListener("click", () => {
+        const pressed = destinationChoices.querySelector('[aria-pressed="true"]');
+        offerChoices(destinationChoices, offered, pick);
+        if (pressed) markChoice(destinationChoices, pressed.dataset.key);
+      });
+      destinationChoices.append(more);
+    }
+    showNote(destinationNote, [`From your Ofself plans, soonest first. Choose a trip to research.${unresolved}`]);
   } else if (unresolved) {
     showNote(destinationNote, [unresolved.trim()]);
   }
