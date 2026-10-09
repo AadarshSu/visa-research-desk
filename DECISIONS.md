@@ -293,6 +293,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
+| [284](#284-the-sidebar-becomes-the-boarding-passs-stub-the-trip-then-advice-weather-and-keeping-it-in-one-card) | **The sidebar becomes the boarding pass's stub** — the trip as its head, then advice, weather and keeping the trip in one card; weather on the card's surface with every forecast day as wrapping tiles; the save row says what it gives |
 | [283](#283-the-trip-and-the-passport-may-be-written-to-ofself-and-nothing-the-plan-concluded) | **The trip and the passport may be written to Ofself, and nothing the plan concluded** — then only the trip, as a `travel-plan`, since no schema can link a passport to it; a direct write on our button for the one trip the traveller picks; a `place` minted for the destination where they hold none; built, not yet synced or run live |
 | [280](#280-a-fact-the-traveller-gave-may-decide-the-plan-exact-dates-a-rough-span-wholly-on-one-side-a-detail-read-off-a-document) | **A fact the traveller gave may decide the plan** — exact dates; a rough span wholly on one side; a shared detail read off a document, never a typed-in one; `decided_for` shown beside the decision |
 | [279](#279-travel-dates-reach-the-plan-call-and-no-store-shared-between-travellers-holds-anything-about-one) | **Travel dates reach the plan call; no shared store holds anything about one traveller** — counts made by the app, the model compares; dates never change the decision; corridor store and plan reuse checked and frozen in tests |
@@ -322,6 +323,49 @@ s more pressing |
 | [58](#58-the-twenty-corridor-measurement-it-passes-the-bar-and-the-bar-was-nearly-the-wrong-question) | **The twenty-corridor measurement** — passes, marginally, against a bar set in advance |
 | [64](#64-the-control-arm-built-run-on-three-corridors-and-deleted) | **The control arm, run then deleted** — 0 of 8 cited hosts passed the trust rule, and one should have |
 | [63](#63-why-a-traveller-goes-unanswered-becomes-a-count-and-the-first-count-contradicts-the-assumption) | **Why a traveller goes unanswered becomes a count** — and the posture cost 0 of 15 lost pages |
+
+---
+
+## 284. The sidebar becomes the boarding pass's stub: the trip, then advice, weather and keeping it, in one card
+
+**2026-10-09 · the owner.** The sidebar beside a plan was four separate boxes — the trip, travel
+advice, weather, saving the trip to Ofself — in the order they were built. The weather box, the least
+important, was the loudest (a solid blue sky), and the owner expected travellers to skip the column as
+"additional text away from the visa decision". Three directions were mocked up with Spain's real data:
+a ticket stub, a "before you go" timeline ordered by when to act, and glance tiles with one number
+each. **The owner chose the stub.**
+
+**What it is.** One card, styled as the tear-off of the boarding pass that already heads the result
+(entry 270). The trip is its tinted head — the destination named, the dates and nights, the
+countdown, the passport line — cut from the rows by a dashed tear line. The rows follow the order a
+traveller meets them: their government's advice, the weather for their dates, keeping the trip. Each
+row has a small drawn mark and the same padding; none is louder than another. The head shows with or
+without dates, so the stub always says which trip its rows are about; without dates it says that
+adding them brings a countdown and the weather.
+
+**Weather moved onto the card's own surface.** The coloured sky, and the code choosing it, are gone;
+the drawn icons were recoloured for a light card. **An exact trip inside MET Norway's window still
+gets every forecast day** (the owner's reminder): the days are tiles that wrap, four or more to a row,
+rather than a strip that scrolls sideways, so a ten-day trip shows whole. Seen on Spain 12–21 October:
+seven forecast days, then October's average outlined as typical, and "forecast for 7 of your 10 days".
+
+**Keeping the trip says what it gives** (the owner): it adds the trip to the traveller's Ofself
+identity graph as one they are considering, and next time they sign in the form can fill in the
+destination, the purpose and the dates, as a rough window, from it. Checked against the code before
+writing it: `traveller_defaults` reads an open `travel-plan`, and the form fills destination, purpose
+and a rough window when it is the traveller's only one, offering a choice when there are several — so
+the copy says "can". The disclosure stays: it adds the destination to their places if it isn't there,
+and nothing the plan concluded is saved.
+
+**What did not move.** Advice is still a link with nothing read (entry 260); weather still says
+whether it is a forecast or an average; nothing in the stub reaches the visa answer (entry 251); the
+save is still one trip on one click (entry 283). Rejected: the timeline, because every "when to act"
+line would be a claim to keep true; the tiles, because advice can have no number (entry 260) and large
+figures would compete with the decision.
+
+**Seen** in the browser at desktop width and 375px, with the real `/travel-advice` and `/weather`
+answers for an Indian passport to Spain, exact October dates and a rough December; no horizontal
+scroll, no console errors. The notches at the ends of the tear line are faint against the tint.
 
 ---
 

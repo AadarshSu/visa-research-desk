@@ -980,43 +980,89 @@ button:disabled {
   line-height: 1.65;
 }
 
-/* The traveller's own dates, above the plan: a restatement and their own passport against them,
-   never a ruling. */
-.trip-strip {
-  display: grid;
-  gap: 6px;
-  padding: 14px 18px;
+/* The stub beside the plan (DECISIONS entry 284): the boarding pass's tear-off. The trip heads it,
+   a perforation cuts it from the rows, and each row — advice, weather, keeping the trip — follows
+   in the order a traveller meets it. One card, so it reads as part of the pass. */
+.stub {
+  gap: 0;
+  overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 18px;
   background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
-.trip-strip-head {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  align-items: baseline;
+.stub > * + * {
+  border-top: 1px solid var(--line);
+}
+
+.stub > .trip-strip + * {
+  border-top: 0;
+}
+
+.trip-strip {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding: 16px 20px 20px;
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+/* The tear line, with a notch cut at each end as on a paper ticket. */
+.trip-strip::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  bottom: -1px;
+  left: 12px;
+  border-bottom: 2px dashed rgb(23 76 65 / 35%);
+}
+
+.trip-strip::before {
+  content: "";
+  position: absolute;
+  right: -9px;
+  bottom: -9px;
+  left: -9px;
+  height: 18px;
+  background:
+    radial-gradient(circle at 9px 9px, var(--paper) 8px, transparent 8.5px) left / 18px 18px no-repeat,
+    radial-gradient(circle at 9px 9px, var(--paper) 8px, transparent 8.5px) right / 18px 18px no-repeat;
+}
+
+.trip-strip p {
   margin: 0;
-  font-size: 15px;
 }
 
-.trip-strip-label {
-  color: var(--muted);
+.trip-strip-label,
+.save-trip-label {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
+.trip-strip-place {
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.trip-strip-when {
+  color: var(--ink);
+  font-size: 15px;
+}
+
 .trip-strip-countdown {
-  color: var(--green);
   font-weight: 700;
 }
 
 .trip-strip-passport {
-  margin: 0;
+  margin-top: 6px !important;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.5;
 }
 
@@ -1025,19 +1071,31 @@ button:disabled {
   font-weight: 650;
 }
 
-/* Saving the trip to Ofself (DECISIONS entry 283): beside the plan, in the trip strip's frame. */
+.stub-icon {
+  flex: none;
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+/* Keeping the trip in Ofself (DECISIONS entry 283): the last row, and what it gives the traveller. */
 .save-trip {
   display: grid;
   gap: 8px;
   justify-items: start;
-  padding: 14px 18px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface);
+  padding: 16px 20px 18px;
 }
 
 .save-trip p {
   margin: 0;
+}
+
+.save-trip-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
 }
 
 .save-trip-line {
@@ -1045,10 +1103,19 @@ button:disabled {
   font-weight: 700;
 }
 
+.save-trip-gains {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
 .save-trip-note,
 .save-trip-status {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12.5px;
   line-height: 1.5;
 }
 
@@ -1451,7 +1518,6 @@ a.glance-cell:hover {
   position: sticky;
   top: 16px;
   display: grid;
-  gap: 16px;
   min-width: 0;
 }
 
@@ -1471,42 +1537,37 @@ a.glance-cell:hover {
 }
 
 /* The traveller's own government's travel advice: a link and nothing else (DECISIONS entry 260).
-   Quieter than the at-a-glance box above it — outside information, never part of the answer. */
+   A stub row: outside information, never part of the answer. */
 .advice {
   display: grid;
-  gap: 8px;
+  gap: 6px;
+  padding: 16px 20px;
 }
 
 .advice-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 16px;
-  padding: 18px 22px;
-  border: 1.5px solid var(--line);
-  border-radius: 14px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
   color: var(--ink);
-  background: var(--surface);
   text-decoration: none;
-  transition: border-color 120ms ease;
-}
-
-.advice-card:hover {
-  border-color: var(--green);
 }
 
 .advice-card:focus-visible {
   outline: 2px solid var(--green);
-  outline-offset: 2px;
+  outline-offset: 4px;
+  border-radius: 6px;
 }
 
 .advice-body {
   display: grid;
-  gap: 4px;
+  gap: 3px;
   min-width: 0;
 }
 
-.advice-label {
+.advice-label,
+.weather-label,
+.weather-typical-label {
   color: var(--muted);
   font-size: 11px;
   font-weight: 800;
@@ -1515,7 +1576,7 @@ a.glance-cell:hover {
 }
 
 .advice-title {
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.3;
   overflow-wrap: anywhere;
 }
@@ -1528,55 +1589,80 @@ a.glance-cell:hover {
 
 .advice-meta {
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.45;
 }
 
 .advice-arrow {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   color: var(--green);
   background: var(--green-soft);
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
 }
 
-/* Weather for the trip's dates (DECISIONS entry 261), as a compact widget whose sky follows the
-   weather it opens with. Every sky is deep enough for white text — 4.5:1 or better at its lighter
-   end and on a tile — so secondary text is told apart by size and weight, never by fading it. */
+.advice-alt {
+  justify-self: start;
+  padding-left: 34px;
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Weather for the trip's dates (DECISIONS entry 261), as a stub row on the card's own surface. A
+   trip inside MET Norway's window gets every forecast day, as tiles that wrap rather than scroll;
+   months beyond it are outlined so they never read as a forecast. */
 .weather {
-  --sky-top: #1a5687;
-  --sky-bottom: #22649a;
   display: grid;
   gap: 12px;
   min-width: 0;
-  padding: 14px 16px 12px;
-  border-radius: 18px;
-  color: #fff;
-  background: linear-gradient(160deg, var(--sky-top), var(--sky-bottom));
-  box-shadow: var(--shadow);
+  padding: 16px 20px;
 }
 
-.weather--hot { --sky-top: #8a3209; --sky-bottom: #a8480f; }
-.weather--cloudy { --sky-top: #36424e; --sky-bottom: #55616d; }
-.weather--rainy { --sky-top: #1c2b3c; --sky-bottom: #354c64; }
-.weather--cold { --sky-top: #183b5a; --sky-bottom: #33608a; }
-
 .weather-head {
+  display: grid;
+  gap: 10px;
+}
+
+.weather-place {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px 16px;
+  gap: 8px;
+}
+
+.weather-city {
+  width: auto;
+  max-width: 100%;
+  padding: 3px 26px 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2317201f' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 10px center;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  appearance: none;
+  cursor: pointer;
+}
+
+.weather-city:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+.weather-city-name {
+  font-size: 14px;
 }
 
 .weather-hero {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
 }
 
@@ -1595,90 +1681,44 @@ a.glance-cell:hover {
 }
 
 .weather-hero-temp strong {
-  font-size: 28px;
-  font-weight: 400;
+  font-size: 26px;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
 .weather-hero-f {
-  font-size: 15px;
+  color: var(--muted);
+  font-size: 14px;
   font-weight: 600;
 }
 
 .weather-hero-line {
+  color: var(--muted);
   font-size: 13px;
   line-height: 1.35;
 }
 
-.weather-place {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.weather-label {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.weather-city {
-  width: auto;
-  max-width: 100%;
-  padding: 4px 28px 4px 11px;
-  border: 1px solid rgb(255 255 255 / 45%);
-  border-radius: 999px;
-  color: #fff;
-  background: rgb(255 255 255 / 14%) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='white' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 11px center;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  appearance: none;
-  cursor: pointer;
-}
-
-.weather-city option {
-  color: var(--ink);
-}
-
-.weather-city:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
-}
-
-.weather-city-name {
-  font-size: 14px;
-}
-
-/* The drawn sky: sun, cloud, rain, snow, fog, storm. */
+/* The drawn sky, coloured for a light card. */
 .weather-icon {
   flex: none;
   overflow: visible;
 }
 
-.icon-sun line { stroke: #ffd36b; stroke-width: 2.4; stroke-linecap: round; }
-.icon-sun circle { fill: #ffd36b; }
-.icon-cloud { fill: rgb(255 255 255 / 96%); }
-.icon-drop { stroke: #bfe3ff; stroke-width: 2.4; stroke-linecap: round; }
-.icon-flake { fill: #fff; }
-.icon-fog { stroke: #fff; stroke-width: 2.4; stroke-linecap: round; }
-.icon-bolt { fill: #ffd36b; }
+.icon-sun line { stroke: var(--gold-deep); stroke-width: 2.4; stroke-linecap: round; }
+.icon-sun circle { fill: var(--gold); }
+.icon-cloud { fill: #c7d0d6; }
+.icon-drop { stroke: var(--blue); stroke-width: 2.4; stroke-linecap: round; }
+.icon-flake { fill: var(--blue); }
+.icon-fog { stroke: #9aa5ab; stroke-width: 2.4; stroke-linecap: round; }
+.icon-bolt { fill: var(--gold-deep); }
 
-/* One strip: forecast days, then typical months outlined so they never read as a forecast. It
-   scrolls sideways when the trip is long. */
 .weather-days {
   display: grid;
-  grid-auto-columns: minmax(74px, 1fr);
-  grid-auto-flow: column;
+  grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
   gap: 6px;
   margin: 0;
-  padding: 0 0 4px;
-  overflow-x: auto;
+  padding: 0;
   list-style: none;
-  scroll-snap-type: x mandatory;
-  scrollbar-color: rgb(255 255 255 / 45%) transparent;
-  scrollbar-width: thin;
 }
 
 .weather-day {
@@ -1687,33 +1727,28 @@ a.glance-cell:hover {
   align-content: start;
   gap: 2px;
   padding: 7px 4px;
-  border: 1px solid transparent;
   border-radius: 12px;
-  background: rgb(255 255 255 / 10%);
-  scroll-snap-align: start;
+  color: var(--muted);
+  background: var(--paper);
   font-size: 11px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-
 .weather-day-name {
+  color: var(--ink);
   font-size: 11px;
   font-weight: 800;
 }
 
 .weather-day-high {
+  color: var(--ink);
   font-size: 13px;
   font-weight: 700;
 }
 
-/* Typical months: chips outlined so they never read as a forecast, wrapping onto a second line. */
 .weather-typical-label {
   margin: 0 0 -6px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
 }
 
 .weather-typical {
@@ -1730,7 +1765,7 @@ a.glance-cell:hover {
   align-items: center;
   gap: 7px;
   padding: 4px 10px 4px 7px;
-  border: 1px dashed rgb(255 255 255 / 70%);
+  border: 1px dashed var(--muted);
   border-radius: 999px;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
@@ -1746,33 +1781,26 @@ a.glance-cell:hover {
   width: 36px;
   height: 4px;
   border-radius: 2px;
-  background: rgb(255 255 255 / 25%);
+  background: var(--line);
 }
 
 .weather-gauge-fill {
   display: block;
   height: 100%;
   border-radius: 2px;
-  background: #ffd36b;
+  background: var(--gold-deep);
 }
 
 .weather-foot {
   margin: 0;
+  color: var(--muted);
   font-size: 11px;
   line-height: 1.4;
 }
 
 .weather-foot a {
-  color: #fff;
-  font-weight: 700;
-}
-
-.advice-alt {
-  justify-self: start;
-  padding-left: 22px;
   color: var(--green);
-  font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Four cells — authority, method, location, in person — as two rows of two, so none is left alone

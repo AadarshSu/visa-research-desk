@@ -69,7 +69,7 @@ person, and the trip may be written back (item 88). Mockup with example data:
 **Built and deployed** — each is a row in *Done*: the date field and the
 at-a-glance box; the dates reaching the plan call and deciding it where the traveller's own fact
 settles a rule; the plan written for the specific traveller; the travel-advice and weather panels;
-the result page redesign; an open decision leading with where to settle it; the
+the result page redesign and its stub sidebar; an open decision leading with where to settle it; the
 `travel_authorisation` role; plans without sign-in; saving the trip to Ofself.
 
 **Left on what is built:**
@@ -105,8 +105,8 @@ website layouts and different ways through the page, not a fix to the current on
 purpose: what to try is the owner's to direct in that session.
 
 **Where it starts from:**
-- **On `main`:** the current design (entry 270) — a verdict band, the boarding pass as the result's
-  header, and advice and weather in a sidebar.
+- **On `main`:** the current design (entries 270, 284) — a verdict band, the boarding pass as the
+  result's header, and its stub beside the plan holding the trip, advice, weather and saving it.
 - **On the local branch `design-bold`** (`b53d421`, not pushed): one bolder direction — a
   question-at-a-time check-in, a departure screen while the plan is researched, and the plan as an
   itinerary of folded stops.
@@ -401,6 +401,7 @@ The reasoning is in the DECISIONS entry; this is the index. Code comments cite s
 
 | Was | Done | Entry | What building it found |
 | --- | --- | --- | --- |
+| — The sidebar as the boarding pass's stub | 10-09 | 284 | One card in trip order: the trip, advice, weather, keeping it; every forecast day as wrapping tiles; the save row says what it gives |
 | 88. Save the trip to Ofself after a plan | 10-09 | 283 | A button beside a plan writes that one trip as a `travel-plan`, minting a `country` place where the traveller holds none, and nothing the plan concluded; saved live in the sandbox user; done and deployed, the owner, 2026-10-09 |
 | — A fact the traveller gave may decide the plan | 10-08 | 280 | Exact dates; a rough span wholly on one side; a detail read off a document, never a typed-in one |
 | — Trip dates reach the plan call | 10-07 | 279 | Measured against stay limits, application windows and passport validity; no shared store holds anything about one traveller, frozen in tests |

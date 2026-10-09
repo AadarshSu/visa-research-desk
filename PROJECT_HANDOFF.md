@@ -36,8 +36,8 @@ propose either unprompted.**
 entry:
 - **Around the plan:** the date field and the at-a-glance box (entries 253, 256); a travel-advice
   panel that links the passport government's advice and reads nothing (entries 259, 260); a weather
-  panel (entry 261); the redesigned result page with advice and weather in a sidebar (entries 270,
-  273). None of the panels is ever an input to the visa answer.
+  panel (entry 261); the redesigned result page (entries 270, 273), whose sidebar is now the
+  boarding pass's stub: the trip, advice, weather and keeping it, in one card (entry 284). None of the panels is ever an input to the visa answer.
 - **In the plan:** what a signed-in traveller shares through Ofself, and the trip's dates, reach the
   plan call (entries 276, 279); a fact the traveller gave may decide it (entry 280); an open decision
   leads with where to settle it (entries 271, 272); a seventh role finds a pre-travel authorisation,

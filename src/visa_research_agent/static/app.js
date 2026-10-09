@@ -1082,11 +1082,24 @@ function siteOf(url) {
   }
 }
 
+// A stub row's mark: drawn, in the page's ink, so each row is told apart at a glance.
+const ROW_ICONS = {
+  advice: "M24 6l14 5v11c0 9-6 16-14 20-8-4-14-11-14-20V11z",
+  save: "M14 7h20a2 2 0 0 1 2 2v32l-12-8-12 8V9a2 2 0 0 1 2-2z",
+};
+
+function rowIcon(kind) {
+  const svg = svgNode("svg", { viewBox: "0 0 48 48", width: 22, height: 22, "aria-hidden": "true", class: "stub-icon" });
+  svg.append(svgNode("path", { d: ROW_ICONS[kind] }));
+  return svg;
+}
+
 function renderAdvice(advice, destinationName) {
   if (!advice) return null;
   const box = element("section", "advice");
   box.setAttribute("aria-label", "Your government's travel advice");
   const card = externalLink("", advice.url, "advice-card");
+  card.append(rowIcon("advice"));
   const body = element("span", "advice-body");
   const label = advice.about_destination ? `Travel advice · ${destinationName}` : "Travel advice";
   body.append(element("span", "advice-label", label));
@@ -1244,15 +1257,6 @@ function thermometer(celsius) {
   return Math.round(Math.min(1, Math.max(0.04, share)) * 100);
 }
 
-// The card's sky follows the weather it opens with: a hot day warms it, rain greys it.
-function skyMood(kind, high) {
-  if (kind === "rain" || kind === "storm") return "rainy";
-  if (kind === "snow" || (high !== null && high < 8)) return "cold";
-  if (kind === "cloud" || kind === "fog") return "cloudy";
-  if (high !== null && high >= 30) return "hot";
-  return "sunny";
-}
-
 function shortDay(value) {
   return parseDay(value).toLocaleDateString(undefined, { weekday: "short" });
 }
@@ -1268,10 +1272,10 @@ function renderWeather(weather, destination) {
   const heroKind = first ? skyKind(first.summary) : monthKind(firstMonth);
   const heroHigh = first ? first.high_c : firstMonth.high_c;
 
-  const box = element("section", `weather weather--${skyMood(heroKind, heroHigh)}`);
+  const box = element("section", "weather");
   box.setAttribute("aria-label", "Weather for your dates");
 
-  // One header row: the opening day (or month) on the left, the city on the right.
+  // The row's label and city first, then the opening day (or month).
   const head = element("div", "weather-head");
   const hero = element("div", "weather-hero");
   hero.append(weatherIcon(heroKind, 44));
@@ -1288,7 +1292,6 @@ function renderWeather(weather, destination) {
     heroText.append(element("span", "weather-hero-line", `Typical high in ${firstMonth.name} · too far ahead to forecast`));
   }
   hero.append(heroText);
-  head.append(hero);
 
   const place = element("div", "weather-place");
   place.append(element("span", "weather-label", "Weather in"));
@@ -1308,7 +1311,7 @@ function renderWeather(weather, destination) {
   } else {
     place.append(element("strong", "weather-city-name", weather.city));
   }
-  head.append(place);
+  head.append(place, hero);
   box.append(head);
 
   // One strip: forecast days, then the typical months beyond them, outlined so they never read as
@@ -1395,7 +1398,7 @@ async function refreshWeather() {
   const fresh = renderWeather(await fetchWeather(lastRun.request.destination, city), lastRun.request.destination);
   if (old && fresh) old.replaceWith(fresh);
   else if (old) old.remove();
-  else if (fresh) sidebar()?.append(fresh);
+  else if (fresh) sidebar()?.insertBefore(fresh, sidebar().querySelector(".save-trip"));
 }
 
 function withId(node, id) {
@@ -1417,8 +1420,8 @@ function renderPlan(plan, advice = null, weather = null) {
   const evidence = withId(renderReliability(plan), "plan-evidence");
   const main = element("div", "plan-main");
   main.append(...[decision, apply, documents, steps, evidence, renderClosingNote(plan)].filter(Boolean));
-  const side = element("aside", "plan-side");
-  side.setAttribute("aria-label", "Beside the plan");
+  const side = element("aside", "plan-side stub");
+  side.setAttribute("aria-label", "Your trip, beside the plan");
   side.append(
     ...[
       renderTrip(),
@@ -1444,13 +1447,25 @@ function renderSaveTrip() {
   const line = [destination, request.traveller.travel_purpose, trip ? tripRange(trip) : "no dates yet"].join(" · ");
   const box = element("section", "save-trip");
   box.setAttribute("aria-label", "Save this trip to Ofself");
+  const head = element("div", "save-trip-head");
+  head.append(rowIcon("save"), element("p", "save-trip-label", "Keep this trip"));
+  const gains = element("ul", "save-trip-gains");
+  gains.append(
+    element("li", "", "Adds it to your Ofself identity graph as a trip you're considering."),
+    element(
+      "li",
+      "",
+      `Next time you sign in, the form can fill in ${destination}, the purpose and ${trip ? "these dates, as a rough window" : "the trip"} from it.`,
+    ),
+  );
   box.append(
-    element("p", "trip-strip-label", "Your Ofself account"),
+    head,
     element("p", "save-trip-line", line),
+    gains,
     element(
       "p",
       "save-trip-note",
-      `Saves it as a trip you're considering, adding ${destination} to your places if it isn't there. Nothing this plan concluded is saved.`,
+      `It also adds ${destination} to your places if it isn't there. Nothing this plan concluded is saved.`,
     ),
   );
   const status = element("p", "save-trip-status");
@@ -2308,17 +2323,23 @@ function passportLine(trip) {
   };
 }
 
+// The head of the stub beside the plan (DECISIONS entry 284): where and when, then a tear line.
+// Shown with or without dates, so the stub always says which trip its rows are about.
 function renderTrip() {
   const trip = tripDates();
-  if (!trip) return null;
+  const destination = optionLabel(destinationSelect, lastRun ? lastRun.request.destination : destinationSelect.value);
   const strip = element("section", "trip-strip");
   strip.setAttribute("aria-label", "Your trip");
-  const head = element("p", "trip-strip-head");
-  head.append(element("span", "trip-strip-label", "Your trip"), element("strong", "", tripRange(trip)));
+  strip.append(element("p", "trip-strip-label", "Your trip"), element("p", "trip-strip-place", destination));
+  if (!trip) {
+    strip.append(element("p", "trip-strip-when", "No dates yet. Add them on the form for a countdown and the weather."));
+    return strip;
+  }
+  const when = element("p", "trip-strip-when");
+  when.append(element("strong", "", tripRange(trip)));
   const length = tripLength(trip);
-  if (length) head.append(element("span", "", length));
-  head.append(element("span", "trip-strip-countdown", countdown(trip)));
-  strip.append(head);
+  if (length) when.append(` · ${length}`);
+  strip.append(when, element("p", "trip-strip-countdown", countdown(trip)));
   const passport = passportLine(trip);
   if (passport) {
     strip.append(element("p", passport.tone ? `trip-strip-passport trip-strip-passport--${passport.tone}` : "trip-strip-passport", passport.text));
@@ -2332,7 +2353,6 @@ function refreshTripStrip() {
   const old = results.querySelector(".trip-strip");
   const fresh = renderTrip();
   if (old && fresh) old.replaceWith(fresh);
-  else if (old) old.remove();
   else if (fresh) sidebar()?.prepend(fresh);
 }
 
