@@ -402,7 +402,7 @@ The reasoning is in the DECISIONS entry; this is the index. Code comments cite s
 
 | Was | Done | Entry | What building it found |
 | --- | --- | --- | --- |
-| — Saved trips offered soonest first, past ones hidden | 10-09 | 286 | Checked in the local app with a made-up list of nine trips, not a real Ofself account: five buttons then "Show all", each with its dates; in the form's half-width column every button wraps to two lines |
+| — Saved trips offered soonest first, past ones hidden | 10-09 | 286 | Checked in the local app with a made-up list of nine trips, not a real Ofself account: five rows then "Show all", each the destination over its dates, across the form's whole width so a long name looks like a short one |
 | — The sidebar as the boarding pass's stub | 10-09 | 284 | One card in trip order: the trip, advice, weather, keeping it; every forecast day as wrapping tiles; the save row says what it gives |
 | 88. Save the trip to Ofself after a plan | 10-09 | 283 | A button beside a plan writes that one trip as a `travel-plan`, minting a `country` place where the traveller holds none, and nothing the plan concluded; saved live in the sandbox user; done and deployed, the owner, 2026-10-09 |
 | — A fact the traveller gave may decide the plan | 10-08 | 280 | Exact dates; a rough span wholly on one side; a detail read off a document, never a typed-in one |

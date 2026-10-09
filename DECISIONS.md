@@ -294,7 +294,7 @@ s more pressing |
 ### Whether this is a product
 | | |
 | --- | --- |
-| [286](#286-saved-trips-are-offered-soonest-first-with-their-dates-and-past-ones-hidden) | **Saved trips are offered soonest first, with their dates, and past ones hidden** — the form offered every open `travel-plan` as a button, unsorted, past trips included, and two trips to one place looked identical; now five, then "Show all" |
+| [286](#286-saved-trips-are-offered-soonest-first-with-their-dates-and-past-ones-hidden) | **Saved trips are offered soonest first, with their dates, and past ones hidden** — the form offered every open `travel-plan` as a button, unsorted, past trips included, and two trips to one place looked identical; now five same-shaped rows across the form's width, then "Show all" |
 | [284](#284-the-sidebar-becomes-the-boarding-passs-stub-the-trip-then-advice-weather-and-keeping-it-in-one-card) | **The sidebar becomes the boarding pass's stub** — the trip as its head, then advice, weather and keeping the trip in one card; weather on the card's surface with every forecast day as wrapping tiles; the save row says what it gives |
 | [283](#283-the-trip-and-the-passport-may-be-written-to-ofself-and-nothing-the-plan-concluded) | **The trip and the passport may be written to Ofself, and nothing the plan concluded** — then only the trip, as a `travel-plan`, since no schema can link a passport to it; a direct write on our button for the one trip the traveller picks; a `place` minted for the destination where they hold none; built, not yet synced or run live |
 | [280](#280-a-fact-the-traveller-gave-may-decide-the-plan-exact-dates-a-rough-span-wholly-on-one-side-a-detail-read-off-a-document) | **A fact the traveller gave may decide the plan** — exact dates; a rough span wholly on one side; a shared detail read off a document, never a typed-in one; `decided_for` shown beside the decision |
@@ -344,16 +344,21 @@ tourism", and two Thailand trips with different dates looked the same until clic
   the note counts them ("2 trips whose dates have passed are not shown"). A trip with no dates is
   never over.
 - **Soonest first**, by the earliest date; undated trips last; Ofself's order among equals.
-- **The button names the destination and the dates** ("Japan · 2 Apr – 16 Apr 2027"); the plan's
-  name only where it adds something ("· Honeymoon"); "no dates" where there are none.
+- **Each trip is a row: the destination, and beneath it the dates** ("2 Apr – 16 Apr 2027"); the
+  plan's name only where it adds something ("· Honeymoon"); "No dates" where there are none.
 - **Five buttons, then "Show all N"**, which keeps a pick already made. One trip left is still
   filled in without asking.
 
 Nothing on the server changed: the server still returns every open plan, and this is how the page
 offers them. **Checked** in the local app with a made-up payload of nine trips (two past, two to
-Thailand, one undated, one with two destinations), not with a real Ofself account. In the form's
-half-width column each button wraps to two lines, so "Show all" on a long list is still a tall
-column.
+Thailand, one undated, one with two destinations), not with a real Ofself account.
+
+**Then the layout, the same day — the owner: "I don't like that Spain fits in 1 line but South
+Korea doesn't."** As pills in the form's half-width column (162–192px), a short name took one line
+and a long one two. A smaller font only moves where that happens. So every trip is the same
+two-line row, and a destination field offering trips spans the form's whole width (Passport moves
+down a row). Measured at 1440px wide and on a 375px phone: every row 48px high, no dates cut off,
+no sideways scroll.
 
 ---
 

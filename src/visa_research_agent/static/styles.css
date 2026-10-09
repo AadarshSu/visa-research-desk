@@ -257,6 +257,46 @@ button.field-choice--more {
   border-style: dashed;
 }
 
+/* Saved trips: one row each, the destination over its dates, so every row is the same shape. Half
+   the form is too narrow for a trip's dates, so a field offering trips takes the whole width. */
+.research-form > .field-group:has(> .field-choices--trips:not([hidden])) {
+  grid-column: 1 / -1;
+}
+
+.field-choices--trips {
+  flex-direction: column;
+}
+
+.field-choices--trips button.field-choice {
+  display: grid;
+  gap: 1px;
+  width: 100%;
+  padding: 7px 12px;
+  border-radius: 10px;
+  text-align: left;
+}
+
+.field-choice__name {
+  font-weight: 700;
+}
+
+.field-choice__detail {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+button.field-choice:hover .field-choice__detail,
+button.field-choice[aria-pressed="true"] .field-choice__detail {
+  color: rgb(255 255 255 / 85%);
+}
+
+.field-choices--trips button.field-choice--more {
+  text-align: center;
+}
+
 .status-dot {
   width: 7px;
   height: 7px;

@@ -1894,7 +1894,12 @@ function markChoice(container, key) {
 function offerChoices(container, choices, onPick) {
   container.replaceChildren(
     ...choices.map((choice) => {
-      const button = element("button", "field-choice", choice.label);
+      // A choice with a detail is two lines, the same shape however long its name (entry 286).
+      const button = element("button", "field-choice", choice.detail === undefined ? choice.label : undefined);
+      if (choice.detail !== undefined) {
+        button.append(element("span", "field-choice__name", choice.label), element("span", "field-choice__detail", choice.detail));
+        button.setAttribute("aria-label", `${choice.label}, ${choice.detail}`);
+      }
       button.type = "button";
       button.dataset.key = choice.key;
       button.setAttribute("aria-pressed", "false");
@@ -2056,16 +2061,16 @@ function planIsOver(plan) {
   return last !== null && last < today();
 }
 
-// The button names the destination and the dates. The plan's own name is added only where it says
-// something they do not — a trip this app saved is called "Thailand, tourism".
-function choiceLabel(choice) {
+// The button names the destination, and beneath it the dates. The plan's own name is added only
+// where it says something they do not — a trip this app saved is called "Thailand, tourism".
+function tripChoice(choice, key) {
   const destination = destinationLabel(destinationSelect, choice.candidate.destination_slug);
-  const parts = [destination];
+  const details = [];
   const when = planWhen(choice.plan);
-  if (when) parts.push(when);
-  if (!choice.plan.label.toLowerCase().startsWith(destination.toLowerCase())) parts.push(choice.plan.label);
-  else if (!when) parts.push("no dates");
-  return parts.join(" · ");
+  if (when) details.push(when);
+  if (!choice.plan.label.toLowerCase().startsWith(destination.toLowerCase())) details.push(choice.plan.label);
+  else if (!when) details.push("No dates");
+  return { key, label: destination, detail: details.join(" · "), value: choice };
 }
 
 const PLAN_CHOICES_SHOWN = 5;
@@ -2114,7 +2119,7 @@ function prefillDestination(payload) {
   if (choices.length === 1) {
     pick(choices[0]);
   } else if (choices.length > 1) {
-    const offered = choices.map((choice, index) => ({ key: String(index), label: choiceLabel(choice), value: choice }));
+    const offered = choices.map((choice, index) => tripChoice(choice, String(index)));
     offerChoices(destinationChoices, offered.slice(0, PLAN_CHOICES_SHOWN), pick);
     if (offered.length > PLAN_CHOICES_SHOWN) {
       const more = element("button", "field-choice field-choice--more", `Show all ${offered.length}`);
